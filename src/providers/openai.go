@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -25,7 +24,7 @@ var (
 		Created   uint64  `json:"created"`
 		Model     string  `json:"model"`
 		Choices   []Choice `json:"choices"`
-		Usage     Usage   `json:"usage"`
+		Usage     []Usage   `json:"usage"`
 	}
 
 	GptResponse struct {
