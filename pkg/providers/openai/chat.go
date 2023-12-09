@@ -42,7 +42,7 @@ type BoolConfigItem struct {
 }
 
 // DefaultProviderConfig returns an instance of ProviderConfig with default values.
-func DefaultProviderConfig() ProviderConfig {
+func OpenAiDefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		Model: ConfigItem{
 			Param:    "model",
