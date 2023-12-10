@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"time"
 )
@@ -20,8 +21,8 @@ func NewHttpServer(config *HTTPServerConfig) (*HTTPServer, error) {
 }
 
 func (srv *HTTPServer) Run() error {
-	srv.server.GET("/hello", func(ctx context.Context, c *app.RequestContext) {
-		c.String(consts.StatusOK, "Hello Glide!")
+	srv.server.GET("/health", func(ctx context.Context, c *app.RequestContext) {
+		c.JSON(consts.StatusOK, utils.H{"healthy": true})
 	})
 
 	return srv.server.Run()
