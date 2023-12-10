@@ -1,9 +1,14 @@
 package main
 
 import (
-	"glide/pkg"
+	"glide/pkg/cmd"
+	"log"
 )
 
 func main() {
-	println(pkg.GetVersion())
+	cli := cmd.NewCLI()
+
+	if err := cli.Execute(); err != nil {
+		log.Fatalf("glide run finished with error: %v", err)
+	}
 }
