@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+
+// provides the base URL and headers for the OpenAI API
 type ProviderAPIConfig struct {
 	BaseURL      string
 	Headers      func(string) http.Header

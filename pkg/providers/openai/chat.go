@@ -24,7 +24,7 @@ type ConfigItem struct {
 	Default  interface{} `json:"default"`
 }
 
-// DefaultProviderConfig returns an instance of ProviderConfig with default values.
+// Provide the request body for OpenAI's ChatCompletion API
 func OpenAiDefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		Model: ConfigItem{
