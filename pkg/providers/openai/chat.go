@@ -1,10 +1,5 @@
 package main
 
-import (
-    "github.com/go-playground/validator/v10"
-)
-
-
 type ProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
 	Messages         ConfigItem          `json:"messages" validate:"required"`
@@ -16,7 +11,7 @@ type ProviderConfig struct {
 	Stop             ConfigItem          `json:"stop"`
 	PresencePenalty  ConfigItem   		 `json:"presence_penalty" validate:"omitempty,gte=-2,lte=2"`
 	FrequencyPenalty ConfigItem   		 `json:"frequency_penalty" validate:"omitempty,gte=-2,lte=2"`
-	LogitBias        LogitBiasConfigItem  `json:"logit_bias" validate:"omitempty"`
+	LogitBias        ConfigItem  		 `json:"logit_bias" validate:"omitempty"`
 	User             ConfigItem          `json:"user"`
 	Seed             ConfigItem          `json:"seed" validate:"omitempty,gte=0"`
 	Tools            ConfigItem          `json:"tools"`
@@ -27,18 +22,6 @@ type ProviderConfig struct {
 type ConfigItem struct {
 	Param    string      `json:"param" validate:"required"`
 	Default  interface{} `json:"default"`
-}
-
-type NumericConfigItem struct {
-    Param   string    `json:"param" validate:"required"`
-    Default float64   `json:"default" validate:"required, gte=0"`
-    Min     float64  `json:"min,omitempty" validate:"omitempty,gte=0"` 
-    Max     float64  `json:"max,omitempty" validate:"omitempty,gtfield=Min"`
-}
-
-type LogitBiasConfigItem struct {
-    Param   string            `json:"param" validate:"required"`
-    Default map[string]float64 `json:"default,omitempty"`
 }
 
 // DefaultProviderConfig returns an instance of ProviderConfig with default values.
@@ -83,7 +66,7 @@ func OpenAiDefaultConfig() ProviderConfig {
 			Param: "frequency_penalty",
 			Default: 0,
 		},
-		LogitBias: LogitBiasConfigItem{
+		LogitBias: ConfigItem{
 			Param: "logit_bias",
 		},
 		User: ConfigItem{
