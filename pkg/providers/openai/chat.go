@@ -1,4 +1,4 @@
-package main
+package openai
 
 type ProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
