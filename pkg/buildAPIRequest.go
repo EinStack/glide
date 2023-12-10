@@ -22,6 +22,6 @@ func BuildAPIRequest(provider string, params map[string]string, mode string, con
     return providerConfig, nil
 
 	// TODO: Next need to build the request based on the params from the client
-	// First check if the param is present. If yes then add it to the request.
+	// First for each param in param check if present. If yes then add it to the request.
 	// If not & the param is required, return a default value from the provider config
 }
