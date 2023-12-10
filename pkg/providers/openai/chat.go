@@ -6,19 +6,19 @@ import (
 
 
 type ProviderConfig struct {
-	Model            ConfigItem          `json:"model" validate:"lowercase"`
-	Messages         ConfigItem          `json:"messages"`
-	MaxTokens        NumericConfigItem   `json:"max_tokens"`
-	Temperature      NumericConfigItem   `json:"temperature"`
-	TopP             NumericConfigItem   `json:"top_p"`
-	N                NumericConfigItem   `json:"n"`
-	Stream           BoolConfigItem      `json:"stream"`
+	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
+	Messages         ConfigItem          `json:"messages" validate:"required"`
+	MaxTokens        ConfigItem   		 `json:"max_tokens" validate:"omitempty,gte=0"`
+	Temperature      ConfigItem   		 `json:"temperature" validate:"omitempty,gte=0,lte=2"`
+	TopP             ConfigItem   		 `json:"top_p" validate:"omitempty,gte=0,lte=1"`
+	N                ConfigItem          `json:"n" validate:"omitempty,gte=1"`
+	Stream           ConfigItem      	 `json:"stream" validate:"omitempty, boolean"`
 	Stop             ConfigItem          `json:"stop"`
-	PresencePenalty  NumericConfigItem   `json:"presence_penalty"`
-	FrequencyPenalty NumericConfigItem   `json:"frequency_penalty" validate:"omitempty,gte=-2,lte=2"`
-	LogitBias        ConfigItem          `json:"logit_bias"`
+	PresencePenalty  ConfigItem   		 `json:"presence_penalty" validate:"omitempty,gte=-2,lte=2"`
+	FrequencyPenalty ConfigItem   		 `json:"frequency_penalty" validate:"omitempty,gte=-2,lte=2"`
+	LogitBias        LogitBiasConfigItem  `json:"logit_bias" validate:"omitempty"`
 	User             ConfigItem          `json:"user"`
-	Seed             ConfigItem          `json:"seed"`
+	Seed             ConfigItem          `json:"seed" validate:"omitempty,gte=0"`
 	Tools            ConfigItem          `json:"tools"`
 	ToolChoice       ConfigItem          `json:"tool_choice"`
 	ResponseFormat   ConfigItem          `json:"response_format"`
@@ -26,8 +26,7 @@ type ProviderConfig struct {
 
 type ConfigItem struct {
 	Param    string      `json:"param" validate:"required"`
-	Required bool        `json:"required,omitempty"` // not sure this is needed
-	Default  interface{} `json:"default" validate:"required"`
+	Default  interface{} `json:"default"`
 }
 
 type NumericConfigItem struct {
@@ -37,9 +36,9 @@ type NumericConfigItem struct {
     Max     float64  `json:"max,omitempty" validate:"omitempty,gtfield=Min"`
 }
 
-type BoolConfigItem struct {
-	Param   string `json:"param" validate:"required,boolean"`
-	Default bool   `json:"default,omitempty"`
+type LogitBiasConfigItem struct {
+    Param   string            `json:"param" validate:"required"`
+    Default map[string]float64 `json:"default,omitempty"`
 }
 
 // DefaultProviderConfig returns an instance of ProviderConfig with default values.
@@ -47,52 +46,44 @@ func OpenAiDefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		Model: ConfigItem{
 			Param:    "model",
-			Required: true,
 			Default:  "gpt-3.5-turbo",
 		},
 		Messages: ConfigItem{
 			Param:   "messages",
 			Default: "",
 		},
-		MaxTokens: NumericConfigItem{
+		MaxTokens: ConfigItem{
 			Param:   "max_tokens",
 			Default: 100,
-			Min:     0,
 		},
-		Temperature: NumericConfigItem{
+		Temperature: ConfigItem{
 			Param:   "temperature",
 			Default: 1,
-			Min:     0,
-			Max:     2,
 		},
-		TopP: NumericConfigItem{
+		TopP: ConfigItem{
 			Param:   "top_p",
 			Default: 1,
-			Min:     0,
-			Max:     1,
 		},
-		N: NumericConfigItem{
+		N: ConfigItem{
 			Param:   "n",
 			Default: 1,
 		},
-		Stream: BoolConfigItem{
+		Stream: ConfigItem{
 			Param:   "stream",
 			Default: false,
 		},
 		Stop: ConfigItem{
 			Param: "stop",
 		},
-		PresencePenalty: NumericConfigItem{
+		PresencePenalty: ConfigItem{
 			Param: "presence_penalty",
-			Min:   -2,
-			Max:   2,
+			Default: 0,
 		},
-		FrequencyPenalty: NumericConfigItem{
+		FrequencyPenalty: ConfigItem{
 			Param: "frequency_penalty",
-			Min:   -2,
-			Max:   2,
+			Default: 0,
 		},
-		LogitBias: ConfigItem{
+		LogitBias: LogitBiasConfigItem{
 			Param: "logit_bias",
 		},
 		User: ConfigItem{
