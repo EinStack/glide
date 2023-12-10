@@ -22,20 +22,29 @@ type Gateway struct {
 }
 
 func NewGateway() (*Gateway, error) {
+	serverManager, err := api.NewServerManager()
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &Gateway{
-		signalC:   make(chan os.Signal, 2), // equal to number of signal types we expect to receive
-		shutdownC: make(chan struct{}),
+		serverManager: serverManager,
+		signalC:       make(chan os.Signal, 2), // equal to number of signal types we expect to receive
+		shutdownC:     make(chan struct{}),
 	}, nil
 }
 
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
 	// TODO: init server manager
+	// TODO: init configs
 	signal.Notify(gw.signalC, os.Interrupt, syscall.SIGTERM)
 
 LOOP:
 	for {
 		select {
+		// TODO: Watch for config updates
 		case <-gw.signalC:
 			// TODO: log this occurrence
 			break LOOP
@@ -52,8 +61,8 @@ LOOP:
 	return gw.shutdown(ctx)
 }
 
-func (gw *Gateway) Shutdown() error {
-
+func (gw *Gateway) Shutdown() {
+	close(gw.shutdownC)
 }
 
 func (gw *Gateway) shutdown(ctx context.Context) error {
