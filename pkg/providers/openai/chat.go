@@ -8,8 +8,6 @@ import (
 type ProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"lowercase"`
 	Messages         ConfigItem          `json:"messages"`
-	Functions        ConfigItem          `json:"functions"`
-	FunctionCall     ConfigItem          `json:"function_call"`
 	MaxTokens        NumericConfigItem   `json:"max_tokens"`
 	Temperature      NumericConfigItem   `json:"temperature"`
 	TopP             NumericConfigItem   `json:"top_p"`
@@ -17,7 +15,7 @@ type ProviderConfig struct {
 	Stream           BoolConfigItem      `json:"stream"`
 	Stop             ConfigItem          `json:"stop"`
 	PresencePenalty  NumericConfigItem   `json:"presence_penalty"`
-	FrequencyPenalty NumericConfigItem   `json:"frequency_penalty"`
+	FrequencyPenalty NumericConfigItem   `json:"frequency_penalty" validate:"omitempty,gte=-2,lte=2"`
 	LogitBias        ConfigItem          `json:"logit_bias"`
 	User             ConfigItem          `json:"user"`
 	Seed             ConfigItem          `json:"seed"`
@@ -30,19 +28,17 @@ type ConfigItem struct {
 	Param    string      `json:"param" validate:"required"`
 	Required bool        `json:"required,omitempty"` // not sure this is needed
 	Default  interface{} `json:"default" validate:"required"`
-	Min      interface{} `json:"min,omitempty"` // not sure this is needed
-	Max      interface{} `json:"max,omitempty"` // not sure this is needed
 }
 
 type NumericConfigItem struct {
     Param   string    `json:"param" validate:"required"`
-    Default float64   `json:"default" validate:"required"`
-    Min     *float64  `json:"min,omitempty" validate:"omitempty,gte=0"` 
-    Max     *float64  `json:"max,omitempty" validate:"omitempty,gtfield=Min"`
+    Default float64   `json:"default" validate:"required, gte=0"`
+    Min     float64  `json:"min,omitempty" validate:"omitempty,gte=0"` 
+    Max     float64  `json:"max,omitempty" validate:"omitempty,gtfield=Min"`
 }
 
 type BoolConfigItem struct {
-	Param   string `json:"param" validate:"required"`
+	Param   string `json:"param" validate:"required,boolean"`
 	Default bool   `json:"default,omitempty"`
 }
 
@@ -57,12 +53,6 @@ func OpenAiDefaultConfig() ProviderConfig {
 		Messages: ConfigItem{
 			Param:   "messages",
 			Default: "",
-		},
-		Functions: ConfigItem{
-			Param: "functions",
-		},
-		FunctionCall: ConfigItem{
-			Param: "function_call",
 		},
 		MaxTokens: NumericConfigItem{
 			Param:   "max_tokens",
