@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"glide/pkg/api"
+	"glide/pkg/api/http"
 	"go.uber.org/multierr"
 	"os"
 	"os/signal"
@@ -22,7 +23,7 @@ type Gateway struct {
 }
 
 func NewGateway() (*Gateway, error) {
-	serverManager, err := api.NewServerManager()
+	serverManager, err := api.NewServerManager(&http.HTTPServerConfig{})
 
 	if err != nil {
 		return nil, err
@@ -30,16 +31,18 @@ func NewGateway() (*Gateway, error) {
 
 	return &Gateway{
 		serverManager: serverManager,
-		signalC:       make(chan os.Signal, 2), // equal to number of signal types we expect to receive
+		signalC:       make(chan os.Signal, 3), // equal to number of signal types we expect to receive
 		shutdownC:     make(chan struct{}),
 	}, nil
 }
 
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
-	// TODO: init server manager
 	// TODO: init configs
-	signal.Notify(gw.signalC, os.Interrupt, syscall.SIGTERM)
+	gw.serverManager.Start()
+
+	signal.Notify(gw.signalC, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer signal.Stop(gw.signalC)
 
 LOOP:
 	for {

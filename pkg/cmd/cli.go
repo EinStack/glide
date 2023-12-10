@@ -7,6 +7,7 @@ import (
 
 // NewCLI Create a Glide CLI
 func NewCLI() *cobra.Command {
+	// TODO: Chances are we could use the build in flags module in this is all we need from CLI
 	cli := &cobra.Command{
 		Use:     "",
 		Version: pkg.GetVersion(),
