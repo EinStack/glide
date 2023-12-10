@@ -13,6 +13,7 @@ type ServerManager struct {
 
 func NewServerManager(httpConfig *http.HTTPServerConfig) (*ServerManager, error) {
 	httpServer, err := http.NewHttpServer(httpConfig)
+	// TODO: init other servers like gRPC in future
 
 	if err != nil {
 		return nil, err
