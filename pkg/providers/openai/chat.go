@@ -1,4 +1,4 @@
-package openai
+package pkg
 
 type ProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
@@ -25,7 +25,7 @@ type ConfigItem struct {
 }
 
 // Provide the request body for OpenAI's ChatCompletion API
-func OpenAiDefaultConfig() ProviderConfig {
+func OpenAiChatDefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		Model: ConfigItem{
 			Param:    "model",
