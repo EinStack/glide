@@ -1,7 +1,12 @@
-package openai
+package main
+
+import (
+    "github.com/go-playground/validator/v10"
+)
+
 
 type ProviderConfig struct {
-	Model            ConfigItem          `json:"model"`
+	Model            ConfigItem          `json:"model" validate:"lowercase"`
 	Messages         ConfigItem          `json:"messages"`
 	Functions        ConfigItem          `json:"functions"`
 	FunctionCall     ConfigItem          `json:"function_call"`
@@ -22,22 +27,22 @@ type ProviderConfig struct {
 }
 
 type ConfigItem struct {
-	Param    string      `json:"param"`
-	Required bool        `json:"required,omitempty"`
-	Default  interface{} `json:"default,omitempty"`
-	Min      interface{} `json:"min,omitempty"`
-	Max      interface{} `json:"max,omitempty"`
+	Param    string      `json:"param" validate:"required"`
+	Required bool        `json:"required,omitempty"` // not sure this is needed
+	Default  interface{} `json:"default" validate:"required"`
+	Min      interface{} `json:"min,omitempty"` // not sure this is needed
+	Max      interface{} `json:"max,omitempty"` // not sure this is needed
 }
 
 type NumericConfigItem struct {
-	Param   string    `json:"param"`
-	Default float64   `json:"default,omitempty"`
-	Min     float64   `json:"min,omitempty"`
-	Max     float64   `json:"max,omitempty"`
+    Param   string    `json:"param" validate:"required"`
+    Default float64   `json:"default" validate:"required"`
+    Min     *float64  `json:"min,omitempty" validate:"omitempty,gte=0"` 
+    Max     *float64  `json:"max,omitempty" validate:"omitempty,gtfield=Min"`
 }
 
 type BoolConfigItem struct {
-	Param   string `json:"param"`
+	Param   string `json:"param" validate:"required"`
 	Default bool   `json:"default,omitempty"`
 }
 
