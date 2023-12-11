@@ -1,24 +1,24 @@
 package openai
 
 type ProviderConfig struct {
-	Model            ConfigItem          `json:"model"`
-	Messages         ConfigItem          `json:"messages"`
-	Functions        ConfigItem          `json:"functions"`
-	FunctionCall     ConfigItem          `json:"function_call"`
-	MaxTokens        NumericConfigItem   `json:"max_tokens"`
-	Temperature      NumericConfigItem   `json:"temperature"`
-	TopP             NumericConfigItem   `json:"top_p"`
-	N                NumericConfigItem   `json:"n"`
-	Stream           BoolConfigItem      `json:"stream"`
-	Stop             ConfigItem          `json:"stop"`
-	PresencePenalty  NumericConfigItem   `json:"presence_penalty"`
-	FrequencyPenalty NumericConfigItem   `json:"frequency_penalty"`
-	LogitBias        ConfigItem          `json:"logit_bias"`
-	User             ConfigItem          `json:"user"`
-	Seed             ConfigItem          `json:"seed"`
-	Tools            ConfigItem          `json:"tools"`
-	ToolChoice       ConfigItem          `json:"tool_choice"`
-	ResponseFormat   ConfigItem          `json:"response_format"`
+	Model            ConfigItem        `json:"model"`
+	Messages         ConfigItem        `json:"messages"`
+	Functions        ConfigItem        `json:"functions"`
+	FunctionCall     ConfigItem        `json:"function_call"`
+	MaxTokens        NumericConfigItem `json:"max_tokens"`
+	Temperature      NumericConfigItem `json:"temperature"`
+	TopP             NumericConfigItem `json:"top_p"`
+	N                NumericConfigItem `json:"n"`
+	Stream           BoolConfigItem    `json:"stream"`
+	Stop             ConfigItem        `json:"stop"`
+	PresencePenalty  NumericConfigItem `json:"presence_penalty"`
+	FrequencyPenalty NumericConfigItem `json:"frequency_penalty"`
+	LogitBias        ConfigItem        `json:"logit_bias"`
+	User             ConfigItem        `json:"user"`
+	Seed             ConfigItem        `json:"seed"`
+	Tools            ConfigItem        `json:"tools"`
+	ToolChoice       ConfigItem        `json:"tool_choice"`
+	ResponseFormat   ConfigItem        `json:"response_format"`
 }
 
 type ConfigItem struct {
@@ -30,10 +30,10 @@ type ConfigItem struct {
 }
 
 type NumericConfigItem struct {
-	Param   string    `json:"param"`
-	Default float64   `json:"default,omitempty"`
-	Min     float64   `json:"min,omitempty"`
-	Max     float64   `json:"max,omitempty"`
+	Param   string  `json:"param"`
+	Default float64 `json:"default,omitempty"`
+	Min     float64 `json:"min,omitempty"`
+	Max     float64 `json:"max,omitempty"`
 }
 
 type BoolConfigItem struct {
