@@ -2,7 +2,11 @@ package pkg
 
 import (
 	"errors"
+	"github.com/go-playground/validator/v10"
 )
+
+// Create a new validator instance
+var validate *validator.Validate = validator.New()
 
 type ProviderConfigs map[string]interface{} // TODO: import from types.go
 
@@ -24,15 +28,20 @@ func BuildAPIRequest(provider string, params map[string]string, mode string, con
     }
 	
 
-	// TODO: Next need to build the request based on the params from the client
-	// First for each param in param check if present. If yes then add it to the request.
-	// If not & the param is required, return a default value from the provider config
+	// Build the providerConfig map by iterating over the keys in the providerConfig map and checking if the key exists in the params map
 
 	for key := range providerConfig {
 		if value, exists := params[key]; exists {
 			providerConfig[key] = value
 		}
 	}
+
+	// Validate the providerConfig map using the validator package
+	err := validate.Struct(providerConfig)
+    if err != nil {
+        // Handle validation error
+        return nil, err
+    }
 
 	
 }
