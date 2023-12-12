@@ -1,3 +1,5 @@
+// this file contains the BuildAPIRequest function which takes in the provider name, params map, and mode and returns the providerConfig map and error
+// The providerConfig map can be used to build the API request to the provider
 package pkg
 
 import (
