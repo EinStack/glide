@@ -3,6 +3,7 @@ package pkg
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"fmt"
 )
 
 // Create a new validator instance
@@ -40,14 +41,8 @@ func BuildAPIRequest(provider string, params map[string]string, mode string, con
 	err := validate.Struct(providerConfig)
     if err != nil {
         // Handle validation error
-        return nil, err
+        return nil, fmt.Errorf("validation error: %v", err)
     }
-
-	
-}
-
-    // For now, return providerConfig and nil error to satisfy the function signature
+	// If everything is fine, return the providerConfig and nil error
     return providerConfig, nil
-
-	
 }
