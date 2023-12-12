@@ -9,6 +9,8 @@ import (
 
 type ProviderConfigs = pkg.ProviderConfigs
 
+// TODO: import provider configs to the config list
+
 // Create a new validator instance
 var validate *validator.Validate = validator.New()
 
