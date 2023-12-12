@@ -1,4 +1,4 @@
-package pkg
+package openai
 
 import (
     "glide/pkg/providers"
