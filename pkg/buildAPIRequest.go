@@ -1,12 +1,28 @@
+// this file contains the BuildAPIRequest function which takes in the provider name, params map, and mode and returns the providerConfig map and error
+// The providerConfig map can be used to build the API request to the provider
 package pkg
 
 import (
 	"errors"
+	"github.com/go-playground/validator/v10"
+	"fmt"
+	"glide/pkg/providers"
+	"glide/pkg/providers/openai"
 )
 
-type ProviderConfigs map[string]interface{} // TODO: import from types.go
+type ProviderConfigs = pkg.ProviderConfigs
 
-func BuildAPIRequest(provider string, params map[string]string, mode string, configList map[string]interface{}) (interface{}, error) {
+// Initialize configList
+
+var configList = map[string]interface{}{
+    "openai": openai.OpenAIConfig,
+}
+
+// Create a new validator instance
+var validate *validator.Validate = validator.New()
+
+
+func BuildAPIRequest(provider string, params map[string]string, mode string) (interface{}, error) {
     // provider is the name of the provider, e.g. "openai", params is the map of parameters from the client, 
 	// mode is the mode of the provider, e.g. "chat", configList is the list of provider configurations 
 
@@ -24,9 +40,7 @@ func BuildAPIRequest(provider string, params map[string]string, mode string, con
     }
 	
 
-	// TODO: Next need to build the request based on the params from the client
-	// First for each param in param check if present. If yes then add it to the request.
-	// If not & the param is required, return a default value from the provider config
+	// Build the providerConfig map by iterating over the keys in the providerConfig map and checking if the key exists in the params map
 
 	for key := range providerConfig {
 		if value, exists := params[key]; exists {
@@ -34,11 +48,12 @@ func BuildAPIRequest(provider string, params map[string]string, mode string, con
 		}
 	}
 
-	
-}
-
-    // For now, return providerConfig and nil error to satisfy the function signature
+	// Validate the providerConfig map using the validator package
+	err := validate.Struct(providerConfig)
+    if err != nil {
+        // Handle validation error
+        return nil, fmt.Errorf("validation error: %v", err)
+    }
+	// If everything is fine, return the providerConfig and nil error
     return providerConfig, nil
-
-	
 }
