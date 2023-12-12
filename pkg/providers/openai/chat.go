@@ -1,4 +1,4 @@
-package pkg
+package openai
 
 type ProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
@@ -29,42 +29,56 @@ func OpenAiChatDefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		Model: ConfigItem{
 			Param:    "model",
+			Required: true,
 			Default:  "gpt-3.5-turbo",
 		},
 		Messages: ConfigItem{
 			Param:   "messages",
 			Default: "",
 		},
-		MaxTokens: ConfigItem{
+		Functions: ConfigItem{
+			Param: "functions",
+		},
+		FunctionCall: ConfigItem{
+			Param: "function_call",
+		},
+		MaxTokens: NumericConfigItem{
 			Param:   "max_tokens",
 			Default: 100,
+			Min:     0,
 		},
-		Temperature: ConfigItem{
+		Temperature: NumericConfigItem{
 			Param:   "temperature",
 			Default: 1,
+			Min:     0,
+			Max:     2,
 		},
-		TopP: ConfigItem{
+		TopP: NumericConfigItem{
 			Param:   "top_p",
 			Default: 1,
+			Min:     0,
+			Max:     1,
 		},
-		N: ConfigItem{
+		N: NumericConfigItem{
 			Param:   "n",
 			Default: 1,
 		},
-		Stream: ConfigItem{
+		Stream: BoolConfigItem{
 			Param:   "stream",
 			Default: false,
 		},
 		Stop: ConfigItem{
 			Param: "stop",
 		},
-		PresencePenalty: ConfigItem{
+		PresencePenalty: NumericConfigItem{
 			Param: "presence_penalty",
-			Default: 0,
+			Min:   -2,
+			Max:   2,
 		},
-		FrequencyPenalty: ConfigItem{
+		FrequencyPenalty: NumericConfigItem{
 			Param: "frequency_penalty",
-			Default: 0,
+			Min:   -2,
+			Max:   2,
 		},
 		LogitBias: ConfigItem{
 			Param: "logit_bias",
