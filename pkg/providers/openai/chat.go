@@ -1,4 +1,4 @@
-package openai
+package pkg
 
 type ProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
@@ -21,6 +21,7 @@ type ProviderConfig struct {
 
 type ConfigItem struct {
 	Param    string      `json:"param" validate:"required"`
+	Required bool        `json:"required" validate:"omitempty,boolean"`
 	Default  interface{} `json:"default"`
 }
 
@@ -34,69 +35,69 @@ func OpenAiChatDefaultConfig() ProviderConfig {
 		},
 		Messages: ConfigItem{
 			Param:   "messages",
+			Required: true,
 			Default: "",
 		},
-		Functions: ConfigItem{
-			Param: "functions",
-		},
-		FunctionCall: ConfigItem{
-			Param: "function_call",
-		},
-		MaxTokens: NumericConfigItem{
+		MaxTokens: ConfigItem{
 			Param:   "max_tokens",
+			Required: false,
 			Default: 100,
-			Min:     0,
 		},
-		Temperature: NumericConfigItem{
+		Temperature: ConfigItem{
 			Param:   "temperature",
+			Required: false,
 			Default: 1,
-			Min:     0,
-			Max:     2,
 		},
-		TopP: NumericConfigItem{
+		TopP: ConfigItem{
 			Param:   "top_p",
+			Required: false,
 			Default: 1,
-			Min:     0,
-			Max:     1,
 		},
-		N: NumericConfigItem{
+		N: ConfigItem{
 			Param:   "n",
+			Required: false,
 			Default: 1,
 		},
-		Stream: BoolConfigItem{
+		Stream: ConfigItem{
 			Param:   "stream",
+			Required: false,
 			Default: false,
 		},
 		Stop: ConfigItem{
 			Param: "stop",
+			Required: false,
 		},
-		PresencePenalty: NumericConfigItem{
+		PresencePenalty: ConfigItem{
 			Param: "presence_penalty",
-			Min:   -2,
-			Max:   2,
+			Required: false,
 		},
-		FrequencyPenalty: NumericConfigItem{
+		FrequencyPenalty: ConfigItem{
 			Param: "frequency_penalty",
-			Min:   -2,
-			Max:   2,
+			Required: false,
 		},
 		LogitBias: ConfigItem{
 			Param: "logit_bias",
+			Required: false,
 		},
 		User: ConfigItem{
 			Param: "user",
+			Required: false,
 		},
 		Seed: ConfigItem{
 			Param: "seed",
+			Required: false,
 		},
 		Tools: ConfigItem{
 			Param: "tools",
+			Required: false,
 		},
 		ToolChoice: ConfigItem{
 			Param: "tool_choice",
+			Required: false,
 		},
 		ResponseFormat: ConfigItem{
 			Param: "response_format",
+			Required: false,
 		},
 	}
 }

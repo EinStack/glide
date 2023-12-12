@@ -1,6 +1,10 @@
 package pkg
 
-type ProviderConfigs map[string]interface{} // TODO: import from types.go
+import (
+    "glide/pkg/providers"
+)
+
+type ProviderConfigs = pkg.ProviderConfigs
 
 var OpenAIConfig = ProviderConfigs{
     "api":                 OpenAIAPIConfig,

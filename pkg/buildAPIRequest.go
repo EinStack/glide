@@ -4,12 +4,14 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"fmt"
+	"glide/pkg/providers"
 )
+
+type ProviderConfigs = pkg.ProviderConfigs
 
 // Create a new validator instance
 var validate *validator.Validate = validator.New()
 
-type ProviderConfigs map[string]interface{} // TODO: import from types.go
 
 func BuildAPIRequest(provider string, params map[string]string, mode string, configList map[string]interface{}) (interface{}, error) {
     // provider is the name of the provider, e.g. "openai", params is the map of parameters from the client, 
