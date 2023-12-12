@@ -1,48 +1,31 @@
 package openai
 
 type ProviderConfig struct {
-	Model            ConfigItem        `json:"model"`
-	Messages         ConfigItem        `json:"messages"`
-	Functions        ConfigItem        `json:"functions"`
-	FunctionCall     ConfigItem        `json:"function_call"`
-	MaxTokens        NumericConfigItem `json:"max_tokens"`
-	Temperature      NumericConfigItem `json:"temperature"`
-	TopP             NumericConfigItem `json:"top_p"`
-	N                NumericConfigItem `json:"n"`
-	Stream           BoolConfigItem    `json:"stream"`
-	Stop             ConfigItem        `json:"stop"`
-	PresencePenalty  NumericConfigItem `json:"presence_penalty"`
-	FrequencyPenalty NumericConfigItem `json:"frequency_penalty"`
-	LogitBias        ConfigItem        `json:"logit_bias"`
-	User             ConfigItem        `json:"user"`
-	Seed             ConfigItem        `json:"seed"`
-	Tools            ConfigItem        `json:"tools"`
-	ToolChoice       ConfigItem        `json:"tool_choice"`
-	ResponseFormat   ConfigItem        `json:"response_format"`
+	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
+	Messages         ConfigItem          `json:"messages" validate:"required"`
+	MaxTokens        ConfigItem   		 `json:"max_tokens" validate:"omitempty,gte=0"`
+	Temperature      ConfigItem   		 `json:"temperature" validate:"omitempty,gte=0,lte=2"`
+	TopP             ConfigItem   		 `json:"top_p" validate:"omitempty,gte=0,lte=1"`
+	N                ConfigItem          `json:"n" validate:"omitempty,gte=1"`
+	Stream           ConfigItem      	 `json:"stream" validate:"omitempty, boolean"`
+	Stop             ConfigItem          `json:"stop"`
+	PresencePenalty  ConfigItem   		 `json:"presence_penalty" validate:"omitempty,gte=-2,lte=2"`
+	FrequencyPenalty ConfigItem   		 `json:"frequency_penalty" validate:"omitempty,gte=-2,lte=2"`
+	LogitBias        ConfigItem  		 `json:"logit_bias" validate:"omitempty"`
+	User             ConfigItem          `json:"user"`
+	Seed             ConfigItem          `json:"seed" validate:"omitempty,gte=0"`
+	Tools            ConfigItem          `json:"tools"`
+	ToolChoice       ConfigItem          `json:"tool_choice"`
+	ResponseFormat   ConfigItem          `json:"response_format"`
 }
 
 type ConfigItem struct {
-	Param    string      `json:"param"`
-	Required bool        `json:"required,omitempty"`
-	Default  interface{} `json:"default,omitempty"`
-	Min      interface{} `json:"min,omitempty"`
-	Max      interface{} `json:"max,omitempty"`
+	Param    string      `json:"param" validate:"required"`
+	Default  interface{} `json:"default"`
 }
 
-type NumericConfigItem struct {
-	Param   string  `json:"param"`
-	Default float64 `json:"default,omitempty"`
-	Min     float64 `json:"min,omitempty"`
-	Max     float64 `json:"max,omitempty"`
-}
-
-type BoolConfigItem struct {
-	Param   string `json:"param"`
-	Default bool   `json:"default,omitempty"`
-}
-
-// DefaultProviderConfig returns an instance of ProviderConfig with default values.
-func OpenAiDefaultConfig() ProviderConfig {
+// Provide the request body for OpenAI's ChatCompletion API
+func OpenAiChatDefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		Model: ConfigItem{
 			Param:    "model",

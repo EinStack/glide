@@ -1,7 +1,6 @@
 module glide
 
 go 1.21.5
-
 require (
 	github.com/cloudwego/hertz v0.7.3
 	github.com/spf13/cobra v1.8.0
