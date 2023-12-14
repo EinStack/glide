@@ -26,8 +26,7 @@ type ConfigItem struct {
 }
 
 // Provide the request body for OpenAI's ChatCompletion API
-func OpenAiChatDefaultConfig() ProviderConfig {
-	return ProviderConfig{
+var OpenAiChatDefaultConfig = ProviderConfig {
 		Model: ConfigItem{
 			Param:    "model",
 			Required: true,
@@ -100,4 +99,3 @@ func OpenAiChatDefaultConfig() ProviderConfig {
 			Required: false,
 		},
 	}
-}

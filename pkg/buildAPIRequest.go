@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"glide/pkg/providers"
 	"glide/pkg/providers/openai"
+	"encoding/json"
 )
 
 type ProviderConfigs = pkg.ProviderConfigs
@@ -22,14 +23,34 @@ var configList = map[string]interface{}{
 var validate *validator.Validate = validator.New()
 
 
-func BuildAPIRequest(provider string, params map[string]string, mode string) (interface{}, error) {
-    // provider is the name of the provider, e.g. "openai", params is the map of parameters from the client, 
-	// mode is the mode of the provider, e.g. "chat", configList is the list of provider configurations 
+func BuildChatAPIRequest(payload map[string]string) (interface{}, error) {
+    // API route api.glide.com/v1/chat
+	// {"provider": "openai", "params": {"model": "gpt-3.5-turbo", "messages": "Hello, how are you?"}}
 
+	// Sample JSON
+	jsonStr := `{"provider": "openai", "params": {"model": "gpt-3.5-turbo", "messages": "Hello, how are you?"}}`
 
+	// Define a map to hold the JSON data
+	var data map[string]interface{}
+
+	// Parse the JSON
+	err := json.Unmarshal([]byte(jsonStr), &data)
+	if err != nil {
+		// Handle error
+		fmt.Println(err)
+	}
+
+	// Extract the provider
+	provider, ok := data["provider"].(string)
+	if !ok {
+		// Handle error
+		fmt.Println("Provider not found")
+	}
+
+	// select the predefined config for the provider
 	var providerConfig map[string]interface{}
 	if config, ok := configList[provider].(ProviderConfigs); ok {
-    	if modeConfig, ok := config[mode].(map[string]interface{}); ok {
+    	if modeConfig, ok := config["chat"].(map[string]interface{}); ok {
         providerConfig = modeConfig
     }
 }
@@ -43,7 +64,7 @@ func BuildAPIRequest(provider string, params map[string]string, mode string) (in
 	// Build the providerConfig map by iterating over the keys in the providerConfig map and checking if the key exists in the params map
 
 	for key := range providerConfig {
-		if value, exists := params[key]; exists {
+		if value, exists := payload[key]; exists {
 			providerConfig[key] = value
 		}
 	}
