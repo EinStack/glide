@@ -1,7 +1,7 @@
 package openai
 
 type OpenAiProviderConfig struct {
-	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
+	Model            ConfigItem          `json:"model" default:"gpt-3.5-turbo" validate:"required,lowercase"`
 	Messages         ConfigItem          `json:"messages" validate:"required"`
 	MaxTokens        ConfigItem   		 `json:"max_tokens" validate:"omitempty,gte=0"`
 	Temperature      ConfigItem   		 `json:"temperature" validate:"omitempty,gte=0,lte=2"`
