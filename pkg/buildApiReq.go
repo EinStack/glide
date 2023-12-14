@@ -7,14 +7,13 @@
 package pkg
 
 import (
-	"errors"
-	"github.com/go-playground/validator/v10"
+	//"errors"
+	//"github.com/go-playground/validator/v10"
 	"fmt"
 	"glide/pkg/providers"
 	"glide/pkg/providers/openai"
 	"encoding/json"
-	"net/http"
-	"time"
+	//"net/http"
 )
 
 
@@ -42,87 +41,52 @@ func DefinePayload(payload []byte) (interface{}, error) {
 		fmt.Println(err)
 	}
 
-	// Extract the provider
-	provider, ok := data["provider"].(string)
+	endpoints, ok := payload_data["endpoints"].([]interface{})
 	if !ok {
-		// Handle error
-		fmt.Println("Provider not found")
+    // Handle error
+    fmt.Println("Endpoints not found")
+}
+
+	providerList := make([]string, len(endpoints))
+	for i, endpoint := range endpoints {
+		endpointMap, ok := endpoint.(map[string]interface{})
+		if !ok {
+			// Handle error
+			fmt.Println("Endpoint is not a map")
+		}
+
+		provider, ok := endpointMap["provider"].(string)
+		if !ok {
+			// Handle error
+			fmt.Println("Provider not found")
+		}
+
+		providerList[i] = provider
 	}
+
+	// TODO: use mode and providerList to determine which provider to use
+	//modeList := payload_data["mode"].([]interface{})
+
+	provider := "openai"
 
 	// select the predefined config for the provider
 	var providerConfig map[string]interface{}
-	if config, ok := configList[provider].(ProviderConfigs); ok {
-    	if modeConfig, ok := config["chat"].(map[string]interface{}); ok {
+	if config, ok := configList[provider].(pkg.ProviderConfigs); ok { // this pulls the config in index.go
+    	if modeConfig, ok := config["chat"].(map[string]interface{}); ok { // this pulls the specific config for the endpoint
         providerConfig = modeConfig
     }
 }
 
-    // If the provider is not supported, return an error
-    if providerConfig == nil {
-        return nil, errors.New("unsupported provider")
-    }
-	
-
 	// Build the providerConfig map by iterating over the keys in the providerConfig map and checking if the key exists in the params map
 
 	for key := range providerConfig {
-		if value, exists := payload[key]; exists {
+		if value, exists := payload_data[key]; exists {
 			providerConfig[key] = value
 		}
 	}
 
-	// Validate the providerConfig map using the validator package
-	validate := validator.New()
-    err := validate.Struct(payload)
-    if err != nil {
-        // Handle validation error
-        return nil, fmt.Errorf("validation error: %v", err)
-    }
-
 	// If everything is fine, return the providerConfig and nil error
+	println(providerConfig)
     return providerConfig, nil
 }
 
-// SendRequest sends an HTTP request to a specific URL path with given headers and payload.
-func SendRequest(config pkg.providerConfig) (map[string]interface{}, error) {
-	client := &http.Client{
-	}
-
-	// TODO: convert the pr
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", baseURL+path, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var result map[string]interface{}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, errors.New(result["error"].(string))
-	}
-
-	return result, nil
-}
