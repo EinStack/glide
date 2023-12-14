@@ -1,7 +1,7 @@
 package openai
 
 type OpenAiProviderConfig struct {
-	Model            ConfigItem          `json:"model" default:"gpt-3.5-turbo" validate:"required,lowercase"`
+	Model            string          `json:"model" validate:"required,lowercase"`
 	Messages         ConfigItem          `json:"messages" validate:"required"`
 	MaxTokens        ConfigItem   		 `json:"max_tokens" validate:"omitempty,gte=0"`
 	Temperature      ConfigItem   		 `json:"temperature" validate:"omitempty,gte=0,lte=2"`
@@ -37,12 +37,9 @@ var defaultMessage = `[
   ]`
 
 // Provide the request body for OpenAI's ChatCompletion API
-var OpenAiChatDefaultConfig = OpenAiProviderConfig {
-		Model: ConfigItem{
-			Param:    "model",
-			Required: true,
-			Default:  "gpt-3.5-turbo",
-		},
+func OpenAiChatDefaultConfig() OpenAiProviderConfig {
+		return OpenAiProviderConfig{
+		Model: "gpt-3.5-turbo",
 		Messages: ConfigItem{
 			Param:   "messages",
 			Required: true, 
@@ -110,3 +107,4 @@ var OpenAiChatDefaultConfig = OpenAiProviderConfig {
 			Required: false,
 		},
 	}
+}
