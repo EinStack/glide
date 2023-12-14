@@ -1,6 +1,6 @@
 package openai
 
-type ProviderConfig struct {
+type OpenAiProviderConfig struct {
 	Model            ConfigItem          `json:"model" validate:"required,lowercase"`
 	Messages         ConfigItem          `json:"messages" validate:"required"`
 	MaxTokens        ConfigItem   		 `json:"max_tokens" validate:"omitempty,gte=0"`
@@ -25,8 +25,19 @@ type ConfigItem struct {
 	Default  interface{} `json:"default"`
 }
 
+var defaultMessage = `[
+	{
+	  "role": "system",
+	  "content": "You are a helpful assistant."
+	},
+	{
+	  "role": "user",
+	  "content": "Hello!"
+	}
+  ]`
+
 // Provide the request body for OpenAI's ChatCompletion API
-var OpenAiChatDefaultConfig = ProviderConfig {
+var OpenAiChatDefaultConfig = OpenAiProviderConfig {
 		Model: ConfigItem{
 			Param:    "model",
 			Required: true,
@@ -34,8 +45,8 @@ var OpenAiChatDefaultConfig = ProviderConfig {
 		},
 		Messages: ConfigItem{
 			Param:   "messages",
-			Required: true,
-			Default: "",
+			Required: true, 
+			Default: defaultMessage,
 		},
 		MaxTokens: ConfigItem{
 			Param:   "max_tokens",

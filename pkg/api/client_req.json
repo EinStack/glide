@@ -1,0 +1,29 @@
+{
+    "mode": ["fallback", "latency"],
+    "endpoints": [
+      {
+        "provider": "openai",
+        "params": {
+          "model": "gpt-3.5-turbo",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are a helpful assistant."
+            },
+            {
+              "role": "user",
+              "content": "Hello!"
+            }
+          ]
+        }
+      },
+      {
+        "provider": "cohere",
+        "params": {
+          "model": "command",
+          "messages": "hello"
+        }
+      }
+    ]
+  }
+  
