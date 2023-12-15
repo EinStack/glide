@@ -3,7 +3,6 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"glide/pkg/api"
 	"glide/pkg/api/http"
 	"go.uber.org/multierr"
 	"os"
@@ -15,7 +14,7 @@ import (
 // It loads configs, start API server(s), and listen to termination signals to shut down
 type Gateway struct {
 	// serverManager controls API over different protocols
-	serverManager *api.ServerManager
+	serverManager *http.ServerManager
 	// signalChannel is used to receive termination signals from the OS.
 	signalC chan os.Signal
 	// shutdownC is used to terminate the gateway
@@ -23,7 +22,7 @@ type Gateway struct {
 }
 
 func NewGateway() (*Gateway, error) {
-	serverManager, err := api.NewServerManager(&http.HTTPServerConfig{})
+	serverManager, err := http.NewServerManager(&http.HTTPServerConfig{})
 
 	if err != nil {
 		return nil, err

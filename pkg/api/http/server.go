@@ -8,11 +8,18 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"time"
+	"glide/pkg/api"
+	"sync"
 	
 )
 
 type HTTPServer struct {
 	server *server.Hertz
+}
+
+type ServerManager struct {
+	httpServer *HTTPServer
+	shutdownWG *sync.WaitGroup
 }
 
 func NewHttpServer(config *HTTPServerConfig) (*HTTPServer, error) {
@@ -51,3 +58,45 @@ func (srv *HTTPServer) Shutdown(_ context.Context) error {
 
 	return srv.server.Shutdown(ctx)
 }
+
+func NewServerManager(httpConfig *HTTPServerConfig) (*ServerManager, error) {
+	httpServer, err := NewHttpServer(httpConfig)
+	// TODO: init other servers like gRPC in future
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ServerManager{
+		httpServer: httpServer,
+		shutdownWG: &sync.WaitGroup{},
+	}, nil
+}
+
+func (mgr *ServerManager) Start() {
+	if mgr.httpServer != nil {
+		mgr.shutdownWG.Add(1)
+
+		go func() {
+			defer mgr.shutdownWG.Done()
+
+			// TODO: log the error
+			err := mgr.httpServer.Run()
+
+			println(err)
+		}()
+	}
+}
+
+func (mgr *ServerManager) Shutdown(ctx context.Context) error {
+	var err error
+
+	if mgr.httpServer != nil {
+		err = mgr.httpServer.Shutdown(ctx)
+	}
+
+	mgr.shutdownWG.Wait()
+
+	return err
+}
+
