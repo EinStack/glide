@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"time"
+	
 )
 
 type HTTPServer struct {
@@ -28,7 +29,7 @@ func (srv *HTTPServer) Run() error {
     srv.server.POST("/chat", func(ctx context.Context, c *app.RequestContext) {
 
         // Pass the client request body to SendRequest
-        resp, err := api.LlmRouter(c)
+        resp, err := pkg.LlmRouter(c)
 		
         if err != nil {
             c.JSON(consts.StatusInternalServerError, utils.H{"error": err.Error()})

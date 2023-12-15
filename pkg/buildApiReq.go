@@ -4,7 +4,7 @@
 // 2. determine provider
 // 3. build request body based on provider
 // 4. send request to provider
-package api
+package pkg
 
 import (
 	"bytes"
