@@ -6,8 +6,9 @@ Achieve unmatched uptime for your Generative AI applications. Glide sits between
 
 | Provider | Support Status | Supported Endpoints |
 | --- | --- | --- |
-| OpenAI | 👍 Available | `/chat` |
-| Cohere | 👍 Available | `/chat` |
+| OpenAI | 👍 Available | `/chat/completions` |
+| Cohere | 👍 Available | `/chat/completions` |
+| Anyscale | 👍 Available | `/chat/completions` |
 | Azure OpenAI | 🏗️ Coming Soon |  |
 | Anthropic | 🏗️ Coming Soon |  |
 | Google Gemini | 🏗️ Coming Soon |  |

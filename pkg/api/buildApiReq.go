@@ -14,6 +14,7 @@ import (
 	"glide/pkg/api/providers"
 	"glide/pkg/api/providers/openai"
 	"glide/pkg/api/providers/cohere"
+	"glide/pkg/api/providers/anyscale"
 	"io"
 	"log/slog"
 	"net/http"
@@ -22,7 +23,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const provider = "cohere" // placeholder until provider pool is implemented
+const provider = "anyscale" // placeholder until provider pool is implemented
 
 func Router(c *app.RequestContext) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
@@ -234,6 +235,9 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	case "cohere":
 	    defaultConfig = cohere.CohereChatDefaultConfig()
 	    apiConfig = cohere.CohereApiConfig(api_key)
+	case "anyscale":
+		defaultConfig = anyscale.AnyscaleChatDefaultConfig()
+		apiConfig = anyscale.AnyscaleApiConfig(api_key)
 	default:
 		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid provider")
 	}
