@@ -19,6 +19,7 @@ import (
 	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/go-playground/validator/v10"
 )
 
 func Router(c *app.RequestContext) (interface{}, error) {
@@ -202,6 +203,12 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		slog.Error("error occurred during unmarshalling. %v", err)
 	}
 
+	err = validateStruct(defaultConfig)
+
+	if err != nil {
+		slog.Error("error occurred during validation.", err)
+	}
+
 	slog.Info("default Config: " + fmt.Sprintf("%v", defaultConfig))
 
 	var requestDetails providers.RequestDetails = providers.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
@@ -243,4 +250,28 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	}
 
 	return defaultConfig, finalApiConfig, nil
+}
+
+func validateStruct(config interface{}) error {
+    validate := validator.New()
+    err := validate.Struct(config)
+    if err != nil {
+        for _, err := range err.(validator.ValidationErrors) {
+            fmt.Println(err.Namespace())
+            fmt.Println(err.Field())
+            fmt.Println(err.StructNamespace())
+            fmt.Println(err.StructField())
+            fmt.Println(err.Tag())
+            fmt.Println(err.ActualTag())
+            fmt.Println(err.Kind())
+            fmt.Println(err.Type())
+            fmt.Println(err.Value())
+            fmt.Println(err.Param())
+            fmt.Println()
+        }
+
+        return fmt.Errorf("validation failed for the configuration")
+    }
+
+    return nil
 }
