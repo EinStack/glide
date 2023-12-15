@@ -7,10 +7,10 @@ Achieve 100% uptime for your Generative AI applications. Glide sits between your
 
 || Provider  | Support Status
 |---|---|---|
-| <img src="docs/images/openai.png" width=18 />| OpenAI | 🏗️ Coming Soon  |
+| <img src="docs/images/openai.png" width=18 />| OpenAI | 👍 Available  |
 | <img src="docs/images/azure.png" width=18>| Azure OpenAI | 🏗️ Coming Soon  |
 | <img src="docs/images/anthropic.png" width=18>| Anthropic  | 🏗️ Coming Soon  |
-| <img src="docs/images/cohere.png" width=18>| Cohere  | 🏗️ Coming Soon|
+| <img src="docs/images/cohere.png" width=18>| Cohere  | 👍 Available |
 | <img src="docs/images/bard.png" width=18>| Google Gemini  | 🏗️ Coming Soon  |  |
 | <img src="docs/images/localai.png" width=18>| LocalAI  | 🏗️ Coming Soon  |  |
 
