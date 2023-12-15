@@ -89,8 +89,6 @@ func sendRequest(payload []byte) (interface{}, error) {
 		}
 	}
 
-	//slog.Info("Request: " + fmt.Sprintf("%v", req))
-
 	// Send the request using http Client
 	client := &http.Client{}
 
@@ -121,7 +119,14 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 	slog.Info("definePayload Function Called")
 
 	// Define a map to hold the JSON data
+	var defaultConfig interface{}                         // Assuming defaultConfig is a struct
+	var finalApiConfig providers.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
 	var payload_data map[string]interface{}
+	var params map[string]interface{}
+	var api_key string
+	var endpoints []map[string]interface{}
+	var defaultConfigMap map[string]interface{}
+	var paramsMap map[string]interface{}
 
 	// Parse the JSON
 	err := json.Unmarshal([]byte(payload), &payload_data)
@@ -135,7 +140,6 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 	slog.Debug("Payload: " + string(jsonString))
 
 	endpointsInterface := payload_data["endpoints"].([]interface{})
-	var endpoints []map[string]interface{}
 
 	for _, endpoint := range endpointsInterface {
 		endpointMap, ok := endpoint.(map[string]interface{})
@@ -168,10 +172,6 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	provider := "openai" // placeholder until provider pool is implemented
 
-	var params map[string]interface{}
-
-	var api_key string
-
 	for _, endpoint := range endpoints {
 		if endpoint["provider"] == provider {
 			params, _ = endpoint["params"].(map[string]interface{})
@@ -180,19 +180,14 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		}
 	}
 
-	var defaultConfig interface{}                         // Assuming defaultConfig is a struct
-	var finalApiConfig providers.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
-
 	defaultConfig, finalApiConfig, _ = buildApiConfig(provider, api_key, endpoint)
 
 	defaultConfigJson, _ := json.Marshal(defaultConfig)
 
 	paramsJson, _ := json.Marshal(params)
 
-	var defaultConfigMap map[string]interface{}
 	json.Unmarshal(defaultConfigJson, &defaultConfigMap)
 
-	var paramsMap map[string]interface{}
 	json.Unmarshal(paramsJson, &paramsMap)
 
 	for key, value := range paramsMap {
