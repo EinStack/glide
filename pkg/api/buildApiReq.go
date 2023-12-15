@@ -159,13 +159,13 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		provider, ok := endpoint["provider"].(string)
 		if !ok {
 			// Handle error
-			fmt.Println("Provider not found")
+			fmt.Println("provider not found")
 		}
 
 		providerList[i] = provider
 	}
 
-	slog.Info("Provider List: " + fmt.Sprintf("%v", providerList))
+	slog.Info("provider list: " + fmt.Sprintf("%v", providerList))
 
 	// TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
 	//modeList := payload_data["mode"].([]interface{})
@@ -203,10 +203,11 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		slog.Error("error occurred during unmarshalling. %v", err)
 	}
 
-	err = validateStruct(defaultConfig)
+	//err = validateStruct(defaultConfig)
 
 	if err != nil {
 		slog.Error("error occurred during validation.", err)
+		return providers.RequestDetails{}, err
 	}
 
 	slog.Info("default Config: " + fmt.Sprintf("%v", defaultConfig))
@@ -256,6 +257,10 @@ func validateStruct(config interface{}) error {
     validate := validator.New()
     err := validate.Struct(config)
     if err != nil {
+        if invalidErr, ok := err.(*validator.InvalidValidationError); ok {
+            return fmt.Errorf("invalid validation error: %v", invalidErr)
+        }
+
         for _, err := range err.(validator.ValidationErrors) {
             fmt.Println(err.Namespace())
             fmt.Println(err.Field())
