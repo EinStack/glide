@@ -10,12 +10,14 @@ import (
 	//"errors"
 	"github.com/go-playground/validator/v10"
 	"fmt"
-	//"glide/pkg/providers"
+	"glide/pkg/providers"
 	"glide/pkg/providers/openai"
 	"encoding/json"
 	//"net/http"
 	"reflect"
 )
+
+
 
 func sendRequest(payload []byte) (interface{}, error) {
 	
@@ -81,11 +83,14 @@ func DefinePayload(payload []byte) (interface{}, error) {
     }
 
     var defaultConfig interface{} // Assuming defaultConfig is a struct
+	var apiConfig interface{} // Assuming apiConfig is a struct
 
     if provider == "openai" {
         defaultConfig = openai.OpenAiChatDefaultConfig() // this is a struct
+		apiConfig = openai.OpenAIAPIConfig("OPEN_API_KEY") // TODO: change this to use the API key from the payload
     } else if provider == "cohere" {
         defaultConfig = openai.OpenAiChatDefaultConfig() //TODO: change this to cohere
+		apiConfig = openai.OpenAIAPIConfig("COHEREAPI_KEY") // TODO: change this to use the API key from the payload
     }
 
     // Use reflect to set the value in defaultConfig
@@ -114,7 +119,11 @@ func DefinePayload(payload []byte) (interface{}, error) {
         return nil, err
     }
 
-    return defaultConfig, nil
+	// TODO: build struct for totalConfig. This should contain the providerApiConfig and the defaultConfig
+
+	var requestDetails pkg.RequestDetails = pkg.RequestDetails{RequestBody: defaultConfig, ApiConfig: apiConfig}
+
+    return requestDetails, nil
 }
 
 

@@ -3,6 +3,7 @@
     "endpoints": [
       {
         "provider": "openai",
+        "api_key": "OPENAI_API_KEY",
         "params": {
           "model": "gpt-3.5-turbo",
           "messages": [
@@ -19,6 +20,7 @@
       },
       {
         "provider": "cohere",
+        "api_key": "COHERE_API_KEY",
         "params": {
           "model": "command",
           "messages": "hello"
