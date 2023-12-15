@@ -16,6 +16,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"io"
+	
 
 	"github.com/cloudwego/hertz/pkg/app"
 	//"github.com/go-playground/validator/v10"
@@ -70,7 +72,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 		return nil, err
 	}
 
-	slog.Info("Request Body: " + string(body))
+	slog.Debug("Request Body: " + string(body))
 
 	// Create a new request using http
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -93,7 +95,24 @@ func sendRequest(payload []byte) (interface{}, error) {
 	// Send the request using http Client
 	client := &http.Client{}
 
-	return client.Do(req)
+	resp, err := client.Do(req)
+
+	if err != nil {
+		slog.Error("Error sending request: ", err)
+	}
+
+	// retrieve payload from response
+	body, _ = io.ReadAll(resp.Body)
+
+	// Unmarshal the JSON response into a map
+	var responseMap map[string]interface{}
+	err = json.Unmarshal(body, &responseMap)
+	if err != nil {
+		slog.Error("Error decoding JSON response:", err)
+	}
+
+	return responseMap, nil
+	
 }
 
 func definePayload(payload []byte, endpoint string) (providers.RequestDetails, error) {
