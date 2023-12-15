@@ -1,21 +1,13 @@
 # Glide - An LLM Routing Engine
-Achieve 100% uptime for your Generative AI applications. Glide sits between your applications and your API endpoint. Pass your model preferences to the API endpoint and your call will be routed to the correct model based on model availability.
 
-
+Achieve unmatched uptime for your Generative AI applications. Glide sits between your applications and your API endpoint. Pass your model preferences to the API endpoint, and your call will be routed to the correct model based on model availability and latency requirements.
 
 ## Supported Providers
 
-|| Provider  | Support Status | Supported Endpoints |
-|---|---|---|
-| <img src="docs/images/openai.png" width=18 />| OpenAI | 👍 Available  | "/chat" |
-| <img src="docs/images/azure.png" width=18>| Azure OpenAI | 🏗️ Coming Soon  |
-| <img src="docs/images/anthropic.png" width=18>| Anthropic  | 🏗️ Coming Soon  |
-| <img src="docs/images/cohere.png" width=18>| Cohere  | 👍 Available | "/chat" |
-| <img src="docs/images/bard.png" width=18>| Google Gemini  | 🏗️ Coming Soon  |
-
-<br />
-
-## Roadmap
-
-- REST API to set primary and secondary models based on LLM API status
-- Open an issue if there is a feature you'd like to see
+| Provider | Support Status | Supported Endpoints |
+| --- | --- | --- |
+| OpenAI | 👍 Available | `/chat` |
+| Cohere | 👍 Available | `/chat` |
+| Azure OpenAI | 🏗️ Coming Soon |  |
+| Anthropic | 🏗️ Coming Soon |  |
+| Google Gemini | 🏗️ Coming Soon |  |
