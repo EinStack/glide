@@ -17,14 +17,6 @@ import (
 	"reflect"
 )
 
-
-// Initialize configList
-
-var configList = map[string]interface{}{
-    "openai": openai.OpenAIConfig,
-}
-
-
 func DefinePayload(payload []byte) (interface{}, error) {
 
     // Define a map to hold the JSON data
