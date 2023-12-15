@@ -13,11 +13,10 @@ import (
 	"fmt"
 	"glide/pkg/api/providers"
 	"glide/pkg/api/providers/openai"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
-	"io"
-	
 
 	"github.com/cloudwego/hertz/pkg/app"
 	//"github.com/go-playground/validator/v10"
@@ -112,7 +111,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 	}
 
 	return responseMap, nil
-	
+
 }
 
 func definePayload(payload []byte, endpoint string) (providers.RequestDetails, error) {
@@ -149,7 +148,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	jsonString, _ = json.Marshal(endpoints)
 
-	slog.Info("Endpoint: " + string(jsonString))
+	slog.Debug("Endpoint: " + string(jsonString))
 
 	providerList := make([]string, len(endpoints))
 	for i, endpoint := range endpoints {
@@ -166,7 +165,6 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	// TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
 	//modeList := payload_data["mode"].([]interface{})
-
 
 	provider := "openai" // placeholder until provider pool is implemented
 
@@ -221,15 +219,15 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	var requestDetails providers.RequestDetails = providers.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
 
-	slog.Info("requestDetails: " + fmt.Sprintf("%v", requestDetails))
+	slog.Debug("requestDetails: " + fmt.Sprintf("%v", requestDetails))
 
 	return requestDetails, nil
 }
 
 func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, providers.ProviderDefinedApiConfig, error) {
-	
+
 	slog.Info("buildApiConfig Function Called")
-	
+
 	var defaultConfig interface{}
 	var apiConfig providers.ProviderApiConfig
 	var finalApiConfig providers.ProviderDefinedApiConfig

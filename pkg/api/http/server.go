@@ -37,19 +37,22 @@ func (srv *HTTPServer) Run() error {
 
     srv.server.POST("/chat", func(ctx context.Context, c *app.RequestContext) {
 
-		slog.Info("POST request at /chat received")
+		slog.Info("pOST request at /chat received")
 
         // Pass the client request body to SendRequest
         resp, err := api.Router(c)
 		
 
-		slog.Info("Provider response received")
+		slog.Info("provider response received")
 		
         if err != nil {
-			slog.Error("Error in Router Response: %v", err)
+			slog.Error("error in Router Response: %v", err)
             c.JSON(consts.StatusInternalServerError, utils.H{"error": err.Error()})
             return
         }
+
+		slog.Info("response received from provider")
+
         c.JSON(consts.StatusOK, utils.H{"response": resp})
     })
 
