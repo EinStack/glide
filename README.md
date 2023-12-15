@@ -11,3 +11,4 @@ Achieve unmatched uptime for your Generative AI applications. Glide sits between
 | Azure OpenAI | 🏗️ Coming Soon |  |
 | Anthropic | 🏗️ Coming Soon |  |
 | Google Gemini | 🏗️ Coming Soon |  |
+| Many More! | 🏗️ Coming Soon |  |
