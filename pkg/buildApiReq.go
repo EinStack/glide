@@ -17,7 +17,17 @@ import (
 	"reflect"
 )
 
+func sendRequest(payload []byte) (interface{}, error) {
+	
+	// this function takes the client payload and returns the response from the provider	
+
+	providerConfig, err := DefinePayload(payload)
+
+}
+
 func DefinePayload(payload []byte) (interface{}, error) {
+
+	// this function takes the client payload and returns the request body for the provider as a struct
 
     // Define a map to hold the JSON data
     var payload_data map[string]interface{}
@@ -52,7 +62,7 @@ func DefinePayload(payload []byte) (interface{}, error) {
         providerList[i] = provider
     }
 
-    // TODO: use mode and providerList to determine which provider to use
+    // TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
     //modeList := payload_data["mode"].([]interface{})
 
     provider := "openai"
@@ -106,3 +116,5 @@ func DefinePayload(payload []byte) (interface{}, error) {
 
     return defaultConfig, nil
 }
+
+
