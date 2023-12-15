@@ -16,7 +16,6 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"reflect"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/go-playground/validator/v10"
@@ -161,34 +160,28 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	defaultConfig, finalApiConfig, _ = buildApiConfig(provider, api_key, endpoint)
 
-	slog.Info("Default Config: " + fmt.Sprintf("%v", defaultConfig))
+	defaultConfigJson, _ := json.Marshal(defaultConfig)
+
+	paramsJson, _ := json.Marshal(params)
+
+	var defaultConfigMap map[string]interface{}
+	json.Unmarshal(defaultConfigJson, &defaultConfigMap)
+
+	var paramsMap map[string]interface{}
+	json.Unmarshal(paramsJson, &paramsMap)
+
+	for key, value := range paramsMap {
+		if _, ok := defaultConfigMap[key]; ok {
+			defaultConfigMap[key] = value
+		}
+	}
+
+	updatedConfigJson, _ := json.Marshal(defaultConfigMap)
+
+	defaultConfig = json.Unmarshal(updatedConfigJson, &defaultConfig)
+
+	slog.Info("Default Config: " + string(updatedConfigJson))
 	slog.Info("Final API Config: " + fmt.Sprintf("%v", finalApiConfig))
-
-	// Use reflect to set the value in defaultConfig based on client payload
-	v := reflect.ValueOf(defaultConfig)
-
-    for key, value := range params {
-        field := v.FieldByName(key)
-
-        if !field.IsValid() {
-            fmt.Printf("No such field: %s in defaultConfig", key)
-            continue
-        }
-
-        if !field.CanSet() {
-            fmt.Printf("Cannot set %s field value", key)
-            continue
-        }
-
-        fieldType := field.Type()
-        val := reflect.ValueOf(value)
-
-        if val.Type().ConvertibleTo(fieldType) {
-            field.Set(val.Convert(fieldType))
-        } else {
-            fmt.Printf("Provided value type didn't match defaultConfig field type")
-        }
-    }
 
 	// Validate the struct
 	validate := validator.New()
