@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"glide/pkg/api/providers"
 	"glide/pkg/api/providers/openai"
+	"glide/pkg/api/providers/cohere"
 	"io"
 	"log"
 	"log/slog"
@@ -21,6 +22,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/go-playground/validator/v10"
 )
+
+const provider = "openai" // placeholder until provider pool is implemented
 
 func Router(c *app.RequestContext) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
@@ -118,7 +121,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	slog.Info("definePayload Function Called")
 
-	// Define a map to hold the JSON data
+	// Define a map to hold the JSON data. Should these be declared at the top?
 	var defaultConfig interface{}                         // Assuming defaultConfig is a struct
 	var finalApiConfig providers.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
 	var payload_data map[string]interface{}
@@ -169,8 +172,6 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	// TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
 	//modeList := payload_data["mode"].([]interface{})
-
-	provider := "openai" // placeholder until provider pool is implemented
 
 	for _, endpoint := range endpoints {
 		if endpoint["provider"] == provider {
@@ -231,9 +232,9 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	case "openai":
 		defaultConfig = openai.OpenAiChatDefaultConfig()
 		apiConfig = openai.OpenAiApiConfig(api_key)
-	//case "cohere":
-	//  defaultConfig = cohere.CohereChatDefaultConfig()
-	//apiConfig = cohere.CohereAiApiConfig(api_key)
+	case "cohere":
+	    defaultConfig = cohere.CohereChatDefaultConfig()
+	    apiConfig = cohere.CohereApiConfig(api_key)
 	default:
 		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid provider")
 	}
