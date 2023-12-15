@@ -8,12 +8,13 @@ package pkg
 
 import (
 	//"errors"
-	//"github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 	"fmt"
-	"glide/pkg/providers"
+	//"glide/pkg/providers"
 	"glide/pkg/providers/openai"
 	"encoding/json"
 	//"net/http"
+	"reflect"
 )
 
 
@@ -23,70 +24,93 @@ var configList = map[string]interface{}{
     "openai": openai.OpenAIConfig,
 }
 
-// Sample JSON
-//var jsonStr = `{"provider": "openai", "params": {"model": "gpt-3.5-turbo", "messages": "Hello, how are you?"}}`
-
 
 func DefinePayload(payload []byte) (interface{}, error) {
-    // API route api.glide.com/v1/chat
-	// {"provider": "openai", "params": {"model": "gpt-3.5-turbo", "messages": "Hello, how are you?"}}
 
-	// Define a map to hold the JSON data
-	var payload_data map[string]interface{}
+    // Define a map to hold the JSON data
+    var payload_data map[string]interface{}
 
-	// Parse the JSON
-	err := json.Unmarshal([]byte(payload), &payload_data)
-	if err != nil {
-		// Handle error
-		fmt.Println(err)
-	}
-
-	endpoints, ok := payload_data["endpoints"].([]interface{})
-	if !ok {
-    // Handle error
-    fmt.Println("Endpoints not found")
-}
-
-	providerList := make([]string, len(endpoints))
-	for i, endpoint := range endpoints {
-		endpointMap, ok := endpoint.(map[string]interface{})
-		if !ok {
-			// Handle error
-			fmt.Println("Endpoint is not a map")
-		}
-
-		provider, ok := endpointMap["provider"].(string)
-		if !ok {
-			// Handle error
-			fmt.Println("Provider not found")
-		}
-
-		providerList[i] = provider
-	}
-
-	// TODO: use mode and providerList to determine which provider to use
-	//modeList := payload_data["mode"].([]interface{})
-
-	provider := "openai"
-
-	// select the predefined config for the provider
-	var providerConfig map[string]interface{}
-	if config, ok := configList[provider].(pkg.ProviderConfigs); ok { // this pulls the config in index.go
-    	if modeConfig, ok := config["chat"].(map[string]interface{}); ok { // this pulls the specific config for the endpoint
-        providerConfig = modeConfig
+    // Parse the JSON
+    err := json.Unmarshal([]byte(payload), &payload_data)
+    if err != nil {
+        // Handle error
+        fmt.Println(err)
     }
+
+    endpoints, ok := payload_data["endpoints"].([]interface{})
+    if !ok {
+        // Handle error
+        fmt.Println("Endpoints not found")
+    }
+
+    providerList := make([]string, len(endpoints))
+    for i, endpoint := range endpoints {
+        endpointMap, ok := endpoint.(map[string]interface{})
+        if !ok {
+            // Handle error
+            fmt.Println("Endpoint is not a map")
+        }
+
+        provider, ok := endpointMap["provider"].(string)
+        if !ok {
+            // Handle error
+            fmt.Println("Provider not found")
+        }
+
+        providerList[i] = provider
+    }
+
+    // TODO: use mode and providerList to determine which provider to use
+    //modeList := payload_data["mode"].([]interface{})
+
+    provider := "openai"
+
+    // TODO: the following is inefficient. Needs updating.
+    endpointsMap := payload_data["endpoints"].([]map[string]interface{})
+
+	var params map[string]interface{} 
+
+    for _, endpoint := range endpointsMap {
+        if endpoint["provider"] == provider {
+            params := endpoint["params"].(map[string]interface{})
+            fmt.Println(params)
+            break
+        }
+    }
+
+    var defaultConfig interface{} // Assuming defaultConfig is a struct
+
+    if provider == "openai" {
+        defaultConfig = openai.OpenAiChatDefaultConfig() // this is a struct
+    } else if provider == "cohere" {
+        defaultConfig = openai.OpenAiChatDefaultConfig() //TODO: change this to cohere
+    }
+
+    // Use reflect to set the value in defaultConfig
+    v := reflect.ValueOf(defaultConfig).Elem()
+    for key, value := range params {
+        field := v.FieldByName(key)
+        if field.IsValid() && field.CanSet() {
+            switch field.Kind() {
+            case reflect.Int:
+                if val, ok := value.(int); ok {
+                    field.SetInt(int64(val))
+                }
+            case reflect.String:
+                if val, ok := value.(string); ok {
+                    field.SetString(val)
+                }
+            }
+        }
+    }
+
+    // Validate the struct
+    validate := validator.New()
+    err = validate.Struct(defaultConfig)
+    if err != nil {
+        fmt.Printf("Validation failed: %v\n", err)
+        return nil, err
+    }
+
+    return defaultConfig, nil
 }
-
-	// Build the providerConfig map by iterating over the keys in the providerConfig map and checking if the key exists in the params map
-
-	for key := range providerConfig {
-		if value, exists := payload_data[key]; exists {
-			providerConfig[key] = value
-		}
-	}
-
-	// If everything is fine, return the providerConfig and nil error
-	println(providerConfig)
-    return providerConfig, nil
-}
-
