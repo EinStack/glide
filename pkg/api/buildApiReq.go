@@ -19,7 +19,6 @@ import (
 	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	//"github.com/go-playground/validator/v10"
 )
 
 func Router(c *app.RequestContext) (interface{}, error) {
@@ -200,17 +199,10 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	err = json.Unmarshal(updatedConfigJson, &defaultConfig)
 	if err != nil {
-		slog.Error("Error occurred during unmarshalling. %v", err)
+		slog.Error("error occurred during unmarshalling. %v", err)
 	}
 
-	slog.Info("Default Config: " + fmt.Sprintf("%v", defaultConfig))
-
-	// Validate the struct
-	//validate := validator.New()
-	//err = validate.Struct(defaultConfig)
-	//if err != nil {
-	//	slog.Error("Validation failed: ", err)
-	//}
+	slog.Info("default Config: " + fmt.Sprintf("%v", defaultConfig))
 
 	var requestDetails providers.RequestDetails = providers.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
 
