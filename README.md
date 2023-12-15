@@ -5,7 +5,7 @@ Achieve 100% uptime for your Generative AI applications. Glide sits between your
 
 ## Supported Providers
 
-|| Provider  | Support Status
+|| Provider  | Support Status | Supported Endpoints |
 |---|---|---|
 | <img src="docs/images/openai.png" width=18 />| OpenAI | 👍 Available  | "/chat" |
 | <img src="docs/images/azure.png" width=18>| Azure OpenAI | 🏗️ Coming Soon  |
