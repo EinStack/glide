@@ -2,7 +2,7 @@ package openai
 
 type OpenAiProviderConfig struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
-	Messages         string           `json:"messages" validate:"required"`
+	Messages         string           `json:"messages" validate:"required"` // does this need to be updated to []string?
 	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
 	Temperature      int              `json:"temperature" validate:"omitempty,gte=0,lte=2"`
 	TopP             int              `json:"top_p" validate:"omitempty,gte=0,lte=1"`
@@ -17,12 +17,6 @@ type OpenAiProviderConfig struct {
 	Tools            []string         `json:"tools"`
 	ToolChoice       interface{}      `json:"tool_choice"`
 	ResponseFormat   interface{}      `json:"response_format"`
-}
-
-type ConfigItem struct {
-	Param    string      `json:"param" validate:"required"`
-	Required bool        `json:"required" validate:"omitempty,boolean"`
-	Default  interface{} `json:"default"`
 }
 
 var defaultMessage = `[
