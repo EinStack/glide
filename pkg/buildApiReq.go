@@ -23,10 +23,15 @@ func sendRequest(payload []byte) (interface{}, error) {
 	
 	// this function takes the client payload and returns the response from the provider	
 
-	requestDetails, _ := DefinePayload(payload)
+	requestDetails, err := DefinePayload(payload, "chat")
+
+	if err != nil {
+		println("Error defining payload: %v", err)
+		return nil, err
+	}
 
 	// Create the full URL
-    url := requestDetails.ApiConfig.BaseURL + requestDetails.ApiConfig.Chat
+    url := requestDetails.ApiConfig.BaseURL + requestDetails.ApiConfig.Endpoint
 
 	// Marshal the requestDetails.RequestBody struct into JSON
 	body, err := json.Marshal(requestDetails.RequestBody)
@@ -43,7 +48,13 @@ func sendRequest(payload []byte) (interface{}, error) {
         log.Printf("Error creating request: %v", err)
         return nil, err
     }
-	req.Header.Set(requestDetails.ApiConfig.Headers)
+
+	// Set the headers
+	for key, values := range requestDetails.ApiConfig.Headers {
+		for _, value := range values {
+			req.Header.Set(key, value)
+		}
+	}
 
     // Send the request using http Client
     client := &http.Client{}
@@ -112,9 +123,9 @@ func DefinePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) 
     var defaultConfig interface{} // Assuming defaultConfig is a struct
 	var finalApiConfig pkg.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
 
-	defaultConfig, finalApiConfig, err = buildApiConfig(provider, api_key, endpoint)
+	defaultConfig, finalApiConfig, _ = buildApiConfig(provider, api_key, endpoint)
 
-    // Use reflect to set the value in defaultConfig
+    // Use reflect to set the value in defaultConfig based on client payload
     v := reflect.ValueOf(defaultConfig).Elem()
     for key, value := range params {
         field := v.FieldByName(key)
@@ -165,7 +176,7 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
       //  defaultConfig = cohere.CohereChatDefaultConfig()
         //apiConfig = cohere.CohereAiApiConfig(api_key)
     default:
-        return nil, pkg.ProviderDefinedApiConfig{}, errors.New("Invalid provider")
+        return nil, pkg.ProviderDefinedApiConfig{}, errors.New("invalid provider")
     }
 
     finalApiConfig.BaseURL = apiConfig.BaseURL
@@ -177,7 +188,7 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
     case "complete":
         finalApiConfig.Endpoint = apiConfig.Complete
     default:
-        return nil, pkg.ProviderDefinedApiConfig{}, errors.New("Invalid endpoint")
+        return nil, pkg.ProviderDefinedApiConfig{}, errors.New("invalid endpoint")
     }
 
     return defaultConfig, finalApiConfig, nil
