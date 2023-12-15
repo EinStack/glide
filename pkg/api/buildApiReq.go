@@ -15,7 +15,6 @@ import (
 	"glide/pkg/api/providers/openai"
 	"glide/pkg/api/providers/cohere"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -23,7 +22,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const provider = "openai" // placeholder until provider pool is implemented
+const provider = "cohere" // placeholder until provider pool is implemented
 
 func Router(c *app.RequestContext) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
@@ -58,7 +57,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 	requestDetails, err := definePayload(payload, "chat")
 
 	if err != nil {
-		slog.Error("Error defining payload: %v", err)
+		slog.Error("error defining payload: %v", err)
 		return nil, err
 	}
 
@@ -70,11 +69,11 @@ func sendRequest(payload []byte) (interface{}, error) {
 	// Marshal the requestDetails.RequestBody struct into JSON
 	body, err := json.Marshal(requestDetails.RequestBody)
 	if err != nil {
-		log.Printf("Error marshalling request body: %v", err)
+		slog.Error("error marshalling request body: %v", err)
 		return nil, err
 	}
 
-	slog.Debug("Request Body: " + string(body))
+	slog.Info("request Body: " + string(body))
 
 	// Create a new request using http
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -204,12 +203,12 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		slog.Error("error occurred during unmarshalling. %v", err)
 	}
 
-	err = validateStruct(defaultConfig)
+	//err = validateStruct(defaultConfig)
 
-	if err != nil {
-		slog.Error("error occurred during validation.", err)
-		return providers.RequestDetails{}, err
-	}
+	//if err != nil {
+	//	slog.Error("error occurred during validation.", err)
+	//	return providers.RequestDetails{}, err
+	//}
 
 	slog.Info("default Config: " + fmt.Sprintf("%v", defaultConfig))
 
@@ -254,8 +253,10 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	return defaultConfig, finalApiConfig, nil
 }
 
+
 func validateStruct(config interface{}) error {
-    validate := validator.New()
+    // Validate a struct
+	validate := validator.New()
     err := validate.Struct(config)
     if err != nil {
         if invalidErr, ok := err.(*validator.InvalidValidationError); ok {

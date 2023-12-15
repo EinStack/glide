@@ -3,7 +3,7 @@ package cohere
 // ProviderConfig represents the provider configuration
 type CohereChatProviderConfig struct {
 	Model            string      `json:"model" validate:"lowercase"`
-	Messages         string      `json:"messages" validate:"required"`
+	Message         string      `json:"message" validate:"required"`
 	Stream           bool        `json:"stream" validate:"omitempty,boolean"`
 	PreambleOverride string      `json:"preamble_override,omitempty"`
 	ChatHistory      interface{} `json:"chat_history,omitempty" validate:"omitempty,dive"`
@@ -19,7 +19,7 @@ type CohereChatProviderConfig struct {
 func CohereChatDefaultConfig() CohereChatProviderConfig {
 	return CohereChatProviderConfig{
 		Model:            "command-light",
-		Messages:         "hello Cohere",
+		Message:         "hello Cohere",
 		Stream:           false,
 		Temperature:      0.3,
 		PreambleOverride: "", // TODO: determine how this affects the request
