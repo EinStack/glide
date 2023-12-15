@@ -29,7 +29,7 @@ func (srv *HTTPServer) Run() error {
     srv.server.POST("/chat", func(ctx context.Context, c *app.RequestContext) {
 
         // Pass the client request body to SendRequest
-        resp, err := pkg.LlmRouter(c)
+        resp, err := api.Router(c)
 		
         if err != nil {
             c.JSON(consts.StatusInternalServerError, utils.H{"error": err.Error()})

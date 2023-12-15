@@ -4,7 +4,7 @@
 // 2. determine provider
 // 3. build request body based on provider
 // 4. send request to provider
-package pkg
+package api
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ import (
 	"reflect"
 )
 
-func LlmRouter(c *app.RequestContext) (interface{}, error) {
+func Router(c *app.RequestContext) (interface{}, error) {
 
 	// this function takes the client request and returns the response from the provider
 
