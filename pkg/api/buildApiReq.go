@@ -203,7 +203,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		slog.Error("error occurred during unmarshalling. %v", err)
 	}
 
-	//err = validateStruct(defaultConfig)
+	err = validateStruct(defaultConfig)
 
 	if err != nil {
 		slog.Error("error occurred during validation.", err)
