@@ -8,6 +8,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"time"
+
+	"glide/pkg/providers"
 )
 
 type HTTPServer struct {
@@ -21,11 +23,22 @@ func NewHttpServer(config *HTTPServerConfig) (*HTTPServer, error) {
 }
 
 func (srv *HTTPServer) Run() error {
-	srv.server.GET("/health", func(ctx context.Context, c *app.RequestContext) {
-		c.JSON(consts.StatusOK, utils.H{"healthy": true})
-	})
+    srv.server.GET("/health", func(ctx context.Context, c *app.RequestContext) {
+        c.JSON(consts.StatusOK, utils.H{"healthy": true})
+    })
 
-	return srv.server.Run()
+    srv.server.POST("/chat", func(ctx context.Context, c *app.RequestContext) {
+
+        // Pass the client request body to SendRequest
+        resp, err := pkg.LlmRouter(c)
+        if err != nil {
+            c.JSON(consts.StatusInternalServerError, utils.H{"error": err.Error()})
+            return
+        }
+        c.JSON(consts.StatusOK, utils.H{"response": resp})
+    })
+
+    return srv.server.Run()
 }
 
 func (srv *HTTPServer) Shutdown(_ context.Context) error {

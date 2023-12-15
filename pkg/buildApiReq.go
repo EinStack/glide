@@ -9,6 +9,7 @@ package pkg
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/cloudwego/hertz/pkg/app"
 	"fmt"
 	"glide/pkg/providers"
 	"glide/pkg/providers/openai"
@@ -19,11 +20,33 @@ import (
 	"bytes"
 )
 
+
+func LlmRouter(c *app.RequestContext) (interface{}, error) {
+
+	// this function takes the client request and returns the response from the provider
+
+	requestBody := c.Request.Body()
+
+	if requestBody == nil {
+		fmt.Println("Request body is nil")
+	}
+
+    fmt.Println(requestBody)
+
+	// Send the request to the provider
+	resp, err := sendRequest(requestBody)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return resp, err
+
+}
+
 func sendRequest(payload []byte) (interface{}, error) {
 	
 	// this function takes the client payload and returns the response from the provider	
 
-	requestDetails, err := DefinePayload(payload, "chat")
+	requestDetails, err := definePayload(payload, "chat")
 
 	if err != nil {
 		println("Error defining payload: %v", err)
@@ -61,7 +84,7 @@ func sendRequest(payload []byte) (interface{}, error) {
     return client.Do(req)
 }
 
-func DefinePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) {
+func definePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) {
 
 	// this function takes the client payload and returns the request body for the provider as a struct
 
@@ -103,7 +126,7 @@ func DefinePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) 
 
     // TODO: the following is inefficient. Needs updating.
 
-	provider := "openai"
+	provider := "openai" // placeholder until provider pool is implemented
 
     endpointsMap := payload_data["endpoints"].([]map[string]interface{})
 
