@@ -8,7 +8,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"time"
-
 )
 
 type HTTPServer struct {
