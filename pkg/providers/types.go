@@ -8,7 +8,7 @@ type ProviderConfigs map[string]interface{}
 
 type RequestDetails struct {
 	RequestBody interface{}
-	ApiConfig ProviderApiConfig
+	ApiConfig ProviderDefinedApiConfig
 }
 
 type ProviderApiConfig struct {
@@ -17,4 +17,10 @@ type ProviderApiConfig struct {
 	Complete string
 	Chat     string
 	Embed    string
+}
+
+type ProviderDefinedApiConfig struct {
+	BaseURL  string
+	Headers  http.Header
+	Endpoint string
 }

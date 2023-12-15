@@ -7,7 +7,7 @@
 package pkg
 
 import (
-	//"errors"
+	"errors"
 	"github.com/go-playground/validator/v10"
 	"fmt"
 	"glide/pkg/providers"
@@ -18,8 +18,6 @@ import (
 	"log"
 	"bytes"
 )
-
-
 
 func sendRequest(payload []byte) (interface{}, error) {
 	
@@ -45,14 +43,14 @@ func sendRequest(payload []byte) (interface{}, error) {
         log.Printf("Error creating request: %v", err)
         return nil, err
     }
-	//req.Header.Set(requestDetails.ApiConfig.Headers())
+	req.Header.Set(requestDetails.ApiConfig.Headers)
 
     // Send the request using http Client
     client := &http.Client{}
     return client.Do(req)
 }
 
-func DefinePayload(payload []byte) (pkg.RequestDetails, error) {
+func DefinePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) {
 
 	// this function takes the client payload and returns the request body for the provider as a struct
 
@@ -112,15 +110,9 @@ func DefinePayload(payload []byte) (pkg.RequestDetails, error) {
     }
 
     var defaultConfig interface{} // Assuming defaultConfig is a struct
-	var apiConfig pkg.ProviderApiConfig // Assuming apiConfig is a struct
+	var finalApiConfig pkg.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
 
-    if provider == "openai" {
-        defaultConfig = openai.OpenAiChatDefaultConfig() // this is a struct
-		apiConfig = openai.OpenAiApiConfig(api_key) // TODO: change this to use the API key from the payload
-    } else if provider == "cohere" {
-        defaultConfig = openai.OpenAiChatDefaultConfig() //TODO: change this to cohere
-		apiConfig = openai.OpenAiApiConfig(api_key) // TODO: change this to use the API key from the payload
-    }
+	defaultConfig, finalApiConfig, err = buildApiConfig(provider, api_key, endpoint)
 
     // Use reflect to set the value in defaultConfig
     v := reflect.ValueOf(defaultConfig).Elem()
@@ -155,9 +147,39 @@ func DefinePayload(payload []byte) (pkg.RequestDetails, error) {
 		fmt.Println(err)
 	}
 
-	var requestDetails pkg.RequestDetails = pkg.RequestDetails{RequestBody: defaultConfig, ApiConfig: apiConfig}
+	var requestDetails pkg.RequestDetails = pkg.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
 
     return requestDetails, nil
 }
 
+func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, pkg.ProviderDefinedApiConfig, error) {
+    var defaultConfig interface{}
+    var apiConfig pkg.ProviderApiConfig
+    var finalApiConfig pkg.ProviderDefinedApiConfig
+
+    switch provider {
+    case "openai":
+        defaultConfig = openai.OpenAiChatDefaultConfig()
+        apiConfig = openai.OpenAiApiConfig(api_key)
+    //case "cohere":
+      //  defaultConfig = cohere.CohereChatDefaultConfig()
+        //apiConfig = cohere.CohereAiApiConfig(api_key)
+    default:
+        return nil, pkg.ProviderDefinedApiConfig{}, errors.New("Invalid provider")
+    }
+
+    finalApiConfig.BaseURL = apiConfig.BaseURL
+    finalApiConfig.Headers = apiConfig.Headers(api_key)
+
+    switch endpoint {
+    case "chat":
+        finalApiConfig.Endpoint = apiConfig.Chat
+    case "complete":
+        finalApiConfig.Endpoint = apiConfig.Complete
+    default:
+        return nil, pkg.ProviderDefinedApiConfig{}, errors.New("Invalid endpoint")
+    }
+
+    return defaultConfig, finalApiConfig, nil
+}
 
