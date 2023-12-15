@@ -3,24 +3,18 @@ package openai
 import (
 	"fmt"
 	"net/http"
+
+	"glide/pkg/providers"
 )
 
 
-// provides the base URL and headers for the OpenAI API
-type ProviderApiConfig struct {
-	BaseURL  string
-	Headers  func(string) http.Header
-	Complete string
-	Chat     string
-	Embed    string
-}
-
-func OpenAIAPIConfig(APIKey string) ProviderApiConfig {
-	return ProviderApiConfig{
+func OpenAiApiConfig(APIKey string) pkg.ProviderApiConfig {
+	return pkg.ProviderApiConfig{
 		BaseURL: "https://api.openai.com/v1",
 		Headers: func(APIKey string) http.Header {
 			headers := make(http.Header)
 			headers.Set("Authorization", fmt.Sprintf("Bearer %s", APIKey))
+			headers.Set("Content-Type", "application/json")
 			return headers
 		},
 		Complete: "/completions",

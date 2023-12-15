@@ -7,6 +7,6 @@ import (
 
 // TODO: this needs to be imported into buildAPIRequest.go
 var OpenAIConfig = pkg.ProviderConfigs{
-    "api":                 OpenAIAPIConfig,
+    "api":                 OpenAiApiConfig,
     "chat":        OpenAiChatDefaultConfig,
 }

@@ -13,8 +13,10 @@ import (
 	"glide/pkg/providers"
 	"glide/pkg/providers/openai"
 	"encoding/json"
-	//"net/http"
+	"net/http"
 	"reflect"
+	"log"
+	"bytes"
 )
 
 
@@ -23,11 +25,34 @@ func sendRequest(payload []byte) (interface{}, error) {
 	
 	// this function takes the client payload and returns the response from the provider	
 
-	providerConfig, err := DefinePayload(payload)
+	requestDetails, _ := DefinePayload(payload)
 
+	// Create the full URL
+    url := requestDetails.ApiConfig.BaseURL + requestDetails.ApiConfig.Chat
+
+	// Marshal the requestDetails.RequestBody struct into JSON
+	body, err := json.Marshal(requestDetails.RequestBody)
+	if err != nil {
+		log.Printf("Error marshalling request body: %v", err)
+		return nil, err
+	}
+
+    // Create a new request using http
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+
+    // If there was an error with creating the request, handle it
+    if err != nil {
+        log.Printf("Error creating request: %v", err)
+        return nil, err
+    }
+	//req.Header.Set(requestDetails.ApiConfig.Headers())
+
+    // Send the request using http Client
+    client := &http.Client{}
+    return client.Do(req)
 }
 
-func DefinePayload(payload []byte) (interface{}, error) {
+func DefinePayload(payload []byte) (pkg.RequestDetails, error) {
 
 	// this function takes the client payload and returns the request body for the provider as a struct
 
@@ -64,33 +89,37 @@ func DefinePayload(payload []byte) (interface{}, error) {
         providerList[i] = provider
     }
 
-    // TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
+	// TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
     //modeList := payload_data["mode"].([]interface{})
 
-    provider := "openai"
-
     // TODO: the following is inefficient. Needs updating.
+
+	provider := "openai"
+
     endpointsMap := payload_data["endpoints"].([]map[string]interface{})
 
 	var params map[string]interface{} 
 
+	var api_key string
+
     for _, endpoint := range endpointsMap {
         if endpoint["provider"] == provider {
-            params := endpoint["params"].(map[string]interface{})
+            params = endpoint["params"].(map[string]interface{})
+			api_key = endpoint["api_key"].(string)
             fmt.Println(params)
             break
         }
     }
 
     var defaultConfig interface{} // Assuming defaultConfig is a struct
-	var apiConfig interface{} // Assuming apiConfig is a struct
+	var apiConfig pkg.ProviderApiConfig // Assuming apiConfig is a struct
 
     if provider == "openai" {
         defaultConfig = openai.OpenAiChatDefaultConfig() // this is a struct
-		apiConfig = openai.OpenAIAPIConfig("OPEN_API_KEY") // TODO: change this to use the API key from the payload
+		apiConfig = openai.OpenAiApiConfig(api_key) // TODO: change this to use the API key from the payload
     } else if provider == "cohere" {
         defaultConfig = openai.OpenAiChatDefaultConfig() //TODO: change this to cohere
-		apiConfig = openai.OpenAIAPIConfig("COHEREAPI_KEY") // TODO: change this to use the API key from the payload
+		apiConfig = openai.OpenAiApiConfig(api_key) // TODO: change this to use the API key from the payload
     }
 
     // Use reflect to set the value in defaultConfig
@@ -116,10 +145,15 @@ func DefinePayload(payload []byte) (interface{}, error) {
     err = validate.Struct(defaultConfig)
     if err != nil {
         fmt.Printf("Validation failed: %v\n", err)
-        return nil, err
+        return pkg.RequestDetails{}, err
     }
 
-	// TODO: build struct for totalConfig. This should contain the providerApiConfig and the defaultConfig
+	// Convert the struct to JSON
+	defaultConfig, err = json.Marshal(defaultConfig)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+	}
 
 	var requestDetails pkg.RequestDetails = pkg.RequestDetails{RequestBody: defaultConfig, ApiConfig: apiConfig}
 
