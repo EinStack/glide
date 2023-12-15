@@ -178,16 +178,19 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	updatedConfigJson, _ := json.Marshal(defaultConfigMap)
 
-	defaultConfig = json.Unmarshal(updatedConfigJson, &defaultConfig)
+	err = json.Unmarshal(updatedConfigJson, &defaultConfig)
+	if err != nil {
+		slog.Error("Error occurred during unmarshalling. %v", err)
+	}
 
-	slog.Info("Default Config: " + string(updatedConfigJson))
+	slog.Info("Default Config: " + fmt.Sprintf("%v", defaultConfig))
 	slog.Info("Final API Config: " + fmt.Sprintf("%v", finalApiConfig))
 
 	// Validate the struct
 	validate := validator.New()
 	err = validate.Struct(defaultConfig)
 	if err != nil {
-		slog.Error("Validation failed: %v\n", err)
+		slog.Error("Validation failed: ", err)
 		return providers.RequestDetails{}, err
 	}
 

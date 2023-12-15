@@ -3,20 +3,20 @@ package openai
 type OpenAiProviderConfig struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
 	Messages         string           `json:"messages" validate:"required"` // does this need to be updated to []string?
-	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
-	Temperature      int              `json:"temperature" validate:"omitempty,gte=0,lte=2"`
-	TopP             int              `json:"top_p" validate:"omitempty,gte=0,lte=1"`
-	N                int              `json:"n" validate:"omitempty,gte=1"`
-	Stream           bool             `json:"stream" validate:"omitempty, boolean"`
-	Stop             interface{}      `json:"stop"`
-	PresencePenalty  int              `json:"presence_penalty" validate:"omitempty,gte=-2,lte=2"`
-	FrequencyPenalty int              `json:"frequency_penalty" validate:"omitempty,gte=-2,lte=2"`
-	LogitBias        *map[int]float64 `json:"logit_bias" validate:"omitempty"`
-	User             interface{}      `json:"user"`
-	Seed             interface{}      `json:"seed" validate:"omitempty,gte=0"`
-	Tools            []string         `json:"tools"`
-	ToolChoice       interface{}      `json:"tool_choice"`
-	ResponseFormat   interface{}      `json:"response_format"`
+	MaxTokens        int              `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
+	Temperature      int              `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=2"`
+	TopP             int              `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
+	N                int              `json:"n,omitempty" validate:"omitempty,gte=1"`
+	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
+	Stop             interface{}      `json:"stop,omitempty" validate:"omitempty"`
+	PresencePenalty  int              `json:"presence_penalty,omitempty" validate:"omitempty,gte=-2,lte=2"`
+	FrequencyPenalty int              `json:"frequency_penalty,omitempty" validate:"omitempty,gte=-2,lte=2"`
+	LogitBias        *map[int]float64 `json:"logit_bias,omitempty" validate:"omitempty"`
+	User             interface{}      `json:"user,omitempty" validate:"omitempty"`
+	Seed             interface{}      `json:"seed,omitempty" validate:"omitempty,gte=0"`
+	Tools            []string         `json:"tools,omitempty" validate:"omitempty"`
+	ToolChoice       interface{}      `json:"tool_choice,omitempty" validate:"omitempty"`
+	ResponseFormat   interface{}      `json:"response_format,omitempty" validate:"omitempty"`
 }
 
 var defaultMessage = `[
