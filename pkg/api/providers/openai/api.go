@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"glide/pkg/providers"
+	"glide/pkg/api/providers"
 )
 
 
-func OpenAiApiConfig(APIKey string) pkg.ProviderApiConfig {
-	return pkg.ProviderApiConfig{
+func OpenAiApiConfig(APIKey string) providers.ProviderApiConfig {
+	return providers.ProviderApiConfig{
 		BaseURL: "https://api.openai.com/v1",
 		Headers: func(APIKey string) http.Header {
 			headers := make(http.Header)

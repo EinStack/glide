@@ -1,4 +1,4 @@
-package pkg
+package providers
 
 import (
 	"net/http"

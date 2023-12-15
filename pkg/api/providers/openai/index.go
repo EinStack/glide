@@ -1,12 +1,12 @@
 package openai
 
 import (
-    "glide/pkg/providers"
+    "glide/pkg/api/providers"
 )
 
 
 // TODO: this needs to be imported into buildAPIRequest.go
-var OpenAIConfig = pkg.ProviderConfigs{
+var OpenAIConfig = providers.ProviderConfigs{
     "api":                 OpenAiApiConfig,
     "chat":        OpenAiChatDefaultConfig,
 }

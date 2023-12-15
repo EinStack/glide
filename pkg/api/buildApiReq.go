@@ -4,7 +4,7 @@
 // 2. determine provider
 // 3. build request body based on provider
 // 4. send request to provider
-package pkg
+package api
 
 import (
 	"bytes"
@@ -13,8 +13,8 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/go-playground/validator/v10"
-	"glide/pkg/providers"
-	"glide/pkg/providers/openai"
+	"glide/pkg/api/providers"
+	"glide/pkg/api/providers/openai"
 	"log"
 	"net/http"
 	"reflect"
@@ -83,7 +83,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 	return client.Do(req)
 }
 
-func definePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) {
+func definePayload(payload []byte, endpoint string) (providers.RequestDetails, error) {
 
 	// this function takes the client payload and returns the request body for the provider as a struct
 
@@ -143,7 +143,7 @@ func definePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) 
 	}
 
 	var defaultConfig interface{}                   // Assuming defaultConfig is a struct
-	var finalApiConfig pkg.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
+	var finalApiConfig providers.ProviderDefinedApiConfig // Assuming finalApiConfig is a struct
 
 	defaultConfig, finalApiConfig, _ = buildApiConfig(provider, api_key, endpoint)
 
@@ -170,7 +170,7 @@ func definePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) 
 	err = validate.Struct(defaultConfig)
 	if err != nil {
 		fmt.Printf("Validation failed: %v\n", err)
-		return pkg.RequestDetails{}, err
+		return providers.RequestDetails{}, err
 	}
 
 	// Convert the struct to JSON
@@ -180,15 +180,15 @@ func definePayload(payload []byte, endpoint string) (pkg.RequestDetails, error) 
 		fmt.Println(err)
 	}
 
-	var requestDetails pkg.RequestDetails = pkg.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
+	var requestDetails providers.RequestDetails = providers.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
 
 	return requestDetails, nil
 }
 
-func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, pkg.ProviderDefinedApiConfig, error) {
+func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, providers.ProviderDefinedApiConfig, error) {
 	var defaultConfig interface{}
-	var apiConfig pkg.ProviderApiConfig
-	var finalApiConfig pkg.ProviderDefinedApiConfig
+	var apiConfig providers.ProviderApiConfig
+	var finalApiConfig providers.ProviderDefinedApiConfig
 
 	switch provider {
 	case "openai":
@@ -198,7 +198,7 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	//  defaultConfig = cohere.CohereChatDefaultConfig()
 	//apiConfig = cohere.CohereAiApiConfig(api_key)
 	default:
-		return nil, pkg.ProviderDefinedApiConfig{}, errors.New("invalid provider")
+		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid provider")
 	}
 
 	finalApiConfig.BaseURL = apiConfig.BaseURL
@@ -210,7 +210,7 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	case "complete":
 		finalApiConfig.Endpoint = apiConfig.Complete
 	default:
-		return nil, pkg.ProviderDefinedApiConfig{}, errors.New("invalid endpoint")
+		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid endpoint")
 	}
 
 	return defaultConfig, finalApiConfig, nil
