@@ -10,6 +10,7 @@ import (
 	"time"
 	"glide/pkg/api"
 	"sync"
+	"log/slog"
 	
 )
 
@@ -28,6 +29,7 @@ func NewHttpServer(config *HTTPServerConfig) (*HTTPServer, error) {
 	}, nil
 }
 
+// This func has the routes for the server
 func (srv *HTTPServer) Run() error {
     srv.server.GET("/health", func(ctx context.Context, c *app.RequestContext) {
         c.JSON(consts.StatusOK, utils.H{"healthy": true})
@@ -35,10 +37,15 @@ func (srv *HTTPServer) Run() error {
 
     srv.server.POST("/chat", func(ctx context.Context, c *app.RequestContext) {
 
+		slog.Info("POST request at /chat received")
+
         // Pass the client request body to SendRequest
         resp, err := api.Router(c)
+
+		slog.Info("Provider response received")
 		
         if err != nil {
+			slog.Error("Error in Router Response: %v", err)
             c.JSON(consts.StatusInternalServerError, utils.H{"error": err.Error()})
             return
         }

@@ -11,26 +11,29 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/go-playground/validator/v10"
 	"glide/pkg/api/providers"
 	"glide/pkg/api/providers/openai"
 	"log"
+	"log/slog"
 	"net/http"
 	"reflect"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/go-playground/validator/v10"
 )
 
+
 func Router(c *app.RequestContext) (interface{}, error) {
-
 	// this function takes the client request and returns the response from the provider
+	slog.Info("Router Function Called")
 
-	requestBody := c.Request.Body()
+    requestBody := c.Request.Body()
 
-	if requestBody == nil {
-		fmt.Println("Request body is nil")
-	}
-
-	fmt.Println(requestBody)
+	// Check if the request body is empty
+    if len(requestBody) == 0 {
+		slog.Error("request body cannot be empty")
+        return nil, errors.New("request body cannot be empty")
+    }
 
 	// Send the request to the provider
 	resp, err := sendRequest(requestBody)
@@ -45,6 +48,8 @@ func sendRequest(payload []byte) (interface{}, error) {
 
 	// this function takes the client payload and returns the response from the provider
 
+	slog.Info("sendRequest Function Called")
+
 	requestDetails, err := definePayload(payload, "chat")
 
 	if err != nil {
@@ -54,6 +59,8 @@ func sendRequest(payload []byte) (interface{}, error) {
 
 	// Create the full URL
 	url := requestDetails.ApiConfig.BaseURL + requestDetails.ApiConfig.Endpoint
+
+	slog.Info("Provider URL: " + url)
 
 	// Marshal the requestDetails.RequestBody struct into JSON
 	body, err := json.Marshal(requestDetails.RequestBody)
@@ -87,6 +94,8 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	// this function takes the client payload and returns the request body for the provider as a struct
 
+	slog.Info("definePayload Function Called")
+
 	// Define a map to hold the JSON data
 	var payload_data map[string]interface{}
 
@@ -94,14 +103,22 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 	err := json.Unmarshal([]byte(payload), &payload_data)
 	if err != nil {
 		// Handle error
-		fmt.Println(err)
+		slog.Error("Error unmarshalling payload: %v", err)
 	}
+
+	jsonString, _ := json.Marshal(payload_data)
+
+	slog.Debug("Payload: " + string(jsonString))
 
 	endpoints, ok := payload_data["endpoints"].([]interface{})
 	if !ok {
 		// Handle error
-		fmt.Println("Endpoints not found")
+		slog.Error("Endpoints not found")
 	}
+
+	jsonString, _ = json.Marshal(endpoints)
+
+	slog.Debug("Payload: " + string(jsonString))
 
 	providerList := make([]string, len(endpoints))
 	for i, endpoint := range endpoints {
