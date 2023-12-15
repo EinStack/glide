@@ -7,7 +7,7 @@ type OpenAiProviderConfig struct {
 	Temperature      int              `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=2"`
 	TopP             int              `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
 	N                int              `json:"n,omitempty" validate:"omitempty,gte=1"`
-	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
+	Stream           bool             `json:"stream,omitempty" validate:"omitempty,boolean"`
 	Stop             interface{}      `json:"stop,omitempty" validate:"omitempty"`
 	PresencePenalty  int              `json:"presence_penalty,omitempty" validate:"omitempty,gte=-2,lte=2"`
 	FrequencyPenalty int              `json:"frequency_penalty,omitempty" validate:"omitempty,gte=-2,lte=2"`

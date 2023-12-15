@@ -18,7 +18,7 @@ import (
 	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/go-playground/validator/v10"
+	//"github.com/go-playground/validator/v10"
 )
 
 func Router(c *app.RequestContext) (interface{}, error) {
@@ -36,8 +36,11 @@ func Router(c *app.RequestContext) (interface{}, error) {
 	// Send the request to the provider
 	resp, err := sendRequest(requestBody)
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("Error with request: %v", err)
 	}
+
+	slog.Info("Response: " + fmt.Sprintf("%v", resp))
+
 	return resp, err
 
 }
@@ -51,7 +54,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 	requestDetails, err := definePayload(payload, "chat")
 
 	if err != nil {
-		println("Error defining payload: %v", err)
+		slog.Error("Error defining payload: %v", err)
 		return nil, err
 	}
 
@@ -67,12 +70,14 @@ func sendRequest(payload []byte) (interface{}, error) {
 		return nil, err
 	}
 
+	slog.Info("Request Body: " + string(body))
+
 	// Create a new request using http
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 
 	// If there was an error with creating the request, handle it
 	if err != nil {
-		log.Printf("Error creating request: %v", err)
+		slog.Error("Error creating request: %v", err)
 		return nil, err
 	}
 
@@ -83,8 +88,11 @@ func sendRequest(payload []byte) (interface{}, error) {
 		}
 	}
 
+	//slog.Info("Request: " + fmt.Sprintf("%v", req))
+
 	// Send the request using http Client
 	client := &http.Client{}
+
 	return client.Do(req)
 }
 
@@ -184,24 +192,17 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 	}
 
 	slog.Info("Default Config: " + fmt.Sprintf("%v", defaultConfig))
-	slog.Info("Final API Config: " + fmt.Sprintf("%v", finalApiConfig))
 
 	// Validate the struct
-	validate := validator.New()
-	err = validate.Struct(defaultConfig)
-	if err != nil {
-		slog.Error("Validation failed: ", err)
-		return providers.RequestDetails{}, err
-	}
-
-	// Convert the struct to JSON
-	defaultConfig, err = json.Marshal(defaultConfig)
-	if err != nil {
-		// handle error
-		fmt.Println(err)
-	}
+	//validate := validator.New()
+	//err = validate.Struct(defaultConfig)
+	//if err != nil {
+	//	slog.Error("Validation failed: ", err)
+	//}
 
 	var requestDetails providers.RequestDetails = providers.RequestDetails{RequestBody: defaultConfig, ApiConfig: finalApiConfig}
+
+	slog.Info("requestDetails: " + fmt.Sprintf("%v", requestDetails))
 
 	return requestDetails, nil
 }
