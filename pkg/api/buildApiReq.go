@@ -23,8 +23,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
-const provider = "google" // placeholder for testing until provider pool is implemented
-
 func Router(c *app.RequestContext) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
 	slog.Info("Router Function Called")
@@ -121,7 +119,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, s
 		return providers.RequestDetails{}, "", err
 	}
 
-	// This is where the provider 
+	// TODO: This is where the provider pool will be implemented
 	provider, err := extractProvider(payloadData)
 	if err != nil {
 		return providers.RequestDetails{}, "", err
@@ -230,6 +228,7 @@ func extractProvider(payloadData map[string]interface{}) (string, error) {
 			continue
 		}
 		if provider, ok := endpointMap["provider"].(string); ok {
+			//provider = "google"
 			return provider, nil
 		}
 	}
