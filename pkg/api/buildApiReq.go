@@ -56,7 +56,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 
 	slog.Info("sendRequest Function Called")
 
-	requestDetails, err := definePayload(payload, "chat")
+	requestDetails, provider, err := definePayload(payload, "chat")
 
 	if err != nil {
 		slog.Error("error defining payload: %v", err)
@@ -122,7 +122,7 @@ func sendRequest(payload []byte) (interface{}, error) {
 
 }
 
-func definePayload(payload []byte, endpoint string) (providers.RequestDetails, error) {
+func definePayload(payload []byte, endpoint string) (providers.RequestDetails, string, error) {
 
 	// this function takes the client payload and returns the request body for the provider as a struct
 
@@ -189,11 +189,14 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 		}
 	}
 
+	// retrieve the default configs for the provider
 	defaultConfig, finalApiConfig, _ = buildApiConfig(provider, api_key, endpoint)
 
+	// convert the defaultConfig and params to maps
 	defaultConfigJson, _ := json.Marshal(defaultConfig)
 
 	paramsJson, _ := json.Marshal(params)
+
 
 	json.Unmarshal(defaultConfigJson, &defaultConfigMap)
 
@@ -225,13 +228,13 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	slog.Debug("requestDetails: " + fmt.Sprintf("%v", requestDetails))
 
-	return requestDetails, nil
+	return requestDetails, provider, nil
 }
 
 func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, providers.ProviderDefinedApiConfig, error) {
 
 	// TODO: CLEAN THIS UP
-	slog.Info("buildApiConfig Function Called")
+	slog.Info("buildApiConfig function Called")
 
 	var defaultConfig interface{}
 	var apiConfig providers.ProviderApiConfig
