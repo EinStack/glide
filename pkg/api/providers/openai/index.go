@@ -4,8 +4,9 @@ import (
     "glide/pkg/api/providers"
 )
 
-var OpenAIConfig = providers.ProviderConfigs{
-    "api":                 OpenAiApiConfig,
-    "chat":        OpenAiChatDefaultConfig,
+func OpenAiFullConfig() providers.ProviderConfigsAll {
+    return providers.ProviderConfigsAll {
+    Api: OpenAiApiConfig,
+    Chat: OpenAiChatDefaultConfig,
+    }
 }
-

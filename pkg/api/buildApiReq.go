@@ -23,9 +23,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
-func Router(c *app.RequestContext) (interface{}, error) {
+func Router(c *app.RequestContext, route string) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
 	slog.Info("Router Function Called")
+
+	var _ = route
 
 	requestBody := c.Request.Body()
 
@@ -159,8 +161,8 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 
 	switch provider {
 	case "openai":
-		defaultConfig = openai.OpenAiChatDefaultConfig()
-		apiConfig = openai.OpenAiApiConfig(api_key)
+		defaultConfig = openai.OpenAiFullConfig().Chat
+		apiConfig = openai.OpenAiFullConfig().Api(api_key)
 	case "cohere":
 	    defaultConfig = cohere.CohereChatDefaultConfig()
 	    apiConfig = cohere.CohereApiConfig(api_key)
@@ -182,15 +184,6 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 		finalApiConfig.BaseURL = apiConfig.BaseURL
 		finalApiConfig.Headers = apiConfig.Headers(api_key)
 
-	}
-
-	switch endpoint {
-	case "chat":
-		finalApiConfig.Endpoint = apiConfig.Chat
-	case "complete":
-		finalApiConfig.Endpoint = apiConfig.Complete
-	default:
-		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid endpoint")
 	}
 
 	return defaultConfig, finalApiConfig, nil

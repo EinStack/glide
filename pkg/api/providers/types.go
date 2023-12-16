@@ -24,3 +24,10 @@ type ProviderDefinedApiConfig struct {
 	Headers  http.Header
 	Endpoint string
 }
+
+type ProviderConfigsAll struct {
+	Api  func(string) ProviderApiConfig
+	Chat interface{}
+	Complete interface{}
+	Embed interface{}
+}

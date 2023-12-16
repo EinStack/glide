@@ -1,4 +1,4 @@
-package cohere
+package anyscale
 
 import (
     "glide/pkg/api/providers"
@@ -6,8 +6,8 @@ import (
 
 func CohereFullConfig() providers.ProviderConfigsAll {
     return providers.ProviderConfigsAll {
-    Api: CohereApiConfig,
-    Chat: CohereChatDefaultConfig,
+    Api: AnyscaleApiConfig,
+    Chat: AnyscaleChatDefaultConfig,
     }
 }
 

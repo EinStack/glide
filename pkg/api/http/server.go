@@ -37,10 +37,10 @@ func (srv *HTTPServer) Run() error {
 
     srv.server.POST("/chat", func(ctx context.Context, c *app.RequestContext) {
 
-		slog.Info("pOST request at /chat received")
+		slog.Info("post request at /chat received")
 
         // Pass the client request body to SendRequest
-        resp, err := api.Router(c)
+        resp, err := api.Router(c, "/chat")
 		
 
 		slog.Info("provider response received")
