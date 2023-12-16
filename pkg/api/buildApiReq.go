@@ -132,7 +132,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, s
 		return providers.RequestDetails{}, "", err
 	}
 
-	defaultConfig, finalApiConfig, err := buildApiConfig(provider, apiKey, endpoint)
+	defaultConfig, finalApiConfig, err := buildApiConfig(provider, apiKey)
 	if err != nil {
 		return providers.RequestDetails{}, "", err
 	}
@@ -150,9 +150,9 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, s
 	return requestDetails, provider, nil
 }
 
-func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, providers.ProviderDefinedApiConfig, error) {
+func buildApiConfig(provider string, api_key string) (interface{}, providers.ProviderDefinedApiConfig, error) {
 
-	// TODO: CLEAN THIS UP
+	// TODO: Need to dynamically pass the route
 	slog.Info("buildApiConfig function Called")
 
 	var defaultConfig interface{}
@@ -161,8 +161,8 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 
 	switch provider {
 	case "openai":
-		defaultConfig = openai.OpenAiFullConfig().Chat
-		apiConfig = openai.OpenAiFullConfig().Api(api_key)
+		defaultConfig = openai.OpenAiChatDefaultConfig()
+		apiConfig = openai.OpenAiApiConfig(api_key)
 	case "cohere":
 	    defaultConfig = cohere.CohereChatDefaultConfig()
 	    apiConfig = cohere.CohereApiConfig(api_key)
