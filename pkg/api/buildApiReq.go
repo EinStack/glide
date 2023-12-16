@@ -27,7 +27,7 @@ func Router(c *app.RequestContext, route string) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
 	slog.Info("Router Function Called")
 
-	var _ = route
+	var _ = route //need to pass this to dynamically route to the correct endpoint
 
 	requestBody := c.Request.Body()
 
@@ -152,13 +152,14 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, s
 
 func buildApiConfig(provider string, api_key string) (interface{}, providers.ProviderDefinedApiConfig, error) {
 
-	// TODO: Need to dynamically pass the route
+	
 	slog.Info("buildApiConfig function Called")
 
 	var defaultConfig interface{}
 	var apiConfig providers.ProviderApiConfig
 	var finalApiConfig providers.ProviderDefinedApiConfig
 
+	// TODO: Need to dynamically pass the route to support multiple endpoints
 	switch provider {
 	case "openai":
 		defaultConfig = openai.OpenAiChatDefaultConfig()
