@@ -9,7 +9,7 @@ Achieve unmatched uptime for your Generative AI applications. Glide sits between
 | OpenAI | 👍 Available | `/chat/completions` |
 | Cohere | 👍 Available | `/chat/completions` |
 | Anyscale | 👍 Available | `/chat/completions` |
+| Google (gemini-pro) | 👍 Available | `:generateContent` |
 | Azure OpenAI | 🏗️ Coming Soon |  |
 | Anthropic | 🏗️ Coming Soon |  |
-| Google Gemini | 🏗️ Coming Soon |  |
 | Many More! | 🏗️ Coming Soon |  |

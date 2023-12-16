@@ -15,6 +15,7 @@ import (
 	"glide/pkg/api/providers/openai"
 	"glide/pkg/api/providers/cohere"
 	"glide/pkg/api/providers/anyscale"
+	"glide/pkg/api/providers/google"
 	"io"
 	"log/slog"
 	"net/http"
@@ -23,7 +24,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const provider = "anyscale" // placeholder until provider pool is implemented
+const provider = "google" // placeholder for testing until provider pool is implemented
 
 func Router(c *app.RequestContext) (interface{}, error) {
 	// this function takes the client request and returns the response from the provider
@@ -63,9 +64,15 @@ func sendRequest(payload []byte) (interface{}, error) {
 	}
 
 	// Create the full URL
-	url := requestDetails.ApiConfig.BaseURL + requestDetails.ApiConfig.Endpoint
+	var url string
+	switch provider {
+	case "google":
+		url = requestDetails.ApiConfig.BaseURL
+	default:
+		url = requestDetails.ApiConfig.BaseURL + requestDetails.ApiConfig.Endpoint
+	}
 
-	slog.Info("Provider URL: " + url)
+	slog.Info("rovider URL: " + url)
 
 	// Marshal the requestDetails.RequestBody struct into JSON
 	body, err := json.Marshal(requestDetails.RequestBody)
@@ -172,6 +179,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 	// TODO: Send the providerList to the provider pool to get the provider selection. Mode list can be used as well. Mode is the routing strategy.
 	//modeList := payload_data["mode"].([]interface{})
+	// provider is used in sendRequest function to build Google URL. This might need to change or provider should be a const
 
 	for _, endpoint := range endpoints {
 		if endpoint["provider"] == provider {
@@ -222,6 +230,7 @@ func definePayload(payload []byte, endpoint string) (providers.RequestDetails, e
 
 func buildApiConfig(provider string, api_key string, endpoint string) (interface{}, providers.ProviderDefinedApiConfig, error) {
 
+	// TODO: CLEAN THIS UP
 	slog.Info("buildApiConfig Function Called")
 
 	var defaultConfig interface{}
@@ -238,12 +247,22 @@ func buildApiConfig(provider string, api_key string, endpoint string) (interface
 	case "anyscale":
 		defaultConfig = anyscale.AnyscaleChatDefaultConfig()
 		apiConfig = anyscale.AnyscaleApiConfig(api_key)
+	case "google":
+		defaultConfig = google.GoogleChatDefaultConfig()
+		apiConfig = google.GoogleApiConfig(api_key)
 	default:
 		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid provider")
 	}
 
-	finalApiConfig.BaseURL = apiConfig.BaseURL
-	finalApiConfig.Headers = apiConfig.Headers(api_key)
+	switch provider {
+	case "google":
+		finalApiConfig.BaseURL = apiConfig.BaseURL + apiConfig.Chat + "?key=" + api_key
+		finalApiConfig.Headers = apiConfig.Headers(api_key)
+	default:
+		finalApiConfig.BaseURL = apiConfig.BaseURL
+		finalApiConfig.Headers = apiConfig.Headers(api_key)
+
+	}
 
 	switch endpoint {
 	case "chat":
