@@ -161,21 +161,22 @@ func buildApiConfig(provider string, api_key string) (interface{}, providers.Pro
 
 	// TODO: Need to dynamically pass the route to support multiple endpoints
 	switch provider {
-	case "openai":
+    case "openai":
 		defaultConfig = openai.OpenAiChatDefaultConfig()
-		apiConfig = openai.OpenAiApiConfig(api_key)
-	case "cohere":
-	    defaultConfig = cohere.CohereChatDefaultConfig()
-	    apiConfig = cohere.CohereApiConfig(api_key)
-	case "anyscale":
-		defaultConfig = anyscale.AnyscaleChatDefaultConfig()
-		apiConfig = anyscale.AnyscaleApiConfig(api_key)
-	case "google":
-		defaultConfig = google.GoogleChatDefaultConfig()
-		apiConfig = google.GoogleApiConfig(api_key)
-	default:
-		return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid provider")
-	}
+        apiConfig = openai.OpenAiApiConfig(api_key)
+    case "cohere":
+        defaultConfig = cohere.CohereChatDefaultConfig()
+		apiConfig = cohere.CohereApiConfig(api_key)
+    case "anyscale":
+        defaultConfig = anyscale.AnyscaleChatDefaultConfig()
+        apiConfig = anyscale.AnyscaleApiConfig(api_key)
+    case "google":
+        defaultConfig = google.GoogleChatDefaultConfig()
+        apiConfig = google.GoogleApiConfig(api_key)
+    default:
+        return nil, providers.ProviderDefinedApiConfig{}, errors.New("invalid provider")
+    }
+
 
 	switch provider {
 	case "google":
