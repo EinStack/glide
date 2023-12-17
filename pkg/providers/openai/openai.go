@@ -1,10 +1,17 @@
 package openai
 
 import (
-	"fmt"
-	"net/http"
-	"io"
 	"bytes"
+	"fmt"
+	"io"
+	"log/slog"
+	"encoding/json"
+	"context"
+
+	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
 )
 
 type OpenAiProviderConfig struct {
@@ -27,18 +34,18 @@ type OpenAiProviderConfig struct {
 }
 
 type OpenAiClient struct {
-	apiKey   string
-	baseURL  string
-	params OpenAiProviderConfig
-	http     *http.Client
+	apiKey  string
+	baseURL string
+	params  OpenAiProviderConfig
+	http    *client.Client
 }
 
 func NewOpenAiClient(apiKey string) *OpenAiClient {
 	return &OpenAiClient{
-		apiKey:   apiKey,
-		baseURL:  "https://api.openai.com/v1",
-		params:   OpenAiChatDefaultConfig(),
-		http:     http.DefaultClient,
+		apiKey:  apiKey,
+		baseURL: "https://api.openai.com/v1",
+		params:  OpenAiChatDefaultConfig(),
+		http:    HertzClient(),
 	}
 }
 
@@ -52,7 +59,17 @@ var defaultMessage = `[
 	  "content": "Hello!"
 	}
   ]`
-  
+
+func HertzClient() *client.Client {
+
+	c, err := client.NewClient()
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	return c
+
+}
+
 func OpenAiChatDefaultConfig() OpenAiProviderConfig {
 	return OpenAiProviderConfig{
 		Model:            "gpt-3.5-turbo",
@@ -77,7 +94,7 @@ func (c *OpenAiClient) SetBaseURL(baseURL string) {
 	c.baseURL = baseURL
 }
 
-func (c *OpenAiClient) SetHTTPOpenAiClient(httpOpenAiClient *http.Client) {
+func (c *OpenAiClient) SetHTTPOpenAiClient(httpOpenAiClient *client.Client) {
 	c.http = httpOpenAiClient
 }
 
@@ -94,32 +111,19 @@ func (c *OpenAiClient) Get(endpoint string) (string, error) {
 func (c *OpenAiClient) Post(endpoint string, payload []byte) (string, error) {
 	// Implement the logic to make a POST request to the OpenAI API
 
+	req := &protocol.Request{}
+	res := &protocol.Response{}
+
 	// Create the full URL
 	url := c.baseURL + endpoint
 
-	// Create a new request using http
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req.Header.SetMethod(consts.MethodPost)
+	req.Header.SetContentTypeBytes([]byte("application/json"))
+	req.SetRequestURI(url)
+	req.SetBody(payload)
+	err = client.Do(context.Background(), req, res)
 	if err != nil {
-		return "", err
-	}
-
-	// Set the headers
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
-
-	// Send the request using http Client
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	responseBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return string(responseBody), nil
+		return
 }
 
 // Add more methods to interact with OpenAI API
@@ -127,7 +131,7 @@ func (c *OpenAiClient) Post(endpoint string, payload []byte) (string, error) {
 func main() {
 	// Example usage of the OpenAI OpenAiClient
 	OpenAiClient := NewOpenAiClient("YOUR_API_KEY")
-	
+
 	// Call methods on the OpenAiClient to interact with the OpenAI API
 	// For example:
 	payrload := []byte(`{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}`)
@@ -136,6 +140,6 @@ func main() {
 		fmt.Println("Error:", err)
 		return
 	}
-	
+
 	fmt.Println("Response:", response)
 }
