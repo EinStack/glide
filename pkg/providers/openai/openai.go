@@ -78,7 +78,8 @@ func main() {
 	
 	// Call methods on the OpenAiClient to interact with the OpenAI API
 	// For example:
-	response, err := OpenAiClient.Get("/endpoints")
+	payrload := []byte(`{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}`)
+	response, err := OpenAiClient.Post("/chat", payrload)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
