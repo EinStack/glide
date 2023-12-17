@@ -1,11 +1,8 @@
 package openai
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"log/slog"
-	"encoding/json"
 	"context"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
@@ -102,13 +99,7 @@ func (c *OpenAiClient) GetAPIKey() string {
 	return c.apiKey
 }
 
-func (c *OpenAiClient) Get(endpoint string) (string, error) {
-	// Implement the logic to make a GET request to the OpenAI API
-
-	return "", nil
-}
-
-func (c *OpenAiClient) Post(endpoint string, payload []byte) (string, error) {
+func (c *OpenAiClient) Post(endpoint string, payload []byte) ([]byte, error) {
 	// Implement the logic to make a POST request to the OpenAI API
 
 	req := &protocol.Request{}
@@ -121,9 +112,14 @@ func (c *OpenAiClient) Post(endpoint string, payload []byte) (string, error) {
 	req.Header.SetContentTypeBytes([]byte("application/json"))
 	req.SetRequestURI(url)
 	req.SetBody(payload)
-	err = client.Do(context.Background(), req, res)
-	if err != nil {
-		return
+	 // Define the err variable
+	 err := client.Do(context.Background(), req, res)
+	 if err != nil {
+		 slog.Error(err.Error())
+		 // Return nil and the error
+		 return nil, err
+	 }
+	 return res.Body(), nil
 }
 
 // Add more methods to interact with OpenAI API
@@ -134,8 +130,8 @@ func main() {
 
 	// Call methods on the OpenAiClient to interact with the OpenAI API
 	// For example:
-	payrload := []byte(`{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}`)
-	response, err := OpenAiClient.Post("/chat", payrload)
+	payload := []byte(`{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}`)
+	response, err := OpenAiClient.Post("/chat", payload)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
