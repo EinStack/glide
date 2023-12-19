@@ -1,3 +1,4 @@
+CHECKER_BIN=$(PWD)/tmp/bin
 VERSION_PACKAGE := glide/pkg
 COMMIT ?= $(shell git describe --dirty --long --always --abbrev=15)
 VERSION ?= "latest" # TODO: pull/pass a real version
@@ -10,9 +11,15 @@ help:
 	@echo "🛠️ Glide Dev Commands:\n"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+
+install: ## Install static checkers
+	@echo "🚚 Downloading binaries.."
+	@GOBIN=$(CHECKER_BIN) go install mvdan.cc/gofumpt@latest
+
 lint: ## Lint the source code
 	@echo "🧹 Formatting files.."
 	@go fmt ./...
+	@$(CHECKER_BIN)/gofumpt -l -w .
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
 	@echo "🧹 Cleaning go.mod.."

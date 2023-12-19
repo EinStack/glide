@@ -1,6 +1,6 @@
 package openai
 
-type OpenAiProviderConfig struct {
+type ProviderConfig struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
 	Messages         string           `json:"messages" validate:"required"` // does this need to be updated to []string?
 	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
@@ -31,8 +31,8 @@ var defaultMessage = `[
   ]`
 
 // Provide the request body for OpenAI's ChatCompletion API
-func OpenAiChatDefaultConfig() OpenAiProviderConfig {
-	return OpenAiProviderConfig{
+func ChatDefaultConfig() ProviderConfig {
+	return ProviderConfig{
 		Model:            "gpt-3.5-turbo",
 		Messages:         defaultMessage,
 		MaxTokens:        100,

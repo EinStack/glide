@@ -13,14 +13,13 @@ func NewCLI() *cobra.Command {
 		Version: pkg.GetVersion(),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gateway, err := pkg.NewGateway()
-
 			if err != nil {
 				return err
 			}
 
 			return gateway.Run(cmd.Context())
 		},
-		//SilenceUsage: true,
+		// SilenceUsage: true,
 	}
 
 	return cli

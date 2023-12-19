@@ -3,12 +3,13 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"glide/pkg/api"
-	"glide/pkg/api/http"
-	"go.uber.org/multierr"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"glide/pkg/api"
+	"glide/pkg/api/http"
+	"go.uber.org/multierr"
 )
 
 // Gateway represents an instance of running Glide gateway.
@@ -23,8 +24,7 @@ type Gateway struct {
 }
 
 func NewGateway() (*Gateway, error) {
-	serverManager, err := api.NewServerManager(&http.HTTPServerConfig{})
-
+	serverManager, err := api.NewServerManager(&http.ServerConfig{})
 	if err != nil {
 		return nil, err
 	}
