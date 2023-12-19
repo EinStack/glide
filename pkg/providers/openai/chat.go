@@ -1,17 +1,18 @@
-package openaiclient
-
+package openai
 
 import (
 	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
+
 	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 const (
@@ -144,46 +145,40 @@ func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatRes
 	}
 
 	// Build request
-	body := bytes.NewReader(payloadBytes)
 	if c.baseURL == "" {
 		c.baseURL = defaultBaseURL
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.buildURL("/chat/completions", c.Model), body)
-	if err != nil {
-		return nil, err
-	}
 
-	c.setHeaders(req)
+	req := &protocol.Request{}
+	res := &protocol.Response{}
+	req.Header.SetMethod(consts.MethodPost)
+	req.SetRequestURI(c.buildURL("/chat/completions", c.Model))
+	req.SetBody(payloadBytes)
+
 
 	// Send request
-	r, err := c.httpClient.Do(req)
+	err = client.Do(ctx, req, res)
 	if err != nil {
 		return nil, err
 	}
-	defer r.Body.Close()
 
-	if r.StatusCode != http.StatusOK {
-		msg := fmt.Sprintf("API returned unexpected status code: %d", r.StatusCode)
+	defer res.ConnectionClose() // replaced r.Body.Close()
 
-		// No need to check the error here: if it fails, we'll just return the
-		// status code.
-		var errResp errorMessage
-		if err := json.NewDecoder(r.Body).Decode(&errResp); err != nil {
-			return nil, errors.New(msg) // nolint:goerr113
-		}
+	if res.StatusCode() != http.StatusOK {
+		msg := fmt.Sprintf("API returned unexpected status code: %d", res.StatusCode())
 
-		return nil, fmt.Errorf("%s: %s", msg, errResp.Error.Message) // nolint:goerr113
+		return nil, fmt.Errorf("%s: %s", msg, err.Error()) // nolint:goerr113
 	}
 	if payload.StreamingFunc != nil {
-		return parseStreamingChatResponse(ctx, r, payload)
+		return parseStreamingChatResponse(ctx, res, payload)
 	}
 	// Parse response
 	var response ChatResponse
-	return &response, json.NewDecoder(r.Body).Decode(&response)
+	return &response, json.NewDecoder(bytes.NewReader(res.Body())).Decode(&response)
 }
 
-func parseStreamingChatResponse(ctx context.Context, r *http.Response, payload *ChatRequest) (*ChatResponse, error) { //nolint:cyclop,lll
-	scanner := bufio.NewScanner(r.Body)
+func parseStreamingChatResponse(ctx context.Context, r *protocol.Response, payload *ChatRequest) (*ChatResponse, error) {
+	scanner := bufio.NewScanner(bytes.NewReader(r.Body()))
 	responseChan := make(chan StreamedChatResponsePayload)
 	go func() {
 		defer close(responseChan)
