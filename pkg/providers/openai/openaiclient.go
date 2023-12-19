@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"gopkg.in/yaml.v2"
 	"os"
+	"context"
 
 	//"Glide/pkg/providers"
 
@@ -76,6 +77,26 @@ type Client struct {
 // Option is an option for the OpenAI client.
 type Option func(*Client) error
 
+func (c *Client) Run() (*ChatResponse, error) {
+	
+	c = &Client{}
+
+	c, err := c.Init("pool1", "gpt-3.5-turbo", "openai")
+	if err != nil {
+		slog.Error("Error:" + err.Error())
+		return nil, err
+	}
+
+	// Create a new chat request
+	chatRequest := c.CreateChatRequest([]byte("hello world"))
+
+	// Send the chat request
+
+	resp, err := c.CreateChatResponse(context.Background(), chatRequest)
+
+	return resp, err
+}
+
 
 func (c *Client) Init(poolName string, modelName string, providerName string) (*Client, error) {
 	// Returns a []*Client of OpenAI
@@ -134,7 +155,6 @@ func (c *Client) Init(poolName string, modelName string, providerName string) (*
 	return client, nil
 	
 }
-
 
 func HttpClient() *client.Client {
 
