@@ -9,6 +9,7 @@ import (
 
 	"glide/pkg/api"
 	"glide/pkg/api/http"
+
 	"go.uber.org/multierr"
 )
 

@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"glide/pkg"
+
+	"github.com/spf13/cobra"
 )
 
 // NewCLI Create a Glide CLI

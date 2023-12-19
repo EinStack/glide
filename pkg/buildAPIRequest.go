@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"glide/pkg/providers"
 	"glide/pkg/providers/openai"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type ProviderConfigs = pkg.ProviderConfigs
