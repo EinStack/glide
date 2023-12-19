@@ -30,10 +30,11 @@ jobs:
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
       - name: Govulncheck
         run: govulncheck -test ./...
 
-      - name: Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: ./...
+      - name: Govulncheck
+        run: gosec ./...
