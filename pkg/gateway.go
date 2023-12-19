@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"glide/pkg/api"
 	"glide/pkg/api/http"
+	"glide/pkg/telemetry"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,6 +25,17 @@ type Gateway struct {
 }
 
 func NewGateway() (*Gateway, error) {
+	// TODO: gonna be read from a config file
+	logConfig := telemetry.NewLogConfig()
+	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	logConfig.Encoding = "console"
+
+	logger, err := telemetry.NewLogger(logConfig)
+
+	if err != nil {
+		return nil, err
+	}
+
 	serverManager, err := api.NewServerManager(&http.HTTPServerConfig{})
 
 	if err != nil {
@@ -30,6 +43,7 @@ func NewGateway() (*Gateway, error) {
 	}
 
 	return &Gateway{
+		logger:        logger,
 		serverManager: serverManager,
 		signalC:       make(chan os.Signal, 3), // equal to number of signal types we expect to receive
 		shutdownC:     make(chan struct{}),
