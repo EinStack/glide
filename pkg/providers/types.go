@@ -17,3 +17,11 @@ type Provider struct {
 	TimeoutMs      int                    `yaml:"timeout_ms,omitempty"`
 	DefaultParams  map[string]interface{} `yaml:"default_params,omitempty"`
 }
+
+type RequestBody struct {
+	Message        []struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"message"`
+	MessageHistory []string `json:"messageHistory"`
+}
