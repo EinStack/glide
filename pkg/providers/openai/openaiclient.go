@@ -1,15 +1,12 @@
 package openai
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"log/slog"
 	"gopkg.in/yaml.v2"
 	"os"
-	"json"
-	"reflect"
 
 	//"Glide/pkg/providers"
 
@@ -74,7 +71,6 @@ type Client struct {
 
 	// required when APIType is APITypeAzure or APITypeAzureAD
 	apiVersion      string
-	embeddingsModel string
 }
 
 // Option is an option for the OpenAI client.
@@ -108,7 +104,8 @@ func (c *Client) Init(poolName string, modelName string, providerName string) (*
 
 	// Check if the pool was found
 	if selectedPool == nil {
-		slog.Error("pool '%s' not found", poolName)
+		slog.Error("pool not found")
+		return nil, fmt.Errorf("pool not found: %s", poolName)
 	}
 
 	// Find the OpenAI provider in the selected pool with the specified model
@@ -123,6 +120,7 @@ func (c *Client) Init(poolName string, modelName string, providerName string) (*
     // Check if the provider was found
     if selectedProvider == nil {
         slog.Error("provider for model '%s' not found in pool '%s'", modelName, poolName)
+		return nil, fmt.Errorf("provider for model '%s' not found in pool '%s'", modelName, poolName)
     }
 
 	// Create clients for each OpenAI provider
@@ -147,88 +145,6 @@ func HttpClient() *client.Client {
 	return c
 
 }
-
-func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
-
-
-	err := json.Unmarshal(message, &requestBody)
-	if err != nil {
-		slog.Error("Error:", err)
-		return nil
-	}
-
-	var messages []*ChatMessage
-	for _, msg := range requestBody.Message {
-		chatMsg := &ChatMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		}
-		if msg.Role == "user" {
-			chatMsg.Content += " " + strings.Join(requestBody.MessageHistory, " ")
-		}
-		messages = append(messages, chatMsg)
-	}
-
-	// iterate through self.Provider.DefaultParams and add them to the request otherwise leave the default value
-	
-	chatRequest := &ChatRequest{
-		Model:            c.Provider.Model,
-		Messages:         messages,
-		Temperature:      0.8,
-		TopP:             1,
-		MaxTokens:        100,
-		N:                1,
-		StopWords:        []string{},
-		Stream:           false,
-		FrequencyPenalty: 0,
-		PresencePenalty:  0,
-		LogitBias:        nil,
-		User:             nil,
-		Seed:             nil,
-		Tools:            []string{},
-		ToolChoice:       nil,
-		ResponseFormat:   nil,
-	}
-
-	// Use reflection to dynamically assign default parameter values
-	defaultParams := c.Provider.DefaultParams
-	v := reflect.ValueOf(chatRequest).Elem()
-	t := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		field := t.Field(i)
-		fieldName := field.Name
-		defaultValue, ok := defaultParams[fieldName]
-		if ok && defaultValue != nil {
-			fieldValue := v.FieldByName(fieldName)
-			if fieldValue.IsValid() && fieldValue.CanSet() {
-				fieldValue.Set(reflect.ValueOf(defaultValue))
-			}
-		}
-	}
-
-	return chatRequest
-}
-
-// CreateChatResponse creates chat Response.
-func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
-	if r.Model == "" {
-		if c.Provider.Model == "" {
-			r.Model = defaultChatModel
-		} else {
-			r.Model = c.Provider.Model
-		}
-	}
-	
-	resp, err := c.createChat(ctx, r)
-	if err != nil {
-		return nil, err
-	}
-	if len(resp.Choices) == 0 {
-		return nil, ErrEmptyResponse
-	}
-	return resp, nil
-}
-
 func IsAzure(apiType APIType) bool {
 	return apiType == APITypeAzure || apiType == APITypeAzureAD
 }
@@ -264,15 +180,3 @@ func (c *Client) buildAzureURL(suffix string, model string) string {
 		baseURL, model, suffix, c.apiVersion,
 	)
 }
-
-func main() {
-
-	c := &Client{}
-
-	c, err := c.Init("pool1", "gpt-3.5-turbo", "openai")
-	if err != nil {
-		// Handle the error
-	}
-
-
-}	

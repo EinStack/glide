@@ -6,9 +6,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
+	"log/slog"
+	"reflect"
 	"strings"
+	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -68,6 +69,68 @@ type ChatUsage struct {
 	TotalTokens      int `json:"total_tokens"`
 }
 
+func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
+
+
+	err := json.Unmarshal(message, &requestBody)
+	if err != nil {
+		slog.Error("Error:", err)
+		return nil
+	}
+
+	var messages []*ChatMessage
+	for _, msg := range requestBody.Message {
+		chatMsg := &ChatMessage{
+			Role:    msg.Role,
+			Content: msg.Content,
+		}
+		if msg.Role == "user" {
+			chatMsg.Content += " " + strings.Join(requestBody.MessageHistory, " ")
+		}
+		messages = append(messages, chatMsg)
+	}
+
+	// iterate through self.Provider.DefaultParams and add them to the request otherwise leave the default value
+	
+	chatRequest := &ChatRequest{
+		Model:            c.Provider.Model,
+		Messages:         messages,
+		Temperature:      0.8,
+		TopP:             1,
+		MaxTokens:        100,
+		N:                1,
+		StopWords:        []string{},
+		Stream:           false,
+		FrequencyPenalty: 0,
+		PresencePenalty:  0,
+		LogitBias:        nil,
+		User:             nil,
+		Seed:             nil,
+		Tools:            []string{},
+		ToolChoice:       nil,
+		ResponseFormat:   nil,
+	}
+
+	// Use reflection to dynamically assign default parameter values
+	defaultParams := c.Provider.DefaultParams
+	v := reflect.ValueOf(chatRequest).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		field := t.Field(i)
+		fieldName := field.Name
+		defaultValue, ok := defaultParams[fieldName]
+		if ok && defaultValue != nil {
+			fieldValue := v.FieldByName(fieldName)
+			if fieldValue.IsValid() && fieldValue.CanSet() {
+				fieldValue.Set(reflect.ValueOf(defaultValue))
+			}
+		}
+	}
+
+	return chatRequest
+}
+
+
 // ChatResponse is a response to a chat request.
 type ChatResponse struct {
 	ID      string        `json:"id,omitempty"`
@@ -98,6 +161,27 @@ type StreamedChatResponsePayload struct {
 	} `json:"choices,omitempty"`
 }
 
+// CreateChatResponse creates chat Response.
+func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
+	if r.Model == "" {
+		if c.Provider.Model == "" {
+			r.Model = defaultChatModel
+		} else {
+			r.Model = c.Provider.Model
+		}
+	}
+	
+	resp, err := c.createChat(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	if len(resp.Choices) == 0 {
+		return nil, ErrEmptyResponse
+	}
+	return resp, nil
+}
+
+
 func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
 	if payload.StreamingFunc != nil {
 		payload.Stream = true
@@ -116,7 +200,7 @@ func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatRes
 	req := &protocol.Request{}
 	res := &protocol.Response{}
 	req.Header.SetMethod(consts.MethodPost)
-	req.SetRequestURI(c.buildURL("/chat/completions", c.Model))
+	req.SetRequestURI(c.buildURL("/chat/completions", c.Provider.Model))
 	req.SetBody(payloadBytes)
 
 	c.setHeaders(req) // sets additional headers
@@ -153,7 +237,7 @@ func parseStreamingChatResponse(ctx context.Context, r *protocol.Response, paylo
 				continue
 			}
 			if !strings.HasPrefix(line, "data:") {
-				log.Fatalf("unexpected line: %v", line)
+				slog.Warn("unexpected line:" + line)
 			}
 			data := strings.TrimPrefix(line, "data: ")
 			if data == "[DONE]" {
@@ -162,12 +246,12 @@ func parseStreamingChatResponse(ctx context.Context, r *protocol.Response, paylo
 			var streamPayload StreamedChatResponsePayload
 			err := json.NewDecoder(bytes.NewReader([]byte(data))).Decode(&streamPayload)
 			if err != nil {
-				log.Fatalf("failed to decode stream payload: %v", err)
+				slog.Error("failed to decode stream payload: %v", err)
 			}
 			responseChan <- streamPayload
 		}
 		if err := scanner.Err(); err != nil {
-			log.Println("issue scanning response:", err)
+			slog.Error("issue scanning response:", err)
 		}
 	}()
 
