@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"strings"
 	"log/slog"
+	"gopkg.in/yaml.v2"
+	"os"
+
+	"Glide/pkg/providers"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -30,7 +34,7 @@ const (
 
 // Client is a client for the OpenAI API.
 type Client struct {
-	token        string
+	apiKey        string
 	Model        string
 	baseURL      string
 	organization string
@@ -45,25 +49,40 @@ type Client struct {
 // Option is an option for the OpenAI client.
 type Option func(*Client) error
 
-// Doer performs a HTTP request.
-type Doer interface {
-	Do(req protocol.Request) (protocol.Response, error)
+
+func Init(c *Client) (*client.Client, error) {
+	// initializes the client
+
+	// Read the YAML file
+	data, err := os.ReadFile("path/to/file.yaml")
+	if err != nil {
+		slog.Error("Failed to read file: %v", err)
+	}
+
+	// Unmarshal the YAML data into your struct
+	var config GatewayConfig
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		slog.Error("Failed to unmarshal YAML: %v", err)
+	}
+
 }
 
+
 // New returns a new OpenAI client.
-func New(token string, model string, baseURL string, organization string,
-	apiType APIType, apiVersion string, httpClient Doer, embeddingsModel string,
+func New(apiKey string, model string, baseURL string, organization string,
+	apiType APIType, apiVersion string, httpClient *client.Client, embeddingsModel string,
 	opts ...Option,
 ) (*Client, error) {
 	c := &Client{
-		token:           token,
+		apiKey:           apiKey,
 		Model:           model,
 		embeddingsModel: embeddingsModel,
 		baseURL:         baseURL,
 		organization:    organization,
 		apiType:         apiType,
 		apiVersion:      apiVersion,
-		httpClient:      HertzClient(),
+		httpClient:      HttpClient(),
 	}
 
 	for _, opt := range opts {
@@ -75,7 +94,7 @@ func New(token string, model string, baseURL string, organization string,
 	return c, nil
 }
 
-func HertzClient() *client.Client {
+func HttpClient() *client.Client {
 
 	c, err := client.NewClient()
 	if err != nil {
@@ -118,9 +137,9 @@ func IsAzure(apiType APIType) bool {
 func (c *Client) setHeaders(req *protocol.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	if c.apiType == APITypeOpenAI || c.apiType == APITypeAzureAD {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+		req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	} else {
-		req.Header.Set("api-key", c.token)
+		req.Header.Set("api-key", c.apiKey)
 	}
 	if c.organization != "" {
 		req.Header.Set("OpenAI-Organization", c.organization)

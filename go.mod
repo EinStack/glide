@@ -6,6 +6,7 @@ require (
 	github.com/cloudwego/hertz v0.7.3
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/multierr v1.11.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

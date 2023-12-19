@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
@@ -94,40 +93,9 @@ type StreamedChatResponsePayload struct {
 		Delta struct {
 			Role         string        `json:"role,omitempty"`
 			Content      string        `json:"content,omitempty"`
-			FunctionCall *FunctionCall `json:"function_call,omitempty"`
 		} `json:"delta,omitempty"`
 		FinishReason string `json:"finish_reason,omitempty"`
 	} `json:"choices,omitempty"`
-}
-
-// FunctionDefinition is a definition of a function that can be called by the model.
-type FunctionDefinition struct {
-	// Name is the name of the function.
-	Name string `json:"name"`
-	// Description is a description of the function.
-	Description string `json:"description"`
-	// Parameters is a list of parameters for the function.
-	Parameters any `json:"parameters"`
-}
-
-// FunctionCallBehavior is the behavior to use when calling functions.
-type FunctionCallBehavior string
-
-const (
-	// FunctionCallBehaviorUnspecified is the empty string.
-	FunctionCallBehaviorUnspecified FunctionCallBehavior = ""
-	// FunctionCallBehaviorNone will not call any functions.
-	FunctionCallBehaviorNone FunctionCallBehavior = "none"
-	// FunctionCallBehaviorAuto will call functions automatically.
-	FunctionCallBehaviorAuto FunctionCallBehavior = "auto"
-)
-
-// FunctionCall is a call to a function.
-type FunctionCall struct {
-	// Name is the name of the function to call.
-	Name string `json:"name"`
-	// Arguments is the set of arguments to pass to the function.
-	Arguments string `json:"arguments"`
 }
 
 func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
@@ -151,8 +119,10 @@ func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatRes
 	req.SetRequestURI(c.buildURL("/chat/completions", c.Model))
 	req.SetBody(payloadBytes)
 
+	c.setHeaders(req) // sets additional headers
+
 	// Send request
-	err = client.Do(ctx, req, res)
+	err = c.httpClient.Do(ctx, req, res) //*client.Client
 	if err != nil {
 		return nil, err
 	}
