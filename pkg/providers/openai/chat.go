@@ -21,16 +21,16 @@ const (
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
-	Model            string         `json:"model" validate:"required,lowercase"`
-	Messages         []*ChatMessage `json:"messages" validate:"required"`
-	Temperature      float64        `json:"temperature,omitempty"`
-	TopP             float64        `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
-	MaxTokens        int            `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
-	N                int            `json:"n,omitempty" validate:"omitempty,gte=1"`
-	StopWords        []string       `json:"stop,omitempty"`
-	Stream           bool           `json:"stream,omitempty" validate:"omitempty, boolean"`
-	FrequencyPenalty int        `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int        `json:"presence_penalty,omitempty"`
+	Model            string           `json:"model" validate:"required,lowercase"`
+	Messages         []*ChatMessage   `json:"messages" validate:"required"`
+	Temperature      float64          `json:"temperature,omitempty"`
+	TopP             float64          `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
+	MaxTokens        int              `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
+	N                int              `json:"n,omitempty" validate:"omitempty,gte=1"`
+	StopWords        []string         `json:"stop,omitempty"`
+	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
+	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int              `json:"presence_penalty,omitempty"`
 	LogitBias        *map[int]float64 `json:"logit_bias,omitempty" validate:"omitempty"`
 	User             interface{}      `json:"user,omitempty"`
 	Seed             interface{}      `json:"seed,omitempty" validate:"omitempty,gte=0"`
@@ -152,7 +152,6 @@ func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatRes
 	req.Header.SetMethod(consts.MethodPost)
 	req.SetRequestURI(c.buildURL("/chat/completions", c.Model))
 	req.SetBody(payloadBytes)
-
 
 	// Send request
 	err = client.Do(ctx, req, res)
