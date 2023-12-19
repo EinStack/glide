@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 
-	"Glide/pkg/providers"
+	//"Glide/pkg/providers"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -31,6 +31,25 @@ const (
 	APITypeAzure   APIType = "AZURE"
 	APITypeAzureAD APIType = "AZURE_AD"
 )
+
+type GatewayConfig struct {
+	Pools []Pool `yaml:"pools"`
+}
+
+type Pool struct {
+	Name       string      `yaml:"name"`
+	Balancing  string      `yaml:"balancing"`
+	Providers  []Provider  `yaml:"providers"`
+}
+
+type Provider struct {
+	Name           string                 `yaml:"name"`
+	Provider       string                 `yaml:"provider"`
+	Model          string                 `yaml:"model"`
+	APIKey         string                 `yaml:"api_key"`
+	TimeoutMs      int                    `yaml:"timeout_ms,omitempty"`
+	DefaultParams  map[string]interface{} `yaml:"default_params,omitempty"`
+}
 
 // Client is a client for the OpenAI API.
 type Client struct {

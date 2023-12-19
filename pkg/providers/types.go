@@ -1,4 +1,4 @@
-package providers
+package provider
 type GatewayConfig struct {
 	Pools []Pool `yaml:"pools"`
 }
