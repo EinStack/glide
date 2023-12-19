@@ -4,3 +4,4 @@ dist
 bin
 glide
 tmp
+coverage.txt

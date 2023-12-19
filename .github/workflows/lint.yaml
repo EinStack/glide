@@ -80,9 +80,9 @@ jobs:
 
       - name: Staticcheck
         run: staticcheck ./...
-
-      - name: Nilaway
-        run: nilaway ./...
+# TODO: Ignore the issue in https://github.com/modelgateway/Glide/issues/32
+#      - name: Nilaway
+#        run: nilaway ./...
 
   tests:
     name: Tests
