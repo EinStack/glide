@@ -11,12 +11,12 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 lint: ## Lint the source code
+	@echo "🧹 Formatting files.."
+	@go fmt ./...
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
 	@echo "🧹 Cleaning go.mod.."
 	@go mod tidy
-	@echo "🧹 Formatting files.."
-	@go fmt ./...
 	@echo "🧹 GoCI Lint.."
 	@golangci-lint run ./...
 
@@ -25,3 +25,6 @@ run: ## Run Glide
 
 build: ## Build Glide
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide
+
+tests: ## Run tests
+	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...

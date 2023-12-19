@@ -1,0 +1,19 @@
+output:
+  # Make output more digestible with quickfix in vim/emacs/etc.
+  sort-results: true
+  print-issued-lines: false
+
+linters:
+  enable:
+    - gofumpt
+    - nolintlint
+    - revive
+
+linters-settings:
+  govet:
+    # These govet checks are disabled by default, but they're useful.
+    enable:
+      - niliness
+      - reflectvaluecompare
+      - sortslice
+      - unusedwrite
