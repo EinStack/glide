@@ -16,9 +16,9 @@ import (
 
 type OpenAiProviderConfig struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
-	Messages         string           `json:"messages" validate:"required"` // does this need to be updated to []string?
+	Messages         []*ChatMessage            `json:"messages" validate:"required"` // does this need to be updated to []string?
 	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
-	Temperature      int              `json:"temperature" validate:"omitempty,gte=0,lte=2"`
+	Temperature      float64              `json:"temperature" validate:"omitempty,gte=0,lte=2"`
 	TopP             int              `json:"top_p" validate:"omitempty,gte=0,lte=1"`
 	N                int              `json:"n" validate:"omitempty,gte=1"`
 	Stream           bool             `json:"stream" validate:"omitempty, boolean"`
@@ -60,15 +60,7 @@ var defaultMessage = `[
 	}
   ]`
 
-func HertzClient() *client.Client {
 
-	c, err := client.NewClient()
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	return c
-
-}
 
 func OpenAiChatDefaultConfig() OpenAiProviderConfig {
 	return OpenAiProviderConfig{

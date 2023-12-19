@@ -21,24 +21,22 @@ const (
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
-	Model            string         `json:"model"`
-	Messages         []*ChatMessage `json:"messages"`
+	Model            string         `json:"model" validate:"required,lowercase"`
+	Messages         []*ChatMessage `json:"messages" validate:"required"`
 	Temperature      float64        `json:"temperature,omitempty"`
-	TopP             float64        `json:"top_p,omitempty"`
-	MaxTokens        int            `json:"max_tokens,omitempty"`
-	N                int            `json:"n,omitempty"`
+	TopP             float64        `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
+	MaxTokens        int            `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
+	N                int            `json:"n,omitempty" validate:"omitempty,gte=1"`
 	StopWords        []string       `json:"stop,omitempty"`
-	Stream           bool           `json:"stream,omitempty"`
-	FrequencyPenalty float64        `json:"frequency_penalty,omitempty"`
-	PresencePenalty  float64        `json:"presence_penalty,omitempty"`
-
-	// Function definitions to include in the request.
-	Functions []FunctionDefinition `json:"functions,omitempty"`
-	// FunctionCallBehavior is the behavior to use when calling functions.
-	//
-	// If a specific function should be invoked, use the format:
-	// `{"name": "my_function"}`
-	FunctionCallBehavior FunctionCallBehavior `json:"function_call,omitempty"`
+	Stream           bool           `json:"stream,omitempty" validate:"omitempty, boolean"`
+	FrequencyPenalty int        `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int        `json:"presence_penalty,omitempty"`
+	LogitBias        *map[int]float64 `json:"logit_bias,omitempty" validate:"omitempty"`
+	User             interface{}      `json:"user,omitempty"`
+	Seed             interface{}      `json:"seed,omitempty" validate:"omitempty,gte=0"`
+	Tools            []string         `json:"tools,omitempty"`
+	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
+	ResponseFormat   interface{}      `json:"response_format,omitempty"`
 
 	// StreamingFunc is a function to be called for each chunk of a streaming response.
 	// Return an error to stop streaming early.
