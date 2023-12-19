@@ -53,8 +53,6 @@ type ChatMessage struct {
 	// with a maximum length of 64 characters.
 	Name string `json:"name,omitempty"`
 
-	// FunctionCall represents a function call to be made in the message.
-	FunctionCall *FunctionCall `json:"function_call,omitempty"`
 }
 
 // ChatChoice is a choice in a chat response.
@@ -202,6 +200,7 @@ func parseStreamingChatResponse(ctx context.Context, r *protocol.Response, paylo
 			log.Println("issue scanning response:", err)
 		}
 	}()
+
 	// Parse response
 	response := ChatResponse{
 		Choices: []*ChatChoice{
@@ -216,14 +215,6 @@ func parseStreamingChatResponse(ctx context.Context, r *protocol.Response, paylo
 		chunk := []byte(streamResponse.Choices[0].Delta.Content)
 		response.Choices[0].Message.Content += streamResponse.Choices[0].Delta.Content
 		response.Choices[0].FinishReason = streamResponse.Choices[0].FinishReason
-		if streamResponse.Choices[0].Delta.FunctionCall != nil {
-			if response.Choices[0].Message.FunctionCall == nil {
-				response.Choices[0].Message.FunctionCall = streamResponse.Choices[0].Delta.FunctionCall
-			} else {
-				response.Choices[0].Message.FunctionCall.Arguments += streamResponse.Choices[0].Delta.FunctionCall.Arguments
-			}
-			chunk, _ = json.Marshal(response.Choices[0].Message.FunctionCall) // nolint:errchkjson
-		}
 
 		if payload.StreamingFunc != nil {
 			err := payload.StreamingFunc(ctx, chunk)
