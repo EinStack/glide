@@ -69,7 +69,6 @@ type ChatUsage struct {
 }
 
 func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
-
 	err := json.Unmarshal(message, &requestBody)
 	if err != nil {
 		slog.Error("Error:", err)
@@ -181,7 +180,6 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 }
 
 func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
-
 	slog.Info("running createChat")
 
 	if payload.StreamingFunc != nil {

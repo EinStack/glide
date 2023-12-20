@@ -1,4 +1,4 @@
-//TODO: Explore resource pooling
+// TODO: Explore resource pooling
 // TODO: Optimize Type use
 // TODO: Explore Hertz TLS & resource pooling
 
@@ -8,9 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"log/slog"
 	"os"
+
+	"gopkg.in/yaml.v2"
 
 	"glide/pkg/providers"
 
@@ -55,7 +56,6 @@ type Client struct {
 }
 
 func (c *Client) Run(poolName string, modelName string, payload []byte) (*ChatResponse, error) {
-
 	c, err := c.NewClient(poolName, modelName)
 	if err != nil {
 		slog.Error("Error:" + err.Error())
@@ -84,11 +84,10 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 	// modelName is determined by the model pool
 	// poolName is determined by the route the request came from
 
-	var providerName = "openai"
+	providerName := "openai"
 
 	// Read the YAML file
 	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
-
 	if err != nil {
 		slog.Error("Failed to read file: %v", err)
 		return nil, err
@@ -144,15 +143,12 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 	}
 
 	return client, nil
-
 }
 
 func HttpClient() *client.Client {
-
 	c, err := client.NewClient()
 	if err != nil {
 		slog.Error(err.Error())
 	}
 	return c
-
 }
