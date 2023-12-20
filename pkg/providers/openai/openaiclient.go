@@ -1,3 +1,7 @@
+//TODO: Explore resource pooling
+// TODO: Optimize Type use
+// TODO: Explore Hertz TLS & resource pooling
+
 package openai
 
 import (
