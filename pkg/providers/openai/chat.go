@@ -10,9 +10,6 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-
-	"github.com/cloudwego/hertz/pkg/protocol"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 const (
@@ -169,7 +166,7 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 		}
 	}
 
-	resp, err := c.createChatHttp(ctx, r)
+	resp, err := c.createChatHttp(r)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +175,7 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 	}
 	return resp, nil
 }
-
+/* will remove later
 func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
 	slog.Info("running createChat")
 
@@ -201,7 +198,7 @@ func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*Ch
 	req.Header.SetMethod(consts.MethodPost)
 	req.SetRequestURI(c.buildURL("/chat/completions", c.Provider.Model))
 	req.SetBody(payloadBytes)
-	req.Header.Set("Authorization", "Bearer "+c.Provider.ApiKey)
+	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	slog.Info("making request")
@@ -230,8 +227,9 @@ func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*Ch
 	var response ChatResponse
 	return &response, json.NewDecoder(bytes.NewReader(res.Body())).Decode(&response)
 }
+*/
 
-func (c *Client) createChatHttp(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
+func (c *Client) createChatHttp(payload *ChatRequest) (*ChatResponse, error) {
 	slog.Info("running createChatHttp")
 
 	if payload.StreamingFunc != nil {
@@ -255,7 +253,7 @@ func (c *Client) createChatHttp(ctx context.Context, payload *ChatRequest) (*Cha
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+c.Provider.ApiKey)
+	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	httpClient := &http.Client{}

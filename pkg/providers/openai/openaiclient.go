@@ -139,13 +139,13 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 		Provider:     *selectedProvider,
 		organization: defaultOrganization,
 		apiType:      APITypeOpenAI,
-		httpClient:   HttpClient(),
+		httpClient:   HTTPClient(),
 	}
 
 	return client, nil
 }
 
-func HttpClient() *client.Client {
+func HTTPClient() *client.Client {
 	c, err := client.NewClient()
 	if err != nil {
 		slog.Error(err.Error())

@@ -16,7 +16,7 @@ type Pool struct {
 type Provider struct {
 	Provider      string                 `yaml:"provider"`
 	Model         string                 `yaml:"model"`
-	ApiKey        string                 `yaml:"api_key"`
+	APIKey        string                 `yaml:"api_key"`
 	TimeoutMs     int                    `yaml:"timeout_ms,omitempty"`
 	DefaultParams map[string]interface{} `yaml:"default_params,omitempty"`
 }
