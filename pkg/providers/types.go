@@ -1,19 +1,22 @@
-package provider
+package providers
+
 type GatewayConfig struct {
+	Gateway PoolsConfig `yaml:"gateway"`
+}
+type PoolsConfig struct {
 	Pools []Pool `yaml:"pools"`
 }
 
 type Pool struct {
-	Name       string      `yaml:"name"`
+	Name       string      `yaml:"pool"`
 	Balancing  string      `yaml:"balancing"`
 	Providers  []Provider  `yaml:"providers"`
 }
 
 type Provider struct {
-	Name           string                 `yaml:"name"`
 	Provider       string                 `yaml:"provider"`
 	Model          string                 `yaml:"model"`
-	APIKey         string                 `yaml:"api_key"`
+	ApiKey         string                 `yaml:"api_key"`
 	TimeoutMs      int                    `yaml:"timeout_ms,omitempty"`
 	DefaultParams  map[string]interface{} `yaml:"default_params,omitempty"`
 }

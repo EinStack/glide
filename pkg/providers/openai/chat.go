@@ -1,7 +1,6 @@
 package openai
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -10,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 	"net/http"
+	"io"
 
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -127,6 +127,8 @@ func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
 		}
 	}
 
+	fmt.Println(chatRequest)
+
 	return chatRequest
 }
 
@@ -171,7 +173,7 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 		}
 	}
 	
-	resp, err := c.createChat(ctx, r)
+	resp, err := c.createChatHttp(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +185,9 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 
 
 func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
+	
+	slog.Info("running createChat")
+	
 	if payload.StreamingFunc != nil {
 		payload.Stream = true
 	}
@@ -202,80 +207,110 @@ func (c *Client) createChat(ctx context.Context, payload *ChatRequest) (*ChatRes
 	req.Header.SetMethod(consts.MethodPost)
 	req.SetRequestURI(c.buildURL("/chat/completions", c.Provider.Model))
 	req.SetBody(payloadBytes)
+	req.Header.Set("Authorization", "Bearer "+c.Provider.ApiKey)
+	req.Header.Set("Content-Type", "application/json")
 
-	c.setHeaders(req) // sets additional headers
+	slog.Info("making request")
 
 	// Send request
 	err = c.httpClient.Do(ctx, req, res) //*client.Client
 	if err != nil {
+		slog.Error(err.Error())
+		fmt.Println(res.Body())
 		return nil, err
 	}
 
+	slog.Info("request returned")
+
 	defer res.ConnectionClose() // replaced r.Body.Close()
+
+	
+
+	slog.Info(fmt.Sprintf("%d", res.StatusCode()))
 
 	if res.StatusCode() != http.StatusOK {
 		msg := fmt.Sprintf("API returned unexpected status code: %d", res.StatusCode())
 
 		return nil, fmt.Errorf("%s: %s", msg, err.Error()) // nolint:goerr113
 	}
-	if payload.StreamingFunc != nil {
-		return parseStreamingChatResponse(ctx, res, payload)
-	}
+	
 	// Parse response
 	var response ChatResponse
 	return &response, json.NewDecoder(bytes.NewReader(res.Body())).Decode(&response)
 }
 
-func parseStreamingChatResponse(ctx context.Context, r *protocol.Response, payload *ChatRequest) (*ChatResponse, error) {
-	scanner := bufio.NewScanner(bytes.NewReader(r.Body()))
-	responseChan := make(chan StreamedChatResponsePayload)
-	go func() {
-		defer close(responseChan)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if line == "" {
-				continue
-			}
-			if !strings.HasPrefix(line, "data:") {
-				slog.Warn("unexpected line:" + line)
-			}
-			data := strings.TrimPrefix(line, "data: ")
-			if data == "[DONE]" {
-				return
-			}
-			var streamPayload StreamedChatResponsePayload
-			err := json.NewDecoder(bytes.NewReader([]byte(data))).Decode(&streamPayload)
-			if err != nil {
-				slog.Error("failed to decode stream payload: %v", err)
-			}
-			responseChan <- streamPayload
-		}
-		if err := scanner.Err(); err != nil {
-			slog.Error("issue scanning response:", err)
-		}
-	}()
+func (c *Client) createChatHttp(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
+	slog.Info("running createChatHttp")
+
+	if payload.StreamingFunc != nil {
+		payload.Stream = true
+	}
+	// Build request payload
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build request
+	if c.baseURL == "" {
+		c.baseURL = defaultBaseURL
+	}
+
+	reqBody := bytes.NewBuffer(payloadBytes)
+	req, err := http.NewRequest("POST", c.buildURL("/chat/completions", c.Provider.Model), reqBody)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+c.Provider.ApiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	httpClient := &http.Client{}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	slog.Info(fmt.Sprintf("%d", resp.StatusCode))
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		slog.Error(err.Error())
+}
+	bodyString := string(bodyBytes)
+	slog.Info(bodyString)
 
 	// Parse response
-	response := ChatResponse{
-		Choices: []*ChatChoice{
-			{},
-		},
+	var response ChatResponse
+	return &response, json.NewDecoder(resp.Body).Decode(&response)
+}
+
+func IsAzure(apiType APIType) bool {
+	return apiType == APITypeAzure || apiType == APITypeAzureAD
+}
+
+
+func (c *Client) buildURL(suffix string, model string) string {
+	if IsAzure(c.apiType) {
+		return c.buildAzureURL(suffix, model)
 	}
 
-	for streamResponse := range responseChan {
-		if len(streamResponse.Choices) == 0 {
-			continue
-		}
-		chunk := []byte(streamResponse.Choices[0].Delta.Content)
-		response.Choices[0].Message.Content += streamResponse.Choices[0].Delta.Content
-		response.Choices[0].FinishReason = streamResponse.Choices[0].FinishReason
+	slog.Info("request url: " + fmt.Sprintf("%s%s", c.baseURL, suffix))
 
-		if payload.StreamingFunc != nil {
-			err := payload.StreamingFunc(ctx, chunk)
-			if err != nil {
-				return nil, fmt.Errorf("streaming func returned an error: %w", err)
-			}
-		}
-	}
-	return &response, nil
+	// open ai implement:
+	return fmt.Sprintf("%s%s", c.baseURL, suffix)
+}
+
+func (c *Client) buildAzureURL(suffix string, model string) string {
+	baseURL := c.baseURL
+	baseURL = strings.TrimRight(baseURL, "/")
+
+	// azure example url:
+	// /openai/deployments/{model}/chat/completions?api-version={api_version}
+	return fmt.Sprintf("%s/openai/deployments/%s%s?api-version=%s",
+		baseURL, model, suffix, c.apiVersion,
+	)
 }
