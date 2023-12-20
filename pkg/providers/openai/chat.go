@@ -166,7 +166,9 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 		}
 	}
 
-	resp, err := c.createChatHttp(r)
+	_ = ctx // keep this for future use
+
+	resp, err := c.createChatHTTP(r)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +232,7 @@ func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*Ch
 }
 */
 
-func (c *Client) createChatHttp(payload *ChatRequest) (*ChatResponse, error) {
+func (c *Client) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
 	slog.Info("running createChatHttp")
 
 	if payload.StreamingFunc != nil {

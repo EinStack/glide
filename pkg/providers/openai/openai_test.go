@@ -9,6 +9,8 @@ import (
 func TestOpenAIClient(t *testing.T) {
 	// Initialize the OpenAI client
 
+	_ = t
+
 	poolName := "default"
 	modelName := "gpt-3.5-turbo"
 
