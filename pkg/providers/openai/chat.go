@@ -175,6 +175,7 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 	}
 	return resp, nil
 }
+
 /* will remove later
 func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
 	slog.Info("running createChat")
