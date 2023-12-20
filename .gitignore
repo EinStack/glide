@@ -6,3 +6,4 @@ bin
 glide
 tmp
 coverage.txt
+precommit.txt

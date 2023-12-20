@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	defaultBaseURL              = "https://api.openai.com/v1"
-	defaultOrganization         = ""
+	defaultBaseURL      = "https://api.openai.com/v1"
+	defaultOrganization = ""
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -41,6 +41,7 @@ const (
 	APITypeAzure   APIType = "AZURE"
 	APITypeAzureAD APIType = "AZURE_AD"
 )
+
 // Client is a client for the OpenAI API.
 type Client struct {
 	Provider     providers.Provider
@@ -52,7 +53,6 @@ type Client struct {
 	// required when APIType is APITypeAzure or APITypeAzureAD
 	apiVersion string
 }
-
 
 func (c *Client) Run(poolName string, modelName string, payload []byte) (*ChatResponse, error) {
 
@@ -88,7 +88,7 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 
 	// Read the YAML file
 	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
-	
+
 	if err != nil {
 		slog.Error("Failed to read file: %v", err)
 		return nil, err
@@ -156,4 +156,3 @@ func HttpClient() *client.Client {
 	return c
 
 }
-
