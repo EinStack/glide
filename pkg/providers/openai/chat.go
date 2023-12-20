@@ -8,8 +8,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strings"
 	"reflect"
+	"strings"
 )
 
 const (
@@ -24,16 +24,16 @@ type ChatRequest struct {
 	TopP             float64          `json:"top_p" validate:"omitempty,gte=0,lte=1"`
 	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
 	N                int              `json:"n" validate:"omitempty,gte=1"`
-	StopWords        []string         `json:"stop,omitempty"`
-	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
-	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int              `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64 `json:"logit_bias,omitempty" validate:"omitempty"`
-	User             interface{}      `json:"user,omitempty"`
-	Seed             interface{}      `json:"seed,omitempty" validate:"omitempty,gte=0"`
-	Tools            []string         `json:"tools,omitempty"`
-	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
-	ResponseFormat   interface{}      `json:"response_format,omitempty"`
+	StopWords        []string         `json:"stop"`
+	Stream           bool             `json:"stream" validate:"omitempty, boolean"`
+	FrequencyPenalty int              `json:"frequency_penalty"`
+	PresencePenalty  int              `json:"presence_penalty"`
+	LogitBias        *map[int]float64 `json:"logit_bias" validate:"omitempty"`
+	User             interface{}      `json:"user"`
+	Seed             interface{}      `json:"seed" validate:"omitempty,gte=0"`
+	Tools            []string         `json:"tools"`
+	ToolChoice       interface{}      `json:"tool_choice"`
+	ResponseFormat   interface{}      `json:"response_format"`
 
 	// StreamingFunc is a function to be called for each chunk of a streaming response.
 	// Return an error to stop streaming early.
@@ -115,14 +115,11 @@ func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
 
 	for i := 0; i < chatRequestValue.NumField(); i++ {
 		jsonTag := chatRequestType.Field(i).Tag.Get("json")
-		fmt.Println(jsonTag)
 		if value, ok := defaultParams[jsonTag]; ok {
 			fieldValue := chatRequestValue.Field(i)
 			fieldValue.Set(reflect.ValueOf(value))
 		}
 	}
-
-	fmt.Println(chatRequest, defaultParams)
 
 	return chatRequest
 }
@@ -159,7 +156,6 @@ type StreamedChatResponsePayload struct {
 
 // CreateChatResponse creates chat Response.
 func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
-
 	_ = ctx // keep this for future use
 
 	resp, err := c.createChatHTTP(r)
@@ -307,7 +303,7 @@ func (c *Client) buildAzureURL(suffix string, model string) string {
 func (c *Client) setModel() string {
 	if c.Provider.Model == "" {
 		return defaultChatModel
-	} else {
-		return c.Provider.Model
 	}
+	
+	return c.Provider.Model
 }

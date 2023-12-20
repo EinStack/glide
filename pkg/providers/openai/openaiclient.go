@@ -46,7 +46,7 @@ const (
 // Client is a client for the OpenAI API.
 type Client struct {
 	Provider     providers.Provider
-	PoolName	 string
+	PoolName     string
 	baseURL      string
 	payload      []byte
 	organization string
@@ -67,7 +67,6 @@ type Client struct {
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, error) {
-
 	providerName := "openai"
 
 	// Read the YAML file
@@ -138,11 +137,10 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 //
 // Parameters:
 // - payload: The user payload for the chat request.
-// Returns: 
+// Returns:
 // - *ChatResponse: a pointer to a ChatResponse
 // - error: An error if the request failed.
 func (c *Client) Chat() (*ChatResponse, error) {
-	
 	// Create a new chat request
 
 	slog.Info("creating chat request")
