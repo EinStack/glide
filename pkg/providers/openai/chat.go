@@ -304,6 +304,6 @@ func (c *Client) setModel() string {
 	if c.Provider.Model == "" {
 		return defaultChatModel
 	}
-	
+
 	return c.Provider.Model
 }
