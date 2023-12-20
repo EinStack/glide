@@ -32,7 +32,9 @@ func TestOpenAIClient(t *testing.T) {
 
 	c := &Client{}
 
-	resp, err := c.Run(poolName, modelName, payloadBytes)
+	resp, _ := c.Run(poolName, modelName, payloadBytes)
 
-	fmt.Println(resp, err)
+	respJSON, _ := json.Marshal(resp)
+
+	fmt.Println(string(respJSON))
 }
