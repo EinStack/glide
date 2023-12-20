@@ -106,12 +106,13 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 
 	// Find the pool with the specified name
 	var selectedPool *providers.Pool
-	for _, pool := range config.Gateway.Pools {
+	for i := range config.Gateway.Pools {
+		pool := &config.Gateway.Pools[i]
 		if pool.Name == poolName {
-			selectedPool = &pool
+			selectedPool = pool
 			break
 		}
-	}
+}
 
 	// Check if the pool was found
 	if selectedPool == nil {
@@ -121,9 +122,10 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 
 	// Find the OpenAI provider in the selected pool with the specified model
 	var selectedProvider *providers.Provider
-	for _, provider := range selectedPool.Providers {
+	for i := range selectedPool.Providers {
+		provider := &selectedPool.Providers[i]
 		if provider.Provider == providerName && provider.Model == modelName {
-			selectedProvider = &provider
+			selectedProvider = provider
 			break
 		}
 	}
