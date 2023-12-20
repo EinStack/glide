@@ -30,9 +30,9 @@ func TestOpenAIClient(t *testing.T) {
 
 	payloadBytes, _ := json.Marshal(payload)
 
-	c := &Client{}
+	c, _ := OpenAiClient(poolName, modelName, payloadBytes)
 
-	resp, _ := c.Run(poolName, modelName, payloadBytes)
+	resp, _ := c.Chat()
 
 	respJSON, _ := json.Marshal(resp)
 

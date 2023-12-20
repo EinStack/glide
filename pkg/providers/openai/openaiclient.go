@@ -1,7 +1,7 @@
 // TODO: Explore resource pooling
 // TODO: Optimize Type use
 // TODO: Explore Hertz TLS & resource pooling
-
+// OpenAI package provide a set of functions to interact with the OpenAI API.
 package openai
 
 import (
@@ -46,7 +46,9 @@ const (
 // Client is a client for the OpenAI API.
 type Client struct {
 	Provider     providers.Provider
+	PoolName	 string
 	baseURL      string
+	payload      []byte
 	organization string
 	apiType      APIType
 	httpClient   *client.Client
@@ -55,34 +57,16 @@ type Client struct {
 	apiVersion string
 }
 
-func (c *Client) Run(poolName string, modelName string, payload []byte) (*ChatResponse, error) {
-	c, err := c.NewClient(poolName, modelName)
-	if err != nil {
-		slog.Error("Error:" + err.Error())
-		return nil, err
-	}
-
-	// Create a new chat request
-
-	slog.Info("creating chat request")
-
-	chatRequest := c.CreateChatRequest(payload)
-
-	slog.Info("chat request created")
-
-	// Send the chat request
-
-	slog.Info("sending chat request")
-
-	resp, err := c.CreateChatResponse(context.Background(), chatRequest)
-
-	return resp, err
-}
-
-func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
-	// Returns a []*Client of OpenAI
-	// modelName is determined by the model pool
-	// poolName is determined by the route the request came from
+// OpenAiClient creates a new client for the OpenAI API.
+//
+// Parameters:
+// - poolName: The name of the pool to connect to.
+// - modelName: The name of the model to use.
+//
+// Returns:
+// - *Client: A pointer to the created client.
+// - error: An error if the client creation failed.
+func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, error) {
 
 	providerName := "openai"
 
@@ -139,6 +123,9 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 	// Create clients for each OpenAI provider
 	client := &Client{
 		Provider:     *selectedProvider,
+		PoolName:     poolName,
+		baseURL:      defaultBaseURL,
+		payload:      payload,
 		organization: defaultOrganization,
 		apiType:      APITypeOpenAI,
 		httpClient:   HTTPClient(),
@@ -147,6 +134,37 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 	return client, nil
 }
 
+// Chat sends a chat request to the specified OpenAI model.
+//
+// Parameters:
+// - payload: The user payload for the chat request.
+// Returns: 
+// - *ChatResponse: a pointer to a ChatResponse
+// - error: An error if the request failed.
+func (c *Client) Chat() (*ChatResponse, error) {
+	
+	// Create a new chat request
+
+	slog.Info("creating chat request")
+
+	chatRequest := c.CreateChatRequest(c.payload)
+
+	slog.Info("chat request created")
+
+	// Send the chat request
+
+	slog.Info("sending chat request")
+
+	resp, err := c.CreateChatResponse(context.Background(), chatRequest)
+
+	return resp, err
+}
+
+// HTTPClient returns a new Hertz HTTP client.
+//
+// It creates a new client using the client.NewClient() function and returns the client.
+// If an error occurs during the creation of the client, it logs the error using slog.Error().
+// The function returns the created client or nil if an error occurred.
 func HTTPClient() *client.Client {
 	c, err := client.NewClient()
 	if err != nil {

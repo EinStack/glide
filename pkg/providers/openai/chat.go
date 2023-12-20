@@ -8,8 +8,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"reflect"
 	"strings"
+	"reflect"
 )
 
 const (
@@ -20,10 +20,10 @@ const (
 type ChatRequest struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
 	Messages         []*ChatMessage   `json:"messages" validate:"required"`
-	Temperature      float64          `json:"temperature,omitempty"`
-	TopP             float64          `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
-	MaxTokens        int              `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
-	N                int              `json:"n,omitempty" validate:"omitempty,gte=1"`
+	Temperature      float64          `json:"temperature" validate:"omitempty,gte=0,lte=1"`
+	TopP             float64          `json:"top_p" validate:"omitempty,gte=0,lte=1"`
+	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
+	N                int              `json:"n" validate:"omitempty,gte=1"`
 	StopWords        []string         `json:"stop,omitempty"`
 	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
 	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
@@ -72,6 +72,8 @@ func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
 		return nil
 	}
 
+	slog.Info("creating chatRequest from payload")
+
 	var messages []*ChatMessage
 	for _, msg := range requestBody.Message {
 		chatMsg := &ChatMessage{
@@ -87,7 +89,7 @@ func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
 	// iterate through self.Provider.DefaultParams and add them to the request otherwise leave the default value
 
 	chatRequest := &ChatRequest{
-		Model:            c.Provider.Model,
+		Model:            c.setModel(),
 		Messages:         messages,
 		Temperature:      0.8,
 		TopP:             1,
@@ -107,21 +109,20 @@ func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
 
 	// Use reflection to dynamically assign default parameter values
 	defaultParams := c.Provider.DefaultParams
-	v := reflect.ValueOf(chatRequest).Elem()
-	t := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		field := t.Field(i)
-		fieldName := field.Name
-		defaultValue, ok := defaultParams[fieldName]
-		if ok && defaultValue != nil {
-			fieldValue := v.FieldByName(fieldName)
-			if fieldValue.IsValid() && fieldValue.CanSet() {
-				fieldValue.Set(reflect.ValueOf(defaultValue))
-			}
+
+	chatRequestValue := reflect.ValueOf(chatRequest).Elem()
+	chatRequestType := chatRequestValue.Type()
+
+	for i := 0; i < chatRequestValue.NumField(); i++ {
+		jsonTag := chatRequestType.Field(i).Tag.Get("json")
+		fmt.Println(jsonTag)
+		if value, ok := defaultParams[jsonTag]; ok {
+			fieldValue := chatRequestValue.Field(i)
+			fieldValue.Set(reflect.ValueOf(value))
 		}
 	}
 
-	fmt.Println(chatRequest)
+	fmt.Println(chatRequest, defaultParams)
 
 	return chatRequest
 }
@@ -158,13 +159,6 @@ type StreamedChatResponsePayload struct {
 
 // CreateChatResponse creates chat Response.
 func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
-	if r.Model == "" {
-		if c.Provider.Model == "" {
-			r.Model = defaultChatModel
-		} else {
-			r.Model = c.Provider.Model
-		}
-	}
 
 	_ = ctx // keep this for future use
 
@@ -308,4 +302,12 @@ func (c *Client) buildAzureURL(suffix string, model string) string {
 	return fmt.Sprintf("%s/openai/deployments/%s%s?api-version=%s",
 		baseURL, model, suffix, c.apiVersion,
 	)
+}
+
+func (c *Client) setModel() string {
+	if c.Provider.Model == "" {
+		return defaultChatModel
+	} else {
+		return c.Provider.Model
+	}
 }
