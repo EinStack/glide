@@ -112,7 +112,7 @@ func (c *Client) NewClient(poolName string, modelName string) (*Client, error) {
 			selectedPool = pool
 			break
 		}
-}
+	}
 
 	// Check if the pool was found
 	if selectedPool == nil {
