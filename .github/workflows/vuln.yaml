@@ -1,0 +1,40 @@
+name: security
+
+on:
+  push:
+    branches: [main, develop]
+
+  pull_request:
+    branches: [main, develop]
+
+  schedule:
+    - cron: '0 10 * * 1' # run "At 10:00 on Monday"
+
+jobs:
+  run:
+    name: Vulnerability Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GO111MODULE: on
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.5'
+          check-latest: true
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Govulncheck
+        run: govulncheck -test ./...
+
+      - name: Govulncheck
+        run: gosec ./...

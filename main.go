@@ -1,8 +1,9 @@
 package main
 
 import (
-	"glide/pkg/cmd"
 	"log"
+
+	"glide/pkg/cmd"
 )
 
 func main() {

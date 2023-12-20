@@ -2,19 +2,19 @@ package api
 
 import (
 	"context"
-	"glide/pkg/api/http"
 	"sync"
+
+	"glide/pkg/api/http"
 )
 
 type ServerManager struct {
-	httpServer *http.HTTPServer
+	httpServer *http.Server
 	shutdownWG *sync.WaitGroup
 }
 
-func NewServerManager(httpConfig *http.HTTPServerConfig) (*ServerManager, error) {
-	httpServer, err := http.NewHttpServer(httpConfig)
+func NewServerManager(httpConfig *http.ServerConfig) (*ServerManager, error) {
+	httpServer, err := http.NewServer(httpConfig)
 	// TODO: init other servers like gRPC in future
-
 	if err != nil {
 		return nil, err
 	}

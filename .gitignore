@@ -2,3 +2,7 @@
 dist
 .env
 config.yaml
+bin
+glide
+tmp
+coverage.txt
