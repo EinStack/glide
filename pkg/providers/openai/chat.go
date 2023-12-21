@@ -14,26 +14,27 @@ import (
 
 const (
 	defaultChatModel = "gpt-3.5-turbo"
+	defaultEndpoint  = "/chat/completions"
 )
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
 	Messages         []*ChatMessage   `json:"messages" validate:"required"`
-	Temperature      float64          `json:"temperature" validate:"omitempty,gte=0,lte=1"`
-	TopP             float64          `json:"top_p" validate:"omitempty,gte=0,lte=1"`
-	MaxTokens        int              `json:"max_tokens" validate:"omitempty,gte=0"`
-	N                int              `json:"n" validate:"omitempty,gte=1"`
-	StopWords        []string         `json:"stop"`
-	Stream           bool             `json:"stream" validate:"omitempty, boolean"`
-	FrequencyPenalty int              `json:"frequency_penalty"`
-	PresencePenalty  int              `json:"presence_penalty"`
-	LogitBias        *map[int]float64 `json:"logit_bias" validate:"omitempty"`
-	User             interface{}      `json:"user"`
-	Seed             interface{}      `json:"seed" validate:"omitempty,gte=0"`
-	Tools            []string         `json:"tools"`
-	ToolChoice       interface{}      `json:"tool_choice"`
-	ResponseFormat   interface{}      `json:"response_format"`
+	Temperature      float64          `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=1"`
+	TopP             float64          `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
+	MaxTokens        int              `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
+	N                int              `json:"n,omitempty" validate:"omitempty,gte=1"`
+	StopWords        []string         `json:"stop,omitempty"`
+	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
+	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int              `json:"presence_penalty,omitempty"`
+	LogitBias        *map[int]float64 `json:"logit_bias,omitempty" validate:"omitempty"`
+	User             interface{}      `json:"user,omitempty"`
+	Seed             interface{}      `json:"seed,omitempty" validate:"omitempty,gte=0"`
+	Tools            []string         `json:"tools,omitempty"`
+	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
+	ResponseFormat   interface{}      `json:"response_format,omitempty"`
 
 	// StreamingFunc is a function to be called for each chunk of a streaming response.
 	// Return an error to stop streaming early.
@@ -114,7 +115,8 @@ func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
 	chatRequestType := chatRequestValue.Type()
 
 	for i := 0; i < chatRequestValue.NumField(); i++ {
-		jsonTag := chatRequestType.Field(i).Tag.Get("json")
+		jsonTags := strings.Split(chatRequestType.Field(i).Tag.Get("json"), ",")
+		jsonTag := jsonTags[0]
 		if value, ok := defaultParams[jsonTag]; ok {
 			fieldValue := chatRequestValue.Field(i)
 			fieldValue.Set(reflect.ValueOf(value))
@@ -136,22 +138,6 @@ type ChatResponse struct {
 		PromptTokens     float64 `json:"prompt_tokens,omitempty"`
 		TotalTokens      float64 `json:"total_tokens,omitempty"`
 	} `json:"usage,omitempty"`
-}
-
-// StreamedChatResponsePayload is a chunk from the stream.
-type StreamedChatResponsePayload struct {
-	ID      string  `json:"id,omitempty"`
-	Created float64 `json:"created,omitempty"`
-	Model   string  `json:"model,omitempty"`
-	Object  string  `json:"object,omitempty"`
-	Choices []struct {
-		Index float64 `json:"index,omitempty"`
-		Delta struct {
-			Role    string `json:"role,omitempty"`
-			Content string `json:"content,omitempty"`
-		} `json:"delta,omitempty"`
-		FinishReason string `json:"finish_reason,omitempty"`
-	} `json:"choices,omitempty"`
 }
 
 // CreateChatResponse creates chat Response.
@@ -240,11 +226,13 @@ func (c *Client) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
 	}
 
 	reqBody := bytes.NewBuffer(payloadBytes)
-	req, err := http.NewRequest("POST", c.buildURL("/chat/completions", c.Provider.Model), reqBody)
+	req, err := http.NewRequest("POST", c.buildURL(defaultEndpoint), reqBody)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err
 	}
+
+	fmt.Println("ReqBody" + reqBody.String())
 
 	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -274,30 +262,11 @@ func (c *Client) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
 	return &response, json.NewDecoder(resp.Body).Decode(&response)
 }
 
-func IsAzure(apiType APIType) bool {
-	return apiType == APITypeAzure || apiType == APITypeAzureAD
-}
-
-func (c *Client) buildURL(suffix string, model string) string {
-	if IsAzure(c.apiType) {
-		return c.buildAzureURL(suffix, model)
-	}
-
+func (c *Client) buildURL(suffix string) string {
 	slog.Info("request url: " + fmt.Sprintf("%s%s", c.baseURL, suffix))
 
 	// open ai implement:
 	return fmt.Sprintf("%s%s", c.baseURL, suffix)
-}
-
-func (c *Client) buildAzureURL(suffix string, model string) string {
-	baseURL := c.baseURL
-	baseURL = strings.TrimRight(baseURL, "/")
-
-	// azure example url:
-	// /openai/deployments/{model}/chat/completions?api-version={api_version}
-	return fmt.Sprintf("%s/openai/deployments/%s%s?api-version=%s",
-		baseURL, model, suffix, c.apiVersion,
-	)
 }
 
 func (c *Client) setModel() string {

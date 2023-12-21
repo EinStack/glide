@@ -16,11 +16,11 @@ import (
 	"glide/pkg/providers"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/go-playground/validator/v10"
 )
 
 const (
-	defaultBaseURL      = "https://api.openai.com/v1"
-	defaultOrganization = ""
+	defaultBaseURL = "https://api.openai.com/v1"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -35,26 +35,13 @@ var (
 	}
 )
 
-type APIType string
-
-const (
-	APITypeOpenAI  APIType = "OPEN_AI"
-	APITypeAzure   APIType = "AZURE"
-	APITypeAzureAD APIType = "AZURE_AD"
-)
-
 // Client is a client for the OpenAI API.
 type Client struct {
-	Provider     providers.Provider
-	PoolName     string
-	baseURL      string
-	payload      []byte
-	organization string
-	apiType      APIType
-	httpClient   *client.Client
-
-	// required when APIType is APITypeAzure or APITypeAzureAD
-	apiVersion string
+	Provider   providers.Provider `validate:"required"`
+	PoolName   string             `validate:"required"`
+	baseURL    string             `validate:"required"`
+	payload    []byte             `validate:"required"`
+	httpClient *client.Client     `validate:"required"`
 }
 
 // OpenAiClient creates a new client for the OpenAI API.
@@ -84,8 +71,6 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	if err != nil {
 		slog.Error("Failed to unmarshal YAML: %v", err)
 	}
-
-	fmt.Println(config)
 
 	// Find the pool with the specified name
 	var selectedPool *providers.Pool
@@ -121,12 +106,20 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 
 	// Create clients for each OpenAI provider
 	client := &Client{
-		Provider:     *selectedProvider,
-		PoolName:     poolName,
-		baseURL:      defaultBaseURL,
-		payload:      payload,
-		organization: defaultOrganization,
-		httpClient:   HTTPClient(),
+		Provider:   *selectedProvider,
+		PoolName:   poolName,
+		baseURL:    defaultBaseURL,
+		payload:    payload,
+		httpClient: HTTPClient(),
+	}
+
+	v := validator.New()
+
+	if err := v.Struct(client); err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+		slog.Error(validationErrors.Error())
+
+		return nil, validationErrors
 	}
 
 	return client, nil
