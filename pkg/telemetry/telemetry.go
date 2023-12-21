@@ -2,7 +2,7 @@ package telemetry
 
 import "go.uber.org/zap"
 
-type TelemetryConfig struct {
+type Config struct {
 	LogConfig *LogConfig `json:"logs" yaml:"logs"`
 	// TODO: add OTEL config
 }
@@ -12,21 +12,15 @@ type Telemetry struct {
 	// TODO: add OTEL meter, tracer
 }
 
-func NewTelemetry(cfg *TelemetryConfig) (*Telemetry, error) {
-	// TODO: gonna be read from a config file
-	logConfig := NewLogConfig()
-	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-	logConfig.Encoding = "console"
-
-	logger, err := telemetry.NewLogger(logConfig)
-
+func NewTelemetry(cfg *Config) (*Telemetry, error) {
+	logger, err := NewLogger(cfg.LogConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Telemetry{
 		logger: logger,
-	}
+	}, nil
 }
 
 func (t *Telemetry) Logger() *zap.Logger {

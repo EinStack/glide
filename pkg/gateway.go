@@ -3,11 +3,12 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"glide/pkg/telemetry"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"glide/pkg/telemetry"
+	"go.uber.org/zap"
 
 	"glide/pkg/api"
 	"glide/pkg/api/http"
@@ -18,6 +19,8 @@ import (
 // Gateway represents an instance of running Glide gateway.
 // It loads configs, start API server(s), and listen to termination signals to shut down
 type Gateway struct {
+	// telemetry holds logger, meter, and tracer
+	telemetry *telemetry.Telemetry
 	// serverManager controls API over different protocols
 	serverManager *api.ServerManager
 	// signalChannel is used to receive termination signals from the OS.
@@ -32,8 +35,7 @@ func NewGateway() (*Gateway, error) {
 	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	logConfig.Encoding = "console"
 
-	logger, err := telemetry.NewLogger(logConfig)
-
+	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: logConfig})
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +46,7 @@ func NewGateway() (*Gateway, error) {
 	}
 
 	return &Gateway{
-		logger:        logger,
+		telemetry:     tel,
 		serverManager: serverManager,
 		signalC:       make(chan os.Signal, 3), // equal to number of signal types we expect to receive
 		shutdownC:     make(chan struct{}),
@@ -63,14 +65,14 @@ LOOP:
 	for {
 		select {
 		// TODO: Watch for config updates
-		case <-gw.signalC:
-			// TODO: log this occurrence
+		case sig := <-gw.signalC:
+			gw.telemetry.Logger().Info("Received signal from OS", zap.String("signal", sig.String()))
 			break LOOP
 		case <-gw.shutdownC:
-			// TODO: log this occurrence
+			gw.telemetry.Logger().Info("received shutdown request")
 			break LOOP
 		case <-ctx.Done():
-			// TODO: log this occurrence
+			gw.telemetry.Logger().Info("context done, terminating process")
 			// Call shutdown with background context as the passed in context has been canceled
 			return gw.shutdown(context.Background())
 		}
