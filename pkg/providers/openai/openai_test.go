@@ -3,8 +3,8 @@ package openai
 import (
 	"encoding/json"
 	"fmt"
-	"testing"
 	"log/slog"
+	"testing"
 )
 
 func TestOpenAIClient(t *testing.T) {

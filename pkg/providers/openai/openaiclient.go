@@ -19,6 +19,7 @@ import (
 
 const (
 	defaultBaseURL = "https://api.openai.com/v1"
+	providerName = "openai"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -52,63 +53,63 @@ type Client struct {
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, error) {
-	providerName := "openai"
-
+	
 	// Read the YAML file
 	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read YAML file: %w", err)
 	}
 
 	slog.Info("config loaded")
 
 	// Unmarshal the YAML data into your struct
 	var config providers.GatewayConfig
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return nil, err
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal YAML data: %w", err)
 	}
 
 	// Find the pool with the specified name
-	var selectedPool *providers.Pool
-	for i := range config.Gateway.Pools {
-		pool := &config.Gateway.Pools[i]
-		if pool.Name == poolName {
-			selectedPool = pool
-			break
-		}
+	selectedPool, err := findPoolByName(config.Gateway.Pools, poolName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find pool: %w", err)
 	}
 
-	// Check if the pool was found
-	if selectedPool == nil {
-		slog.Error("pool not found")
-		return nil, fmt.Errorf("pool not found: %s", poolName)
+	// Find the OpenAI provider params in the selected pool with the specified model
+	selectedProvider, err := findProviderByModel(selectedPool.Providers, providerName, modelName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find provider: %w", err)
 	}
 
-	// Find the OpenAI provider in the selected pool with the specified model
-	var selectedProvider *providers.Provider
-	for i := range selectedPool.Providers {
-		provider := &selectedPool.Providers[i]
-		if provider.Provider == providerName && provider.Model == modelName {
-			selectedProvider = provider
-			break
-		}
-	}
-
-	// Check if the provider was found
-	if selectedProvider == nil {
-		slog.Error("double check the config.yaml for errors")
-		return nil, fmt.Errorf("provider for model '%s' not found in pool '%s'", modelName, poolName)
-	}
-
-	// Create clients for each OpenAI provider
-	client := &Client{
+	// Create a new client
+	c := &Client{
 		Provider:   *selectedProvider,
 		PoolName:   poolName,
-		baseURL:    defaultBaseURL,
+		baseURL:    "", // Set the appropriate base URL
 		payload:    payload,
 		httpClient: HTTPClient(),
 	}
 
-	return client, nil
+	return c, nil
+}
+
+func findPoolByName(pools []providers.Pool, name string) (*providers.Pool, error) {
+	for i := range pools {
+		pool := &pools[i]
+		if pool.Name == name {
+			return pool, nil
+		}
+	}
+
+	return nil, fmt.Errorf("pool not found: %s", name)
+}
+
+func findProviderByModel(providers []providers.Provider, providerName string, modelName string) (*providers.Provider, error) {
+	for i := range providers {
+		provider := &providers[i]
+		if provider.Provider == providerName && provider.Model == modelName {
+			return provider, nil
+		}
+	}
+
+	return nil, fmt.Errorf("provider not found: %s", modelName)
 }
