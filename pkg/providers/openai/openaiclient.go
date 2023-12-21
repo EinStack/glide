@@ -55,7 +55,7 @@ type Client struct {
 // - error: An error if the client creation failed.
 func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, error) {
 	// Read the YAML file
-	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
+	data, err := os.ReadFile("config.yaml") // TODO: How will this be accessed? Does it have to be read each time?
 	if err != nil {
 		return nil, fmt.Errorf("failed to read YAML file: %w", err)
 	}
