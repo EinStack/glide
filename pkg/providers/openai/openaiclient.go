@@ -93,7 +93,7 @@ func Client(poolName string, modelName string, payload []byte) (*ProviderClient,
 	c := &ProviderClient{
 		Provider:   *selectedProvider,
 		PoolName:   poolName,
-		baseURL:    defaultBaseURL, // Set the appropriate base URL
+		baseURL:    defaultBaseURL,
 		payload:    payload,
 		httpClient: httpClient,
 	}
