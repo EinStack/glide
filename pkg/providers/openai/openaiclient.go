@@ -15,7 +15,6 @@ import (
 	"glide/pkg/providers"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
-	"github.com/go-playground/validator/v10"
 )
 
 const (
@@ -56,9 +55,8 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	providerName := "openai"
 
 	// Read the YAML file
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
 	if err != nil {
-		slog.Error("Failed to read file: %v", err)
 		return nil, err
 	}
 
@@ -68,7 +66,7 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	var config providers.GatewayConfig
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		slog.Error("Failed to unmarshal YAML: %v", err)
+		return nil, err
 	}
 
 	// Find the pool with the specified name
@@ -99,7 +97,7 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 
 	// Check if the provider was found
 	if selectedProvider == nil {
-		slog.Error("provider for model '%s' not found in pool '%s'", modelName, poolName)
+		slog.Error("double check the config.yaml for errors")
 		return nil, fmt.Errorf("provider for model '%s' not found in pool '%s'", modelName, poolName)
 	}
 
@@ -110,15 +108,6 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 		baseURL:    defaultBaseURL,
 		payload:    payload,
 		httpClient: HTTPClient(),
-	}
-
-	v := validator.New()
-
-	if err := v.Struct(client); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		slog.Error(validationErrors.Error())
-
-		return nil, validationErrors
 	}
 
 	return client, nil

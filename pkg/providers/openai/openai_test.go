@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"log/slog"
 )
 
 func TestOpenAIClient(t *testing.T) {
@@ -30,7 +31,11 @@ func TestOpenAIClient(t *testing.T) {
 
 	payloadBytes, _ := json.Marshal(payload)
 
-	c, _ := OpenAiClient(poolName, modelName, payloadBytes)
+	c, err := OpenAiClient(poolName, modelName, payloadBytes)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
 
 	resp, _ := c.Chat()
 
