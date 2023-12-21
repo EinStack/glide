@@ -15,11 +15,12 @@ import (
 	"glide/pkg/providers"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/go-playground/validator/v10"
 )
 
 const (
 	defaultBaseURL = "https://api.openai.com/v1"
-	providerName = "openai"
+	providerName   = "openai"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -53,7 +54,6 @@ type Client struct {
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, error) {
-	
 	// Read the YAML file
 	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
 	if err != nil {
@@ -77,7 +77,7 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	// Find the OpenAI provider params in the selected pool with the specified model
 	selectedProvider, err := findProviderByModel(selectedPool.Providers, providerName, modelName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find provider: %w", err)
+		return nil, fmt.Errorf("provider error: %w", err)
 	}
 
 	// Create a new client
@@ -87,6 +87,12 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 		baseURL:    defaultBaseURL, // Set the appropriate base URL
 		payload:    payload,
 		httpClient: HTTPClient(),
+	}
+
+	v := validator.New()
+	err = v.Struct(c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate client: %w", err)
 	}
 
 	return c, nil
@@ -103,13 +109,23 @@ func findPoolByName(pools []providers.Pool, name string) (*providers.Pool, error
 	return nil, fmt.Errorf("pool not found: %s", name)
 }
 
+// findProviderByModel find provider params in the given config file by the specified provider name and model name.
+//
+// Parameters:
+// - providers: a slice of providers.Provider, the list of providers to search in.
+// - providerName: a string, the name of the provider to search for.
+// - modelName: a string, the name of the model to search for.
+//
+// Returns:
+// - *providers.Provider: a pointer to the found provider.
+// - error: an error indicating whether a provider was found or not.
 func findProviderByModel(providers []providers.Provider, providerName string, modelName string) (*providers.Provider, error) {
 	for i := range providers {
 		provider := &providers[i]
-		if provider.Provider == providerName && provider.Model == modelName {
+		if provider.Name == providerName && provider.Model == modelName {
 			return provider, nil
 		}
 	}
 
-	return nil, fmt.Errorf("provider not found: %s", modelName)
+	return nil, fmt.Errorf("no provider found in config for model: %s", modelName)
 }

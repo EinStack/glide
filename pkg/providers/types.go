@@ -14,7 +14,7 @@ type Pool struct {
 }
 
 type Provider struct {
-	Provider      string                 `yaml:"provider" validate:"required"`
+	Name      string                 `yaml:"name" validate:"required"`
 	Model         string                 `yaml:"model"`
 	APIKey        string                 `yaml:"api_key" validate:"required"`
 	TimeoutMs     int                    `yaml:"timeout_ms,omitempty"`
