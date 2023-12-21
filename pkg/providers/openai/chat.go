@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/cloudwego/hertz/pkg/app/client"
 )
 
 const (
@@ -64,6 +66,31 @@ type ChatUsage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
+}
+
+// Chat sends a chat request to the specified OpenAI model.
+//
+// Parameters:
+// - payload: The user payload for the chat request.
+// Returns:
+// - *ChatResponse: a pointer to a ChatResponse
+// - error: An error if the request failed.
+func (c *Client) Chat() (*ChatResponse, error) {
+	// Create a new chat request
+
+	slog.Info("creating chat request")
+
+	chatRequest := c.CreateChatRequest(c.payload)
+
+	slog.Info("chat request created")
+
+	// Send the chat request
+
+	slog.Info("sending chat request")
+
+	resp, err := c.CreateChatResponse(context.Background(), chatRequest)
+
+	return resp, err
 }
 
 func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
@@ -275,4 +302,17 @@ func (c *Client) setModel() string {
 	}
 
 	return c.Provider.Model
+}
+
+// HTTPClient returns a new Hertz HTTP client.
+//
+// It creates a new client using the client.NewClient() function and returns the client.
+// If an error occurs during the creation of the client, it logs the error using slog.Error().
+// The function returns the created client or nil if an error occurred.
+func HTTPClient() *client.Client {
+	c, err := client.NewClient()
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	return c
 }

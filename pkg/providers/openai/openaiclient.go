@@ -5,7 +5,6 @@
 package openai
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -57,13 +56,13 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	providerName := "openai"
 
 	// Read the YAML file
-	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml")
+	data, err := os.ReadFile("config.yaml")
 	if err != nil {
 		slog.Error("Failed to read file: %v", err)
 		return nil, err
 	}
 
-	slog.Info("config found")
+	slog.Info("config loaded")
 
 	// Unmarshal the YAML data into your struct
 	var config providers.GatewayConfig
@@ -123,42 +122,4 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	}
 
 	return client, nil
-}
-
-// Chat sends a chat request to the specified OpenAI model.
-//
-// Parameters:
-// - payload: The user payload for the chat request.
-// Returns:
-// - *ChatResponse: a pointer to a ChatResponse
-// - error: An error if the request failed.
-func (c *Client) Chat() (*ChatResponse, error) {
-	// Create a new chat request
-
-	slog.Info("creating chat request")
-
-	chatRequest := c.CreateChatRequest(c.payload)
-
-	slog.Info("chat request created")
-
-	// Send the chat request
-
-	slog.Info("sending chat request")
-
-	resp, err := c.CreateChatResponse(context.Background(), chatRequest)
-
-	return resp, err
-}
-
-// HTTPClient returns a new Hertz HTTP client.
-//
-// It creates a new client using the client.NewClient() function and returns the client.
-// If an error occurs during the creation of the client, it logs the error using slog.Error().
-// The function returns the created client or nil if an error occurred.
-func HTTPClient() *client.Client {
-	c, err := client.NewClient()
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	return c
 }
