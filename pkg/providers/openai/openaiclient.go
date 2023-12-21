@@ -126,7 +126,6 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 		baseURL:      defaultBaseURL,
 		payload:      payload,
 		organization: defaultOrganization,
-		apiType:      APITypeOpenAI,
 		httpClient:   HTTPClient(),
 	}
 
