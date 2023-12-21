@@ -84,7 +84,7 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	c := &Client{
 		Provider:   *selectedProvider,
 		PoolName:   poolName,
-		baseURL:    "", // Set the appropriate base URL
+		baseURL:    defaultBaseURL, // Set the appropriate base URL
 		payload:    payload,
 		httpClient: HTTPClient(),
 	}
