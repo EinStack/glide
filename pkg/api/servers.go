@@ -4,6 +4,9 @@ import (
 	"context"
 	"sync"
 
+	"glide/pkg/pools"
+	"glide/pkg/telemetry"
+
 	"glide/pkg/api/http"
 )
 
@@ -12,12 +15,13 @@ type ServerManager struct {
 	shutdownWG *sync.WaitGroup
 }
 
-func NewServerManager(httpConfig *http.ServerConfig) (*ServerManager, error) {
-	httpServer, err := http.NewServer(httpConfig)
-	// TODO: init other servers like gRPC in future
+func NewServerManager(httpConfig *http.ServerConfig, tel *telemetry.Telemetry, router *pools.Router) (*ServerManager, error) {
+	httpServer, err := http.NewServer(httpConfig, tel, router)
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO: init other servers like gRPC in future
 
 	return &ServerManager{
 		httpServer: httpServer,

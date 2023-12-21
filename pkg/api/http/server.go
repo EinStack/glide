@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"glide/pkg/pools"
+	"glide/pkg/telemetry"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/utils"
@@ -12,12 +15,16 @@ import (
 )
 
 type Server struct {
-	server *server.Hertz
+	telemetry *telemetry.Telemetry
+	router    *pools.Router
+	server    *server.Hertz
 }
 
-func NewServer(config *ServerConfig) (*Server, error) {
+func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *pools.Router) (*Server, error) {
 	return &Server{
-		server: config.ToServer(),
+		telemetry: tel,
+		router:    router,
+		server:    config.ToServer(),
 	}, nil
 }
 
@@ -32,7 +39,9 @@ func (srv *Server) Run() error {
 func (srv *Server) Shutdown(_ context.Context) error {
 	exitWaitTime := srv.server.GetOptions().ExitWaitTimeout
 
-	println(fmt.Sprintf("Begin graceful shutdown, wait at most %d seconds...", exitWaitTime/time.Second))
+	srv.telemetry.Logger().Info(
+		fmt.Sprintf("Begin graceful shutdown, wait at most %d seconds...", exitWaitTime/time.Second),
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), exitWaitTime)
 	defer cancel()

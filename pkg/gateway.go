@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"glide/pkg/pools"
+
 	"glide/pkg/telemetry"
 	"go.uber.org/zap"
 
@@ -40,7 +42,12 @@ func NewGateway() (*Gateway, error) {
 		return nil, err
 	}
 
-	serverManager, err := api.NewServerManager(&http.ServerConfig{})
+	router, err := pools.NewRouter(tel)
+	if err != nil {
+		return nil, err
+	}
+
+	serverManager, err := api.NewServerManager(&http.ServerConfig{}, tel, router)
 	if err != nil {
 		return nil, err
 	}
