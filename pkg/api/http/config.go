@@ -1,16 +1,17 @@
 package http
 
 import (
+	"time"
+
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/network/netpoll"
-	"time"
 )
 
-type HTTPServerConfig struct {
+type ServerConfig struct {
 	// TODO: add fields
 }
 
-func (cfg *HTTPServerConfig) ToServer() *server.Hertz {
+func (cfg *ServerConfig) ToServer() *server.Hertz {
 	// TODO: do real server build based on provided config
 	return server.Default(
 		server.WithIdleTimeout(1*time.Second),

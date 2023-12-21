@@ -3,14 +3,16 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"glide/pkg/api"
-	"glide/pkg/api/http"
 	"glide/pkg/telemetry"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"glide/pkg/api"
+	"glide/pkg/api/http"
+
+	"go.uber.org/multierr"
 )
 
 // Gateway represents an instance of running Glide gateway.
@@ -36,8 +38,7 @@ func NewGateway() (*Gateway, error) {
 		return nil, err
 	}
 
-	serverManager, err := api.NewServerManager(&http.HTTPServerConfig{})
-
+	serverManager, err := api.NewServerManager(&http.ServerConfig{})
 	if err != nil {
 		return nil, err
 	}

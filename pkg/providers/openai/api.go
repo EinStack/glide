@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-
 // provides the base URL and headers for the OpenAI API
 type ProviderAPIConfig struct {
 	BaseURL  string
@@ -15,7 +14,7 @@ type ProviderAPIConfig struct {
 	Embed    string
 }
 
-func OpenAIAPIConfig(APIKey string) *ProviderAPIConfig {
+func APIConfig(_ string) *ProviderAPIConfig {
 	return &ProviderAPIConfig{
 		BaseURL: "https://api.openai.com/v1",
 		Headers: func(APIKey string) http.Header {
