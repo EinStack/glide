@@ -31,7 +31,7 @@ func TestOpenAIClient(t *testing.T) {
 
 	payloadBytes, _ := json.Marshal(payload)
 
-	c, err := OpenAiClient(poolName, modelName, payloadBytes)
+	c, err := Client(poolName, modelName, payloadBytes)
 	if err != nil {
 		slog.Error(err.Error())
 		return

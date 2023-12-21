@@ -10,8 +10,6 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-
-	"github.com/cloudwego/hertz/pkg/app/client"
 )
 
 const (
@@ -75,7 +73,7 @@ type ChatUsage struct {
 // Returns:
 // - *ChatResponse: a pointer to a ChatResponse
 // - error: An error if the request failed.
-func (c *Client) Chat() (*ChatResponse, error) {
+func (c *ProviderClient) Chat() (*ChatResponse, error) {
 	// Create a new chat request
 
 	slog.Info("creating chat request")
@@ -93,7 +91,7 @@ func (c *Client) Chat() (*ChatResponse, error) {
 	return resp, err
 }
 
-func (c *Client) CreateChatRequest(message []byte) *ChatRequest {
+func (c *ProviderClient) CreateChatRequest(message []byte) *ChatRequest {
 	err := json.Unmarshal(message, &requestBody)
 	if err != nil {
 		slog.Error("Error:", err)
@@ -168,10 +166,10 @@ type ChatResponse struct {
 }
 
 // CreateChatResponse creates chat Response.
-func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
+func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
 	_ = ctx // keep this for future use
 
-	resp, err := c.createChatHTTP(r)
+	resp, err := c.createChatHTTP(r) // netpoll -> hertz does not yet support tls
 	if err != nil {
 		return nil, err
 	}
@@ -181,61 +179,7 @@ func (c *Client) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatR
 	return resp, nil
 }
 
-/* will remove later
-func (c *Client) createChatHertz(ctx context.Context, payload *ChatRequest) (*ChatResponse, error) {
-	slog.Info("running createChat")
-
-	if payload.StreamingFunc != nil {
-		payload.Stream = true
-	}
-	// Build request payload
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build request
-	if c.baseURL == "" {
-		c.baseURL = defaultBaseURL
-	}
-
-	req := &protocol.Request{}
-	res := &protocol.Response{}
-	req.Header.SetMethod(consts.MethodPost)
-	req.SetRequestURI(c.buildURL("/chat/completions", c.Provider.Model))
-	req.SetBody(payloadBytes)
-	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	slog.Info("making request")
-
-	// Send request
-	err = c.httpClient.Do(ctx, req, res) //*client.Client
-	if err != nil {
-		slog.Error(err.Error())
-		fmt.Println(res.Body())
-		return nil, err
-	}
-
-	slog.Info("request returned")
-
-	defer res.ConnectionClose() // replaced r.Body.Close()
-
-	slog.Info(fmt.Sprintf("%d", res.StatusCode()))
-
-	if res.StatusCode() != http.StatusOK {
-		msg := fmt.Sprintf("API returned unexpected status code: %d", res.StatusCode())
-
-		return nil, fmt.Errorf("%s: %s", msg, err.Error()) // nolint:goerr113
-	}
-
-	// Parse response
-	var response ChatResponse
-	return &response, json.NewDecoder(bytes.NewReader(res.Body())).Decode(&response)
-}
-*/
-
-func (c *Client) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
+func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
 	slog.Info("running createChatHttp")
 
 	if payload.StreamingFunc != nil {
@@ -264,8 +208,7 @@ func (c *Client) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
 	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err
@@ -289,30 +232,17 @@ func (c *Client) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
 	return &response, json.NewDecoder(resp.Body).Decode(&response)
 }
 
-func (c *Client) buildURL(suffix string) string {
+func (c *ProviderClient) buildURL(suffix string) string {
 	slog.Info("request url: " + fmt.Sprintf("%s%s", c.baseURL, suffix))
 
 	// open ai implement:
 	return fmt.Sprintf("%s%s", c.baseURL, suffix)
 }
 
-func (c *Client) setModel() string {
+func (c *ProviderClient) setModel() string {
 	if c.Provider.Model == "" {
 		return defaultChatModel
 	}
 
 	return c.Provider.Model
-}
-
-// HTTPClient returns a new Hertz HTTP client.
-//
-// It creates a new client using the client.NewClient() function and returns the client.
-// If an error occurs during the creation of the client, it logs the error using slog.Error().
-// The function returns the created client or nil if an error occurred.
-func HTTPClient() *client.Client {
-	c, err := client.NewClient()
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	return c
 }

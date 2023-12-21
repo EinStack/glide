@@ -8,13 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v2"
 
 	"glide/pkg/providers"
 
-	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -35,13 +36,21 @@ var (
 	}
 )
 
+var httpClient = &http.Client{
+	Timeout: time.Second * 60,
+	Transport: &http.Transport{
+		MaxIdleConns:        90,
+		MaxIdleConnsPerHost: 5,
+	},
+}
+
 // Client is a client for the OpenAI API.
-type Client struct {
+type ProviderClient struct {
 	Provider   providers.Provider `validate:"required"`
 	PoolName   string             `validate:"required"`
 	baseURL    string             `validate:"required"`
 	payload    []byte             `validate:"required"`
-	httpClient *client.Client     `validate:"required"`
+	httpClient *http.Client       `validate:"required"`
 }
 
 // OpenAiClient creates a new client for the OpenAI API.
@@ -53,9 +62,9 @@ type Client struct {
 // Returns:
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
-func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, error) {
+func Client(poolName string, modelName string, payload []byte) (*ProviderClient, error) {
 	// Read the YAML file
-	data, err := os.ReadFile("config.yaml") // TODO: How will this be accessed? Does it have to be read each time?
+	data, err := os.ReadFile("/Users/max/code/Glide/config.yaml") // TODO: How will this be accessed? Does it have to be read each time?
 	if err != nil {
 		return nil, fmt.Errorf("failed to read YAML file: %w", err)
 	}
@@ -81,12 +90,12 @@ func OpenAiClient(poolName string, modelName string, payload []byte) (*Client, e
 	}
 
 	// Create a new client
-	c := &Client{
+	c := &ProviderClient{
 		Provider:   *selectedProvider,
 		PoolName:   poolName,
 		baseURL:    defaultBaseURL, // Set the appropriate base URL
 		payload:    payload,
-		httpClient: HTTPClient(),
+		httpClient: httpClient,
 	}
 
 	v := validator.New()
