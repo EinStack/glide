@@ -1,0 +1,4 @@
+- name: openai
+  chatBaseURL: https://api.openai.com/v1
+- name: cohere
+  chatBaseURL: https://api.cohere.ai/v1/chat

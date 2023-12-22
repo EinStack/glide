@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -193,7 +194,8 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 
 	// Build request
 	if c.baseURL == "" {
-		c.baseURL = defaultBaseURL
+		slog.Error("baseURL not set")
+		return nil, errors.New("baseURL not set")
 	}
 
 	reqBody := bytes.NewBuffer(payloadBytes)

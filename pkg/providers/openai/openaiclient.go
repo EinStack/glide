@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://api.openai.com/v1"
-	providerName   = "openai"
+	providerName    = "openai"
+	providerVarPath = "/Users/max/code/Glide/pkg/providers/providerVars.yaml"
+	configPath      = "/Users/max/code/Glide/config.yaml"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -63,18 +64,19 @@ type ProviderClient struct {
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func Client(poolName string, modelName string, payload []byte) (*ProviderClient, error) {
-	// Read the YAML file
-	data, err := os.ReadFile("config.yaml") // TODO: Replace with struct from pools
+	provVars, err := readProviderVars(providerVarPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read YAML file: %w", err)
+		return nil, fmt.Errorf("failed to read provider vars: %w", err)
 	}
 
-	slog.Info("config loaded")
+	defaultBaseURL, err := getDefaultBaseURL(provVars, providerName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get default base URL: %w", err)
+	}
 
-	// Unmarshal the YAML data into your struct
-	var config providers.GatewayConfig
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal YAML data: %w", err)
+	config, err := readConfig(configPath) // TODO: replace with struct built in router/pool
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	// Find the pool with the specified name
@@ -137,4 +139,48 @@ func findProviderByModel(providers []providers.Provider, providerName string, mo
 	}
 
 	return nil, fmt.Errorf("no provider found in config for model: %s", modelName)
+}
+
+func readProviderVars(filePath string) ([]providers.ProviderVars, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read provider vars file: %w", err)
+	}
+
+	var provVars []providers.ProviderVars
+	if err := yaml.Unmarshal(data, &provVars); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal provider vars data: %w", err)
+	}
+
+	return provVars, nil
+}
+
+func getDefaultBaseURL(provVars []providers.ProviderVars, providerName string) (string, error) {
+	providerVarsMap := make(map[string]string)
+	for _, providerVar := range provVars {
+		providerVarsMap[providerVar.Name] = providerVar.ChatBaseURL
+	}
+
+	defaultBaseURL, ok := providerVarsMap[providerName]
+	if !ok {
+		return "", fmt.Errorf("default base URL not found for provider: %s", providerName)
+	}
+
+	return defaultBaseURL, nil
+}
+
+func readConfig(filePath string) (providers.GatewayConfig, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		slog.Error("Error:", err)
+		return providers.GatewayConfig{}, fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	var config providers.GatewayConfig
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		slog.Error("Error:", err)
+		return providers.GatewayConfig{}, fmt.Errorf("failed to unmarshal config data: %w", err)
+	}
+
+	return config, nil
 }

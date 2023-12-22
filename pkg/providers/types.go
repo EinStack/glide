@@ -21,10 +21,7 @@ type Provider struct {
 	DefaultParams map[string]interface{} `yaml:"default_params,omitempty"`
 }
 
-type RequestBody struct {
-	Message []struct {
-		Role    string `json:"role"`
-		Content string `json:"content"`
-	} `json:"message"`
-	MessageHistory []string `json:"messageHistory"`
+type ProviderVars struct {
+	Name        string `yaml:"name"`
+	ChatBaseURL string `yaml:"chatBaseURL"`
 }
