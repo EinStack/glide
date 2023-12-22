@@ -64,7 +64,7 @@ type ProviderClient struct {
 // - error: An error if the client creation failed.
 func Client(poolName string, modelName string, payload []byte) (*ProviderClient, error) {
 	// Read the YAML file
-	data, err := os.ReadFile("config.yaml") // TODO: How will this be accessed? Does it have to be read each time?
+	data, err := os.ReadFile("config.yaml") // TODO: Replace with struct from pools
 	if err != nil {
 		return nil, fmt.Errorf("failed to read YAML file: %w", err)
 	}
