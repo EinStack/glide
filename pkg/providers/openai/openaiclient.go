@@ -79,13 +79,13 @@ func Client(poolName string, modelName string, payload []byte) (*ProviderClient,
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
-	// Find the pool with the specified name
+	// Find the pool with the specified name from global config. This may not be necessary
 	selectedPool, err := findPoolByName(config.Gateway.Pools, poolName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find pool: %w", err)
 	}
 
-	// Find the OpenAI provider params in the selected pool with the specified model
+	// Find the OpenAI provider params in the selected pool with the specified model. This may not be necessary
 	selectedProvider, err := findProviderByModel(selectedPool.Providers, providerName, modelName)
 	if err != nil {
 		return nil, fmt.Errorf("provider error: %w", err)
