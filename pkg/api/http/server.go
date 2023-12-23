@@ -21,10 +21,12 @@ type Server struct {
 }
 
 func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *pools.Router) (*Server, error) {
+	srv := config.ToServer()
+
 	return &Server{
 		telemetry: tel,
 		router:    router,
-		server:    config.ToServer(),
+		server:    srv,
 	}, nil
 }
 
@@ -39,7 +41,7 @@ func (srv *Server) Run() error {
 func (srv *Server) Shutdown(_ context.Context) error {
 	exitWaitTime := srv.server.GetOptions().ExitWaitTimeout
 
-	srv.telemetry.Logger().Info(
+	srv.telemetry.Logger.Info(
 		fmt.Sprintf("Begin graceful shutdown, wait at most %d seconds...", exitWaitTime/time.Second),
 	)
 

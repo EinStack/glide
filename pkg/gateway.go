@@ -73,13 +73,13 @@ LOOP:
 		select {
 		// TODO: Watch for config updates
 		case sig := <-gw.signalC:
-			gw.telemetry.Logger().Info("Received signal from OS", zap.String("signal", sig.String()))
+			gw.telemetry.Logger.Info("Received signal from OS", zap.String("signal", sig.String()))
 			break LOOP
 		case <-gw.shutdownC:
-			gw.telemetry.Logger().Info("received shutdown request")
+			gw.telemetry.Logger.Info("received shutdown request")
 			break LOOP
 		case <-ctx.Done():
-			gw.telemetry.Logger().Info("context done, terminating process")
+			gw.telemetry.Logger.Info("context done, terminating process")
 			// Call shutdown with background context as the passed in context has been canceled
 			return gw.shutdown(context.Background())
 		}

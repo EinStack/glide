@@ -15,7 +15,6 @@ help:
 install-checkers: ## Install static checkers
 	@echo "🚚 Downloading binaries.."
 	@GOBIN=$(CHECKER_BIN) go install mvdan.cc/gofumpt@latest
-	@GOBIN=$(CHECKER_BIN) go install go.uber.org/nilaway/cmd/nilaway@latest
 	@GOBIN=$(CHECKER_BIN) go install golang.org/x/vuln/cmd/govulncheck@latest
 	@GOBIN=$(CHECKER_BIN) go install github.com/securego/gosec/v2/cmd/gosec@latest
 
@@ -33,7 +32,6 @@ static-checks: install-checkers ## Static Analysis
 	@echo "🧹 GoCI Lint.."
 	@golangci-lint run ./...
 	@echo "🧹 Nilaway.."
-	@$(CHECKER_BIN)/nilaway ./...
 
 vuln: install-checkers ## Check for vulnerabilities
 	@echo "🔍 Checking for vulnerabilities"

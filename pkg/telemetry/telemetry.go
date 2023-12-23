@@ -8,7 +8,8 @@ type Config struct {
 }
 
 type Telemetry struct {
-	logger *zap.Logger
+	Config *Config
+	Logger *zap.Logger
 	// TODO: add OTEL meter, tracer
 }
 
@@ -19,10 +20,7 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	}
 
 	return &Telemetry{
-		logger: logger,
+		Config: cfg,
+		Logger: logger,
 	}, nil
-}
-
-func (t *Telemetry) Logger() *zap.Logger {
-	return t.logger
 }
