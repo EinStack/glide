@@ -24,7 +24,6 @@ var (
 	ErrEmptyResponse = errors.New("empty response")
 )
 
-
 // OpenAiClient creates a new client for the OpenAI API.
 //
 // Parameters:
@@ -68,7 +67,7 @@ func Client(poolName string, modelName string, payload []byte) (*ProviderClient,
 		PoolName:   poolName,
 		BaseURL:    defaultBaseURL,
 		Payload:    payload,
-		HttpClient: providers.HTTPClient,
+		HTTPClient: providers.HTTPClient,
 	}
 
 	v := validator.New()

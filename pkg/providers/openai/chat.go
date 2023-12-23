@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"glide/pkg/providers"
 	"io"
 	"log/slog"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"glide/pkg/providers"
 )
 
 const (
@@ -25,10 +26,8 @@ type ProviderClient struct {
 	PoolName   string             `validate:"required"`
 	BaseURL    string             `validate:"required"`
 	Payload    []byte             `validate:"required"`
-	HttpClient *http.Client       `validate:"required"`
+	HTTPClient *http.Client       `validate:"required"`
 }
-
-
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
@@ -77,6 +76,20 @@ type ChatUsage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
+}
+
+// ChatResponse is a response to a chat request.
+type ChatResponse struct {
+	ID      string        `json:"id,omitempty"`
+	Created float64       `json:"created,omitempty"`
+	Choices []*ChatChoice `json:"choices,omitempty"`
+	Model   string        `json:"model,omitempty"`
+	Object  string        `json:"object,omitempty"`
+	Usage   struct {
+		CompletionTokens float64 `json:"completion_tokens,omitempty"`
+		PromptTokens     float64 `json:"prompt_tokens,omitempty"`
+		TotalTokens      float64 `json:"total_tokens,omitempty"`
+	} `json:"usage,omitempty"`
 }
 
 // Chat sends a chat request to the specified OpenAI model.
@@ -165,25 +178,11 @@ func (c *ProviderClient) CreateChatRequest(message []byte) *ChatRequest {
 	return chatRequest
 }
 
-// ChatResponse is a response to a chat request.
-type ChatResponse struct {
-	ID      string        `json:"id,omitempty"`
-	Created float64       `json:"created,omitempty"`
-	Choices []*ChatChoice `json:"choices,omitempty"`
-	Model   string        `json:"model,omitempty"`
-	Object  string        `json:"object,omitempty"`
-	Usage   struct {
-		CompletionTokens float64 `json:"completion_tokens,omitempty"`
-		PromptTokens     float64 `json:"prompt_tokens,omitempty"`
-		TotalTokens      float64 `json:"total_tokens,omitempty"`
-	} `json:"usage,omitempty"`
-}
-
 // CreateChatResponse creates chat Response.
 func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
 	_ = ctx // keep this for future use
 
-	resp, err := c.createChatHTTP(r) // netpoll -> hertz does not yet support tls
+	resp, err := c.createChatHTTP(r) // netpoll/hertz does not yet support tls
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +222,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.HttpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err

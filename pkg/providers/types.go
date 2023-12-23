@@ -3,13 +3,12 @@ package providers
 import (
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
-	"net/http"
 	"time"
 
 	"gopkg.in/yaml.v2"
-
 )
 
 type GatewayConfig struct {
@@ -39,12 +38,12 @@ type ProviderVars struct {
 }
 
 type RequestBody struct {
-		Message []struct {
-			Role    string `json:"role"`
-			Content string `json:"content"`
-		} `json:"message"`
-		MessageHistory []string `json:"messageHistory"`
-	}
+	Message []struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"message"`
+	MessageHistory []string `json:"messageHistory"`
+}
 
 // Variables
 
@@ -161,4 +160,3 @@ func ReadConfig(filePath string) (GatewayConfig, error) {
 
 	return config, nil
 }
-
