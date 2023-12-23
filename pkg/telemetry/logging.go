@@ -32,9 +32,12 @@ type LogConfig struct {
 
 func NewLogConfig() *LogConfig {
 	return &LogConfig{
-		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
-		Encoding:    "json",
-		OutputPaths: []string{"stdout"},
+		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
+		Encoding:          "json",
+		DisableCaller:     false,
+		DisableStacktrace: false,
+		OutputPaths:       []string{"stdout"},
+		InitialFields:     make(map[string]interface{}),
 	}
 }
 
@@ -63,7 +66,6 @@ func NewHertzLogger(zapConfig *zap.Config) (*hertzzap.Logger, error) {
 	// Both hertzzap and zap have a set of private methods that prevents from leveraging
 	//  their native encoder & sink building functionality
 	//  We had to copy & paste some of those to get it working
-
 	var encoder zapcore.Encoder
 
 	if zapConfig.Encoding == "console" {

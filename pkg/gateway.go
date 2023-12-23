@@ -81,7 +81,7 @@ LOOP:
 		case <-ctx.Done():
 			gw.telemetry.Logger.Info("context done, terminating process")
 			// Call shutdown with background context as the passed in context has been canceled
-			return gw.shutdown(context.Background())
+			return gw.shutdown(context.Background()) //nolint:contextcheck
 		}
 	}
 

@@ -48,5 +48,5 @@ func (srv *Server) Shutdown(_ context.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), exitWaitTime)
 	defer cancel()
 
-	return srv.server.Shutdown(ctx)
+	return srv.server.Shutdown(ctx) //nolint:contextcheck
 }

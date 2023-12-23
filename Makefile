@@ -31,7 +31,6 @@ lint: install-checkers ## Lint the source code
 static-checks: install-checkers ## Static Analysis
 	@echo "🧹 GoCI Lint.."
 	@golangci-lint run ./...
-	@echo "🧹 Nilaway.."
 
 vuln: install-checkers ## Check for vulnerabilities
 	@echo "🔍 Checking for vulnerabilities"
