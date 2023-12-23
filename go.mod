@@ -5,9 +5,11 @@ go 1.21.5
 require (
 	github.com/cloudwego/hertz v0.7.3
 	github.com/go-playground/validator/v10 v10.16.0
+	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/goleak v1.3.0
 	go.uber.org/multierr v1.11.0
+	go.uber.org/zap v1.26.0
 )
 
 require (

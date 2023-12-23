@@ -26,8 +26,8 @@ var validate *validator.Validate = validator.New()
 func BuildAPIRequest(provider string, params map[string]string, mode string) (interface{}, error) {
 	// provider is the name of the provider, e.g. "openai", params is the map of parameters from the client,
 	// mode is the mode of the provider, e.g. "chat", configList is the list of provider configurations
-
 	var providerConfig map[string]interface{}
+
 	if config, ok := configList[provider].(ProviderConfigs); ok {
 		if modeConfig, ok := config[mode].(map[string]interface{}); ok {
 			providerConfig = modeConfig
