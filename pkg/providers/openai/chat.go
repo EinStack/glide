@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"glide/pkg/providers"
 	"io"
 	"log/slog"
 	"net/http"
@@ -17,6 +18,17 @@ const (
 	defaultChatModel = "gpt-3.5-turbo"
 	defaultEndpoint  = "/chat/completions"
 )
+
+// Client is a client for the OpenAI API.
+type ProviderClient struct {
+	Provider   providers.Provider `validate:"required"`
+	PoolName   string             `validate:"required"`
+	BaseURL    string             `validate:"required"`
+	Payload    []byte             `validate:"required"`
+	HttpClient *http.Client       `validate:"required"`
+}
+
+
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
@@ -79,7 +91,7 @@ func (c *ProviderClient) Chat() (*ChatResponse, error) {
 
 	slog.Info("creating chat request")
 
-	chatRequest := c.CreateChatRequest(c.payload)
+	chatRequest := c.CreateChatRequest(c.Payload)
 
 	slog.Info("chat request created")
 
@@ -93,6 +105,7 @@ func (c *ProviderClient) Chat() (*ChatResponse, error) {
 }
 
 func (c *ProviderClient) CreateChatRequest(message []byte) *ChatRequest {
+	var requestBody providers.RequestBody
 	err := json.Unmarshal(message, &requestBody)
 	if err != nil {
 		slog.Error("Error:", err)
@@ -193,7 +206,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 	}
 
 	// Build request
-	if c.baseURL == "" {
+	if c.BaseURL == "" {
 		slog.Error("baseURL not set")
 		return nil, errors.New("baseURL not set")
 	}
@@ -210,7 +223,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err
@@ -235,10 +248,10 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 }
 
 func (c *ProviderClient) buildURL(suffix string) string {
-	slog.Info("request url: " + fmt.Sprintf("%s%s", c.baseURL, suffix))
+	slog.Info("request url: " + fmt.Sprintf("%s%s", c.BaseURL, suffix))
 
 	// open ai implement:
-	return fmt.Sprintf("%s%s", c.baseURL, suffix)
+	return fmt.Sprintf("%s%s", c.BaseURL, suffix)
 }
 
 func (c *ProviderClient) setModel() string {

@@ -7,13 +7,6 @@ package openai
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"net/http"
-	"os"
-	"path/filepath"
-	"time"
-
-	"gopkg.in/yaml.v2"
 
 	"glide/pkg/providers"
 
@@ -29,31 +22,8 @@ const (
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
 var (
 	ErrEmptyResponse = errors.New("empty response")
-	requestBody      struct {
-		Message []struct {
-			Role    string `json:"role"`
-			Content string `json:"content"`
-		} `json:"message"`
-		MessageHistory []string `json:"messageHistory"`
-	}
 )
 
-var httpClient = &http.Client{
-	Timeout: time.Second * 30,
-	Transport: &http.Transport{
-		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 2,
-	},
-}
-
-// Client is a client for the OpenAI API.
-type ProviderClient struct {
-	Provider   providers.Provider `validate:"required"`
-	PoolName   string             `validate:"required"`
-	baseURL    string             `validate:"required"`
-	payload    []byte             `validate:"required"`
-	httpClient *http.Client       `validate:"required"`
-}
 
 // OpenAiClient creates a new client for the OpenAI API.
 //
@@ -65,29 +35,29 @@ type ProviderClient struct {
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func Client(poolName string, modelName string, payload []byte) (*ProviderClient, error) {
-	provVars, err := readProviderVars(providerVarPath)
+	provVars, err := providers.ReadProviderVars(providerVarPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read provider vars: %w", err)
 	}
 
-	defaultBaseURL, err := getDefaultBaseURL(provVars, providerName)
+	defaultBaseURL, err := providers.GetDefaultBaseURL(provVars, providerName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get default base URL: %w", err)
 	}
 
-	config, err := readConfig(configPath) // TODO: replace with struct built in router/pool
+	config, err := providers.ReadConfig(configPath) // TODO: replace with struct built in router/pool
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	// Find the pool with the specified name from global config. This may not be necessary if details are passed directly in struct
-	selectedPool, err := findPoolByName(config.Gateway.Pools, poolName)
+	selectedPool, err := providers.FindPoolByName(config.Gateway.Pools, poolName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find pool: %w", err)
 	}
 
 	// Find the OpenAI provider params in the selected pool with the specified model. This may not be necessary if details are passed directly in struct
-	selectedProvider, err := findProviderByModel(selectedPool.Providers, providerName, modelName)
+	selectedProvider, err := providers.FindProviderByModel(selectedPool.Providers, providerName, modelName)
 	if err != nil {
 		return nil, fmt.Errorf("provider error: %w", err)
 	}
@@ -96,9 +66,9 @@ func Client(poolName string, modelName string, payload []byte) (*ProviderClient,
 	c := &ProviderClient{
 		Provider:   *selectedProvider,
 		PoolName:   poolName,
-		baseURL:    defaultBaseURL,
-		payload:    payload,
-		httpClient: httpClient,
+		BaseURL:    defaultBaseURL,
+		Payload:    payload,
+		HttpClient: providers.HTTPClient,
 	}
 
 	v := validator.New()
@@ -108,108 +78,4 @@ func Client(poolName string, modelName string, payload []byte) (*ProviderClient,
 	}
 
 	return c, nil
-}
-
-func findPoolByName(pools []providers.Pool, name string) (*providers.Pool, error) {
-	for i := range pools {
-		pool := &pools[i]
-		if pool.Name == name {
-			return pool, nil
-		}
-	}
-
-	return nil, fmt.Errorf("pool not found: %s", name)
-}
-
-// findProviderByModel find provider params in the given config file by the specified provider name and model name.
-//
-// Parameters:
-// - providers: a slice of providers.Provider, the list of providers to search in.
-// - providerName: a string, the name of the provider to search for.
-// - modelName: a string, the name of the model to search for.
-//
-// Returns:
-// - *providers.Provider: a pointer to the found provider.
-// - error: an error indicating whether a provider was found or not.
-func findProviderByModel(providers []providers.Provider, providerName string, modelName string) (*providers.Provider, error) {
-	for i := range providers {
-		provider := &providers[i]
-		if provider.Name == providerName && provider.Model == modelName {
-			return provider, nil
-		}
-	}
-
-	return nil, fmt.Errorf("no provider found in config for model: %s", modelName)
-}
-
-func readProviderVars(filePath string) ([]providers.ProviderVars, error) {
-	absPath, err := filepath.Abs(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get absolute file path: %w", err)
-	}
-
-	// Validate that the absolute path is a file
-	fileInfo, err := os.Stat(absPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get file info: %w", err)
-	}
-	if fileInfo.IsDir() {
-		return nil, fmt.Errorf("provided path is a directory, not a file")
-	}
-
-	data, err := os.ReadFile(absPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read provider vars file: %w", err)
-	}
-
-	var provVars []providers.ProviderVars
-	if err := yaml.Unmarshal(data, &provVars); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal provider vars data: %w", err)
-	}
-
-	return provVars, nil
-}
-
-func getDefaultBaseURL(provVars []providers.ProviderVars, providerName string) (string, error) {
-	providerVarsMap := make(map[string]string)
-	for _, providerVar := range provVars {
-		providerVarsMap[providerVar.Name] = providerVar.ChatBaseURL
-	}
-
-	defaultBaseURL, ok := providerVarsMap[providerName]
-	if !ok {
-		return "", fmt.Errorf("default base URL not found for provider: %s", providerName)
-	}
-
-	return defaultBaseURL, nil
-}
-
-func readConfig(filePath string) (providers.GatewayConfig, error) {
-	absPath, err := filepath.Abs(filePath)
-	if err != nil {
-		return providers.GatewayConfig{}, fmt.Errorf("failed to get absolute file path: %w", err)
-	}
-
-	// Validate that the absolute path is a file
-	fileInfo, err := os.Stat(absPath)
-	if err != nil {
-		return providers.GatewayConfig{}, fmt.Errorf("failed to get file info: %w", err)
-	}
-	if fileInfo.IsDir() {
-		return providers.GatewayConfig{}, fmt.Errorf("provided path is a directory, not a file")
-	}
-
-	data, err := os.ReadFile(absPath)
-	if err != nil {
-		slog.Error("Error:", err)
-		return providers.GatewayConfig{}, fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	var config providers.GatewayConfig
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		slog.Error("Error:", err)
-		return providers.GatewayConfig{}, fmt.Errorf("failed to unmarshal config data: %w", err)
-	}
-
-	return config, nil
 }
