@@ -22,7 +22,6 @@ linters:
     - prealloc
     - predeclared
     - testifylint
-    - testpackage
     - unconvert
     - usestdlibvars
     - wsl
