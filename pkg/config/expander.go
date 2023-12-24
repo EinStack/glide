@@ -10,7 +10,6 @@ type Expander struct{}
 func (e *Expander) Expand(rawConfig RawConfig) (RawConfig, error) {
 	for configKey, configValue := range rawConfig {
 		expandedValue, err := e.expandConfigValue(configValue)
-
 		if err != nil {
 			return nil, err
 		}
