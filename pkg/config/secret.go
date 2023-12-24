@@ -9,7 +9,7 @@ const maskedSecret = "[REDACTED]"
 
 var _ encoding.TextMarshaler = Secret("")
 
-// MarshalText marshals the string as `[REDACTED]`.
+// MarshalText marshals the secret as `[REDACTED]`.
 func (s Secret) MarshalText() ([]byte, error) {
 	return []byte(maskedSecret), nil
 }
