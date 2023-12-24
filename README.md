@@ -22,6 +22,7 @@ model failover, caching, etc.
 - **High availability** and **resiliency** working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
+- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
 - Straightforward and simple maintenance and configuration, API key rotation, etc.
 
 ## Supported Providers
@@ -55,6 +56,7 @@ TBU
 
 - Exact & Semantic Caching
 - Cost Management & Budgeting
+- and many more!
 
 Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
 if there is a feature or an enhancement you'd like to see in Glide.
@@ -67,8 +69,8 @@ if there is a feature or an enhancement you'd like to see in Glide.
 
 - Maintainers
     
-    - [Roman Hlushko](https://github.com/roma-glushko)
-    - [Max Krueger](https://github.com/mkrueger12)
+    - [Roman Hlushko](https://github.com/roma-glushko), Software Engineer, Distributed Systems & MLOps
+    - [Max Krueger](https://github.com/mkrueger12), Data Engineer, Data Scientist
 
 Thanks everyone for already put their effort to make Glide better and more feature-rich: 
 
