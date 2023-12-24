@@ -19,13 +19,13 @@ install-checkers: ## Install static checkers
 	@GOBIN=$(CHECKER_BIN) go install github.com/securego/gosec/v2/cmd/gosec@latest
 
 lint: install-checkers ## Lint the source code
+	@echo "🧹 Cleaning go.mod.."
+	@go mod tidy
 	@echo "🧹 Formatting files.."
 	@go fmt ./...
 	@$(CHECKER_BIN)/gofumpt -l -w .
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
-	@echo "🧹 Cleaning go.mod.."
-	@go mod tidy
 
 
 static-checks: install-checkers ## Static Analysis
