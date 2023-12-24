@@ -7,6 +7,6 @@ import (
 
 // Config is a general top-level Glide configuration
 type Config struct {
-	Telemetry *telemetry.Config `json:"telemetry" yaml:"telemetry"`
-	API       *api.Config       `json:"api" yaml:"api"`
+	Telemetry *telemetry.Config `mapstructure:"telemetry"`
+	API       *api.Config       `mapstructure:"api"`
 }

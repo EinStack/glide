@@ -16,7 +16,7 @@ func NewCLI() *cobra.Command {
 		Use:     "glide",
 		Short:   "🐦Glide is an open source lightweight high-performant model gateway",
 		Long:    "TODO",
-		Version: pkg.GetVersion(),
+		Version: pkg.FullVersion,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configProvider, err := config.NewProvider().Load(cfgFile)
 			if err != nil {
