@@ -3,7 +3,7 @@ package telemetry
 import "go.uber.org/zap"
 
 type Config struct {
-	LogConfig *LogConfig `json:"logs" yaml:"logs"`
+	LogConfig *LogConfig `json:"logging" yaml:"logging"`
 	// TODO: add OTEL config
 }
 
