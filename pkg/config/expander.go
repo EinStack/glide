@@ -12,7 +12,7 @@ type Expander struct{}
 
 func (e *Expander) Expand(content []byte) []byte {
 	expandedContent := string(content)
-
+	
 	expandedContent = e.expandEnvVarDirectives(expandedContent)
 	expandedContent = e.expandFileDirectives(expandedContent)
 	expandedContent = e.expandEnvVars(expandedContent)

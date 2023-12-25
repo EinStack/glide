@@ -56,7 +56,7 @@ func TestExpander_EnvVarExpanded(t *testing.T) {
 	assert.Equal(t, apiKey, cfg.APIKey)
 	assert.Equal(t, []string{seed1, seed2, "42"}, cfg.Seeds)
 
-	assert.Contains(t, cfg.Messages["human"], "how $$ $ does")
+	assert.Contains(t, cfg.Messages["human"], "how $$ $ $ does")
 	assert.Contains(t, cfg.Messages["human"], fmt.Sprintf("$%v", answerMarker))
 
 	assert.Equal(t, topP, cfg.Params[0].Value)
