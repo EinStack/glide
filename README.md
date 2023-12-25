@@ -3,7 +3,7 @@
     <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
 </div>
 
-[![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%2362d0c6)](https://github.com/modelgateway/glide/blob/main/LICENSE)
+[![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
 
 Glide is a cloud-native open source high-performant model gateway. All LLMOps you needed is packed in one lightweight service.
 
