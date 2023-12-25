@@ -1,5 +1,5 @@
 # Glide
-<div style="text-align: center;">
+<div align="center">
     <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
 </div>
 
