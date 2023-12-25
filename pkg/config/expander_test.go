@@ -24,10 +24,15 @@ type sampleConfig struct {
 
 func TestExpander_EnvVarExpanded(t *testing.T) {
 	const apiKey = "ABC1234"
+
 	const seed1 = "40"
+
 	const seed2 = "41"
+
 	const answerMarker = "Answer:"
+
 	const topP = "3"
+
 	const budget = "100"
 
 	t.Setenv("OPENAPI_KEY", apiKey)
@@ -41,14 +46,14 @@ func TestExpander_EnvVarExpanded(t *testing.T) {
 	require.NoError(t, err)
 
 	expander := Expander{}
-	updatedContent, err := expander.Expand(content)
+	updatedContent := expander.Expand(content)
 
 	var cfg *sampleConfig
 
 	err = yaml.Unmarshal(updatedContent, &cfg)
 	require.NoError(t, err)
 
-	assert.Equal(t, apiKey, cfg.ApiKey)
+	assert.Equal(t, apiKey, cfg.APIKey)
 	assert.Equal(t, []string{seed1, seed2, "42"}, cfg.Seeds)
 
 	assert.Contains(t, cfg.Messages["human"], "how $$ $ does")

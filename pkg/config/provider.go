@@ -29,11 +29,7 @@ func (p *Provider) Load(configPath string) (*Provider, error) {
 	}
 
 	// process raw config
-	content, err = p.expander.Expand(content)
-
-	if err != nil {
-		return p, fmt.Errorf("unable to expand config directives %v: %w", configPath, err)
-	}
+	content = p.expander.Expand(content)
 
 	// validate the config structure
 	cfg := DefaultConfig()

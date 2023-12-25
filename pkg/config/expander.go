@@ -10,14 +10,14 @@ import (
 // Expander finds special directives like ${env:ENV_VAR} in the config file and fill them with actual values
 type Expander struct{}
 
-func (e *Expander) Expand(content []byte) ([]byte, error) {
+func (e *Expander) Expand(content []byte) []byte {
 	expandedContent := string(content)
 
 	expandedContent = e.expandEnvVarDirectives(expandedContent)
 	expandedContent = e.expandFileDirectives(expandedContent)
 	expandedContent = e.expandEnvVars(expandedContent)
 
-	return []byte(expandedContent), nil
+	return []byte(expandedContent)
 }
 
 // expandEnvVars expands $ENVAR
