@@ -6,7 +6,6 @@ require (
 	github.com/cloudwego/hertz v0.7.3
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/hertz-contrib/logger/zap v1.1.0
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.2
 	go.uber.org/goleak v1.3.0

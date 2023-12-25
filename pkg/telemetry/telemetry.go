@@ -3,7 +3,7 @@ package telemetry
 import "go.uber.org/zap"
 
 type Config struct {
-	LogConfig *LogConfig `mapstructure:"logging"`
+	LogConfig *LogConfig `yaml:"logging"`
 	// TODO: add OTEL config
 }
 
@@ -11,6 +11,12 @@ type Telemetry struct {
 	Config *Config
 	Logger *zap.Logger
 	// TODO: add OTEL meter, tracer
+}
+
+func DefaultConfig() *Config {
+	return &Config{
+		LogConfig: DefaultLogConfig(),
+	}
 }
 
 func NewTelemetry(cfg *Config) (*Telemetry, error) {

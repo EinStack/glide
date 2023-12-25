@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mitchellh/mapstructure"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,31 +23,23 @@ func NewProvider() *Provider {
 }
 
 func (p *Provider) Load(configPath string) (*Provider, error) {
-	rawContent, err := os.ReadFile(filepath.Clean(configPath))
+	content, err := os.ReadFile(filepath.Clean(configPath))
 	if err != nil {
 		return p, fmt.Errorf("unable to read the file %v: %w", configPath, err)
 	}
 
-	var rawConfig RawConfig
-
-	if err := yaml.Unmarshal(rawContent, &rawConfig); err != nil {
-		return p, fmt.Errorf("unable to serialize the file %v: %w", configPath, err)
-	}
-
 	// process raw config
-	rawConfig, err = p.expander.Expand(rawConfig)
+	content, err = p.expander.Expand(content)
 
 	if err != nil {
 		return p, fmt.Errorf("unable to expand config directives %v: %w", configPath, err)
 	}
 
 	// validate the config structure
-	var cfg *Config
+	cfg := DefaultConfig()
 
-	err = mapstructure.Decode(rawConfig, cfg)
-
-	if err != nil {
-		return p, err
+	if err := yaml.Unmarshal(content, &cfg); err != nil {
+		return p, fmt.Errorf("unable to parse config file %v: %w", configPath, err)
 	}
 
 	// TODO: validate config values

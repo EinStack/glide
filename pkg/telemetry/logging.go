@@ -9,30 +9,30 @@ import (
 
 type LogConfig struct {
 	// Level is the minimum enabled logging level.
-	Level zap.AtomicLevel `mapstructure:"level"`
+	Level zapcore.Level `yaml:"level"`
 
 	// Encoding sets the logger's encoding. Valid values are "json", "console"
-	Encoding string `mapstructure:"encoding"`
+	Encoding string `yaml:"encoding"`
 
 	// DisableCaller stops annotating logs with the calling function's file name and line number.
 	// By default, all logs are annotated.
-	DisableCaller bool `mapstructure:"disable_caller"`
+	DisableCaller bool `yaml:"disable_caller"`
 
 	// DisableStacktrace completely disables automatic stacktrace capturing. By
 	// default, stacktraces are captured for WarnLevel and above logs in
 	// development and ErrorLevel and above in production.
-	DisableStacktrace bool `mapstructure:"disable_stacktrace"`
+	DisableStacktrace bool `yaml:"disable_stacktrace"`
 
 	// OutputPaths is a list of URLs or file paths to write logging output to.
-	OutputPaths []string `mapstructure:"output_paths"`
+	OutputPaths []string `yaml:"output_paths"`
 
 	// InitialFields is a collection of fields to add to the root logger.
-	InitialFields map[string]interface{} `mapstructure:"initial_fields"`
+	InitialFields map[string]interface{} `yaml:"initial_fields"`
 }
 
-func NewLogConfig() *LogConfig {
+func DefaultLogConfig() *LogConfig {
 	return &LogConfig{
-		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
+		Level:             zap.InfoLevel,
 		Encoding:          "json",
 		DisableCaller:     false,
 		DisableStacktrace: false,
@@ -53,7 +53,7 @@ func (c *LogConfig) ToZapConfig() *zap.Config {
 		zapConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
-	zapConfig.Level = c.Level
+	zapConfig.Level = zap.NewAtomicLevelAt(c.Level)
 	zapConfig.DisableCaller = c.DisableCaller
 	zapConfig.DisableStacktrace = c.DisableStacktrace
 	zapConfig.OutputPaths = c.OutputPaths
