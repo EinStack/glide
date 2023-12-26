@@ -7,4 +7,4 @@ glide
 tmp
 coverage.txt
 precommit.txt
-/Users/max/code/Glide/pkg/providers/openai/openai_test.go
+pkg/providers/openai/openai_test.go

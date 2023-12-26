@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	providerName    = "openai"
-	defaultBaseURL  = "https://api.openai.com/v1"
+	providerName   = "openai"
+	defaultBaseURL = "https://api.openai.com/v1"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
