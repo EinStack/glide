@@ -8,7 +8,6 @@ import (
 	"errors"
 
 	"glide/pkg/providers"
-
 )
 
 const (
@@ -23,7 +22,6 @@ var (
 	ErrEmptyResponse = errors.New("empty response")
 )
 
-
 // OpenAiClient creates a new client for the OpenAI API.
 //
 // Parameters:
@@ -34,13 +32,11 @@ var (
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func Client(UnifiedData providers.UnifiedAPIData) (*ProviderClient, error) {
-
-
 	// Create a new client
 	c := &ProviderClient{
-		BaseURL:    defaultBaseURL,
-		UnifiedData:    UnifiedData,
-		HTTPClient: providers.HTTPClient,
+		BaseURL:     defaultBaseURL,
+		UnifiedData: UnifiedData,
+		HTTPClient:  providers.HTTPClient,
 	}
 
 	return c, nil

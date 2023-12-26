@@ -22,29 +22,29 @@ const (
 
 // Client is a client for the OpenAI API.
 type ProviderClient struct {
-	BaseURL    string             `validate:"required"`
-	UnifiedData    providers.UnifiedAPIData             `validate:"required"`
-	HTTPClient *http.Client       `validate:"required"`
+	BaseURL     string                   `validate:"required"`
+	UnifiedData providers.UnifiedAPIData `validate:"required"`
+	HTTPClient  *http.Client             `validate:"required"`
 }
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
-	Model            string           `json:"model" validate:"required,lowercase"`
-	Messages         []string   `json:"messages" validate:"required"`
-	Temperature      float64          `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=1"`
-	TopP             float64          `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
-	MaxTokens        int              `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
-	N                int              `json:"n,omitempty" validate:"omitempty,gte=1"`
-	StopWords        []string         `json:"stop,omitempty"`
-	Stream           bool             `json:"stream,omitempty" validate:"omitempty, boolean"`
-	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int              `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64 `json:"logit_bias,omitempty" validate:"omitempty"`
-	User             interface{}      `json:"user,omitempty"`
-	Seed             interface{}      `json:"seed,omitempty" validate:"omitempty,gte=0"`
-	Tools            []string         `json:"tools,omitempty"`
-	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
-	ResponseFormat   interface{}      `json:"response_format,omitempty"`
+	Model            string              `json:"model" validate:"required,lowercase"`
+	Messages         []map[string]string `json:"messages" validate:"required"`
+	Temperature      float64             `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=1"`
+	TopP             float64             `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
+	MaxTokens        int                 `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
+	N                int                 `json:"n,omitempty" validate:"omitempty,gte=1"`
+	StopWords        []string            `json:"stop,omitempty"`
+	Stream           bool                `json:"stream,omitempty" validate:"omitempty, boolean"`
+	FrequencyPenalty int                 `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int                 `json:"presence_penalty,omitempty"`
+	LogitBias        *map[int]float64    `json:"logit_bias,omitempty" validate:"omitempty"`
+	User             interface{}         `json:"user,omitempty"`
+	Seed             interface{}         `json:"seed,omitempty" validate:"omitempty,gte=0"`
+	Tools            []string            `json:"tools,omitempty"`
+	ToolChoice       interface{}         `json:"tool_choice,omitempty"`
+	ResponseFormat   interface{}         `json:"response_format,omitempty"`
 
 	// StreamingFunc is a function to be called for each chunk of a streaming response.
 	// Return an error to stop streaming early.
@@ -116,10 +116,9 @@ func (c *ProviderClient) Chat() (*ChatResponse, error) {
 }
 
 func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData) *ChatRequest {
-
 	slog.Info("creating chatRequest from payload")
 
-	var messages []string
+	var messages []map[string]string
 
 	// Add items from messageHistory first
 	messages = append(messages, unifiedData.MessageHistory...)
@@ -205,7 +204,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 		return nil, err
 	}
 
-	fmt.Println("ReqBody" + reqBody.String())
+	fmt.Println(reqBody.String())
 
 	req.Header.Set("Authorization", "Bearer "+c.UnifiedData.APIKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -246,5 +245,5 @@ func (c *ProviderClient) setModel() string {
 		return defaultChatModel
 	}
 
-	return  c.UnifiedData.Model
+	return c.UnifiedData.Model
 }
