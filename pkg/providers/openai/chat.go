@@ -126,7 +126,7 @@ func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData)
 	// Add msg variable last
 	messages = append(messages, unifiedData.Message)
 
-	// iterate through self.Provider.DefaultParams and add them to the request otherwise leave the default value
+	// iterate throughunifiedData.Params and add them to the request otherwise leave the default value
 
 	chatRequest := &ChatRequest{
 		Model:            c.setModel(),

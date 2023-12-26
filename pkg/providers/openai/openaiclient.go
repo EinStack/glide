@@ -12,8 +12,6 @@ import (
 
 const (
 	providerName    = "openai"
-	providerVarPath = "/Users/max/code/Glide/pkg/providers/providerVars.yaml"
-	configPath      = "/Users/max/code/Glide/config.yaml"
 	defaultBaseURL  = "https://api.openai.com/v1"
 )
 
