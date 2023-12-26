@@ -22,17 +22,15 @@ const (
 
 // Client is a client for the OpenAI API.
 type ProviderClient struct {
-	Provider   providers.Provider `validate:"required"`
-	PoolName   string             `validate:"required"`
 	BaseURL    string             `validate:"required"`
-	Payload    []byte             `validate:"required"`
+	UnifiedData    providers.UnifiedAPIData             `validate:"required"`
 	HTTPClient *http.Client       `validate:"required"`
 }
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
 	Model            string           `json:"model" validate:"required,lowercase"`
-	Messages         []*ChatMessage   `json:"messages" validate:"required"`
+	Messages         []string   `json:"messages" validate:"required"`
 	Temperature      float64          `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=1"`
 	TopP             float64          `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
 	MaxTokens        int              `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
@@ -104,7 +102,7 @@ func (c *ProviderClient) Chat() (*ChatResponse, error) {
 
 	slog.Info("creating chat request")
 
-	chatRequest := c.CreateChatRequest(c.Payload)
+	chatRequest := c.CreateChatRequest(c.UnifiedData)
 
 	slog.Info("chat request created")
 
@@ -117,27 +115,19 @@ func (c *ProviderClient) Chat() (*ChatResponse, error) {
 	return resp, err
 }
 
-func (c *ProviderClient) CreateChatRequest(message []byte) *ChatRequest {
-	var requestBody providers.RequestBody
-	err := json.Unmarshal(message, &requestBody)
-	if err != nil {
-		slog.Error("Error:", err)
-		return nil
-	}
+func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData) *ChatRequest {
 
 	slog.Info("creating chatRequest from payload")
 
-	var messages []*ChatMessage
-	for _, msg := range requestBody.Message {
-		chatMsg := &ChatMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		}
-		if msg.Role == "user" {
-			chatMsg.Content += " " + strings.Join(requestBody.MessageHistory, " ")
-		}
-		messages = append(messages, chatMsg)
+	var messages []string
+
+	// Add items from messageHistory first
+	for _, history := range unifiedData.MessageHistory {
+		messages = append(messages, history)
 	}
+
+	// Add msg variable last
+	messages = append(messages, unifiedData.Message)
 
 	// iterate through self.Provider.DefaultParams and add them to the request otherwise leave the default value
 
@@ -161,7 +151,7 @@ func (c *ProviderClient) CreateChatRequest(message []byte) *ChatRequest {
 	}
 
 	// Use reflection to dynamically assign default parameter values
-	defaultParams := c.Provider.DefaultParams
+	defaultParams := unifiedData.Params
 
 	chatRequestValue := reflect.ValueOf(chatRequest).Elem()
 	chatRequestType := chatRequestValue.Type()
@@ -219,7 +209,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 
 	fmt.Println("ReqBody" + reqBody.String())
 
-	req.Header.Set("Authorization", "Bearer "+c.Provider.APIKey)
+	req.Header.Set("Authorization", "Bearer "+c.UnifiedData.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)

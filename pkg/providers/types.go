@@ -55,6 +55,16 @@ var HTTPClient = &http.Client{
 	},
 }
 
+type UnifiedAPIData struct {
+	Provider       string            `json:"provider"`
+	Model          string            `json:"model"`
+	APIKey         string            `json:"api_key"`
+	Params         map[string]interface{} `json:"params"`
+	Message        string            `json:"message"`
+	MessageHistory []string          `json:"messageHistory"`
+}
+
+
 // Helper Functions
 
 func FindPoolByName(pools []Pool, name string) (*Pool, error) {
