@@ -22,15 +22,15 @@ const (
 
 // Client is a client for the OpenAI API.
 type ProviderClient struct {
-	BaseURL     string                   `validate:"required"`
-	UnifiedData providers.UnifiedAPIData `validate:"required"`
-	HTTPClient  *http.Client             `validate:"required"`
+	BaseURL     string                   `json:"baseURL"`
+	UnifiedData providers.UnifiedAPIData `json:"unifiedData"`
+	HTTPClient  *http.Client             `json:"httpClient"`
 }
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
-	Model            string              `json:"model" validate:"required,lowercase"`
-	Messages         []map[string]string `json:"messages" validate:"required"`
+	Model            string              `json:"model"`
+	Messages         []map[string]string `json:"messages"`
 	Temperature      float64             `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=1"`
 	TopP             float64             `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
 	MaxTokens        int                 `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
@@ -148,6 +148,7 @@ func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData)
 	}
 
 	// Use reflection to dynamically assign default parameter values
+	// TODO: refactor to avoid reflection(?)
 	defaultParams := unifiedData.Params
 
 	chatRequestValue := reflect.ValueOf(chatRequest).Elem()

@@ -8,6 +8,23 @@ linters:
     - nolintlint
     - revive
     - staticcheck
+    - asasalint
+    - bodyclose
+    - contextcheck
+    - cyclop
+    - dupword
+    - errname
+    - exhaustive
+    - loggercheck
+    - misspell
+    - nestif
+    - perfsprint
+    - prealloc
+    - predeclared
+    - testifylint
+    - unconvert
+    - usestdlibvars
+    - wsl
 
 linters-settings:
   govet:
@@ -17,3 +34,9 @@ linters-settings:
       - reflectvaluecompare
       - sortslice
       - unusedwrite
+      - defers
+      - atomic
+      - nilfunc
+      - printf
+      - sortslice
+      - tests

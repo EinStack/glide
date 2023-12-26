@@ -7,6 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"glide/pkg/pools"
+
+	"glide/pkg/telemetry"
+	"go.uber.org/zap"
+
 	"glide/pkg/api"
 	"glide/pkg/api/http"
 
@@ -16,6 +21,8 @@ import (
 // Gateway represents an instance of running Glide gateway.
 // It loads configs, start API server(s), and listen to termination signals to shut down
 type Gateway struct {
+	// telemetry holds logger, meter, and tracer
+	telemetry *telemetry.Telemetry
 	// serverManager controls API over different protocols
 	serverManager *api.ServerManager
 	// signalChannel is used to receive termination signals from the OS.
@@ -25,12 +32,28 @@ type Gateway struct {
 }
 
 func NewGateway() (*Gateway, error) {
-	serverManager, err := api.NewServerManager(&http.ServerConfig{})
+	// TODO: gonna be read from a config file
+	logConfig := telemetry.NewLogConfig()
+	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	logConfig.Encoding = "console"
+
+	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: logConfig})
+	if err != nil {
+		return nil, err
+	}
+
+	router, err := pools.NewRouter(tel)
+	if err != nil {
+		return nil, err
+	}
+
+	serverManager, err := api.NewServerManager(&http.ServerConfig{}, tel, router)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Gateway{
+		telemetry:     tel,
 		serverManager: serverManager,
 		signalC:       make(chan os.Signal, 3), // equal to number of signal types we expect to receive
 		shutdownC:     make(chan struct{}),
@@ -49,16 +72,16 @@ LOOP:
 	for {
 		select {
 		// TODO: Watch for config updates
-		case <-gw.signalC:
-			// TODO: log this occurrence
+		case sig := <-gw.signalC:
+			gw.telemetry.Logger.Info("Received signal from OS", zap.String("signal", sig.String()))
 			break LOOP
 		case <-gw.shutdownC:
-			// TODO: log this occurrence
+			gw.telemetry.Logger.Info("received shutdown request")
 			break LOOP
 		case <-ctx.Done():
-			// TODO: log this occurrence
+			gw.telemetry.Logger.Info("context done, terminating process")
 			// Call shutdown with background context as the passed in context has been canceled
-			return gw.shutdown(context.Background())
+			return gw.shutdown(context.Background()) //nolint:contextcheck
 		}
 	}
 
