@@ -122,9 +122,7 @@ func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData)
 	var messages []string
 
 	// Add items from messageHistory first
-	for _, history := range unifiedData.MessageHistory {
-		messages = append(messages, history)
-	}
+	messages = append(messages, unifiedData.MessageHistory...)
 
 	// Add msg variable last
 	messages = append(messages, unifiedData.Message)
@@ -244,9 +242,9 @@ func (c *ProviderClient) buildURL(suffix string) string {
 }
 
 func (c *ProviderClient) setModel() string {
-	if c.Provider.Model == "" {
+	if c.UnifiedData.Model == "" {
 		return defaultChatModel
 	}
 
-	return c.Provider.Model
+	return  c.UnifiedData.Model
 }

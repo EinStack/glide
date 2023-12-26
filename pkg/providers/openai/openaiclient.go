@@ -6,11 +6,9 @@ package openai
 
 import (
 	"errors"
-	"fmt"
 
 	"glide/pkg/providers"
 
-	"github.com/go-playground/validator/v10"
 )
 
 const (
