@@ -169,7 +169,7 @@ func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData)
 func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
 	_ = ctx // keep this for future use
 
-	resp, err := c.createChatHTTP(r) // netpoll/hertz does not yet support tls
+	resp, err := c.createChatHTTP(r)
 	if err != nil {
 		return nil, err
 	}
