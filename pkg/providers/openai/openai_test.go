@@ -23,7 +23,6 @@ func TestOpenAIClient(t *testing.T) {
 	_ = t
 
 	fakeData := providers.UnifiedAPIData{
-		Provider: "openai",
 		Model:    "gpt-3.5-turbo",
 		APIKey:   os.Getenv("openai"),
 		Params: map[string]interface{}{

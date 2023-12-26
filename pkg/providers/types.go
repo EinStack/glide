@@ -56,7 +56,6 @@ var HTTPClient = &http.Client{
 }
 
 type UnifiedAPIData struct {
-	Provider       string                 `json:"provider"`
 	Model          string                 `json:"model"`
 	APIKey         string                 `json:"api_key"`
 	Params         map[string]interface{} `json:"params"`
