@@ -13,6 +13,8 @@ import (
 	"strings"
 
 	"glide/pkg/providers"
+
+	"glide/pkg/telemetry"
 )
 
 const (
@@ -24,6 +26,7 @@ const (
 type ProviderClient struct {
 	BaseURL    string       `json:"baseURL"`
 	HTTPClient *http.Client `json:"httpClient"`
+	Telemetry  *telemetry.Telemetry `json:"telemetry"`
 }
 
 // ChatRequest is a request to complete a chat completion..
@@ -92,7 +95,7 @@ type ChatResponse struct {
 func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error) {
 	// Create a new chat request
 
-	slog.Info("creating chat request")
+	c.Telemetry.Logger.Info("creating new chat request")
 
 	chatRequest := CreateChatRequest(u)
 

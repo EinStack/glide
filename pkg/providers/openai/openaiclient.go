@@ -8,6 +8,8 @@ import (
 	"errors"
 
 	"glide/pkg/providers"
+
+	"glide/pkg/telemetry"
 )
 
 const (
@@ -30,10 +32,20 @@ var (
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func Client() (*ProviderClient, error) {
+	
+	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: telemetry.NewLogConfig()})
+	if err != nil {
+		return nil, err
+	}
+
+	tel.Logger.Info("init openai provider client")
+
+	
 	// Create a new client
 	c := &ProviderClient{
 		BaseURL:    defaultBaseURL,
 		HTTPClient: providers.HTTPClient,
+		Telemetry:  tel,
 	}
 
 	return c, nil
