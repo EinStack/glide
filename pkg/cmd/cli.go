@@ -14,7 +14,7 @@ func NewCLI() *cobra.Command {
 	// TODO: Chances are we could use the build in flags module in this is all we need from CLI
 	cli := &cobra.Command{
 		Use:     "glide",
-		Short:   "🐦Glide is an open source lightweight high-performant model gateway",
+		Short:   "🐦Glide is an open-source, lightweight, high-performance model gateway",
 		Long:    "TODO",
 		Version: pkg.FullVersion,
 		RunE: func(cmd *cobra.Command, args []string) error {
