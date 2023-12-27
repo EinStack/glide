@@ -7,9 +7,11 @@ require (
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.8.0
+	github.com/stretchr/testify v1.8.2
 	go.uber.org/goleak v1.3.0
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.26.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -18,6 +20,7 @@ require (
 	github.com/bytedance/sonic v1.8.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cloudwego/netpoll v0.5.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -26,6 +29,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect

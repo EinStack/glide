@@ -11,6 +11,12 @@ type ServerConfig struct {
 	// TODO: add fields
 }
 
+func DefaultServerConfig() *ServerConfig {
+	return &ServerConfig{
+		// TODO: set defaults
+	}
+}
+
 func (cfg *ServerConfig) ToServer() *server.Hertz {
 	// TODO: do real server build based on provided config
 	return server.Default(

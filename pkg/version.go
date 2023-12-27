@@ -13,6 +13,8 @@ var version = "devel"
 // and will be populated by the Makefile
 var commitSha = "unknown"
 
-func GetVersion() string {
-	return fmt.Sprintf("%s (commit: %s, %s)", version, commitSha, runtime.Version())
+var FullVersion string
+
+func init() {
+	FullVersion = fmt.Sprintf("%s (commit: %s, %s)", version, commitSha, runtime.Version())
 }
