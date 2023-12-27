@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"reflect"
 	"strings"
@@ -104,8 +103,6 @@ func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error
 	c.Telemetry.Logger.Info("chat request created")
 
 	// Send the chat request
-
-	slog.Info("sending chat request")
 
 	resp, err := c.CreateChatResponse(context.Background(), chatRequest, u)
 
@@ -233,7 +230,6 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.Unifi
 }
 
 func buildURL(suffix string) string {
-	slog.Info("request url: " + fmt.Sprintf("%s%s", defaultBaseURL, suffix))
 
 	// open ai implement:
 	return fmt.Sprintf("%s%s", defaultBaseURL, suffix)
