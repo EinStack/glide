@@ -32,7 +32,6 @@ var (
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func Client() (*ProviderClient, error) {
-	
 	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: telemetry.NewLogConfig()})
 	if err != nil {
 		return nil, err
@@ -40,7 +39,6 @@ func Client() (*ProviderClient, error) {
 
 	tel.Logger.Info("init openai provider client")
 
-	
 	// Create a new client
 	c := &ProviderClient{
 		BaseURL:    defaultBaseURL,

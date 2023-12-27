@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"glide/pkg/providers"
@@ -25,8 +26,8 @@ const (
 
 // Client is a client for the OpenAI API.
 type ProviderClient struct {
-	BaseURL    string       `json:"baseURL"`
-	HTTPClient *http.Client `json:"httpClient"`
+	BaseURL    string               `json:"baseURL"`
+	HTTPClient *http.Client         `json:"httpClient"`
 	Telemetry  *telemetry.Telemetry `json:"telemetry"`
 }
 
@@ -95,7 +96,6 @@ type ChatResponse struct {
 // - error: An error if the request failed.
 func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error) {
 	// Create a new chat request
-
 	c.Telemetry.Logger.Info("creating new chat request")
 
 	chatRequest := c.CreateChatRequest(u)
@@ -110,7 +110,6 @@ func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error
 }
 
 func (c *ProviderClient) CreateChatRequest(u *providers.UnifiedAPIData) *ChatRequest {
-
 	c.Telemetry.Logger.Info("creating chatRequest from payload")
 
 	var messages []map[string]string
@@ -121,7 +120,8 @@ func (c *ProviderClient) CreateChatRequest(u *providers.UnifiedAPIData) *ChatReq
 	// Add msg variable last
 	messages = append(messages, u.Message)
 
-	// iterate throughunifiedData.Params and add them to the request otherwise leave the default value
+	// Iterate through unifiedData.Params and add them to the request, otherwise leave the default value
+	defaultParams := u.Params
 
 	chatRequest := &ChatRequest{
 		Model:            u.Model,
@@ -142,16 +142,13 @@ func (c *ProviderClient) CreateChatRequest(u *providers.UnifiedAPIData) *ChatReq
 		ResponseFormat:   nil,
 	}
 
-	// Use reflection to dynamically assign default parameter values
-	// TODO: refactor to avoid reflection(?)
-	defaultParams := u.Params
-
 	chatRequestValue := reflect.ValueOf(chatRequest).Elem()
 	chatRequestType := chatRequestValue.Type()
 
 	for i := 0; i < chatRequestValue.NumField(); i++ {
 		jsonTags := strings.Split(chatRequestType.Field(i).Tag.Get("json"), ",")
 		jsonTag := jsonTags[0]
+
 		if value, ok := defaultParams[jsonTag]; ok {
 			fieldValue := chatRequestValue.Field(i)
 			fieldValue.Set(reflect.ValueOf(value))
@@ -171,14 +168,15 @@ func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest,
 	if err != nil {
 		return nil, err
 	}
+
 	if len(resp.Choices) == 0 {
 		return nil, ErrEmptyResponse
 	}
+
 	return resp, nil
 }
 
 func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
-
 	c.Telemetry.Logger.Info("running createChatHttp")
 
 	if payload.StreamingFunc != nil {
@@ -197,7 +195,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.Unifi
 	}
 
 	reqBody := bytes.NewBuffer(payloadBytes)
-	req, err := http.NewRequest("POST", buildURL(defaultEndpoint), reqBody)
+	req, err := http.NewRequest(http.MethodPost, buildURL(defaultEndpoint), reqBody)
 	if err != nil {
 		c.Telemetry.Logger.Error(err.Error())
 		return nil, err
@@ -213,24 +211,24 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.Unifi
 	}
 	defer resp.Body.Close()
 
-	c.Telemetry.Logger.Info("Response Code: ", zap.String("response_code", fmt.Sprintf("%d", resp.StatusCode)))
+	c.Telemetry.Logger.Info("Response Code: ", zap.String("response_code", strconv.Itoa(resp.StatusCode)))
 
 	if resp.StatusCode != http.StatusOK {
-
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			c.Telemetry.Logger.Error(err.Error())
 		}
+
 		c.Telemetry.Logger.Warn("Response Body: ", zap.String("response_body", string(bodyBytes)))
 	}
 
 	// Parse response
 	var response ChatResponse
+
 	return &response, json.NewDecoder(resp.Body).Decode(&response)
 }
 
 func buildURL(suffix string) string {
-
 	// open ai implement:
 	return fmt.Sprintf("%s%s", defaultBaseURL, suffix)
 }
