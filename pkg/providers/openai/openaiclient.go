@@ -32,7 +32,7 @@ var (
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
 func Client() (*ProviderClient, error) {
-	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: telemetry.NewLogConfig()})
+	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: telemetry.DefaultLogConfig()})
 	if err != nil {
 		return nil, err
 	}
