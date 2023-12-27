@@ -22,26 +22,25 @@ const (
 
 // Client is a client for the OpenAI API.
 type ProviderClient struct {
-	BaseURL     string                   `json:"baseURL"`
-	UnifiedData providers.UnifiedAPIData `json:"unifiedData"`
-	HTTPClient  *http.Client             `json:"httpClient"`
+	BaseURL    string       `json:"baseURL"`
+	HTTPClient *http.Client `json:"httpClient"`
 }
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
 	Model            string              `json:"model"`
 	Messages         []map[string]string `json:"messages"`
-	Temperature      float64             `json:"temperature,omitempty" validate:"omitempty,gte=0,lte=1"`
-	TopP             float64             `json:"top_p,omitempty" validate:"omitempty,gte=0,lte=1"`
-	MaxTokens        int                 `json:"max_tokens,omitempty" validate:"omitempty,gte=0"`
-	N                int                 `json:"n,omitempty" validate:"omitempty,gte=1"`
+	Temperature      float64             `json:"temperature,omitempty"`
+	TopP             float64             `json:"top_p,omitempty"`
+	MaxTokens        int                 `json:"max_tokens,omitempty"`
+	N                int                 `json:"n,omitempty"`
 	StopWords        []string            `json:"stop,omitempty"`
-	Stream           bool                `json:"stream,omitempty" validate:"omitempty, boolean"`
+	Stream           bool                `json:"stream,omitempty"`
 	FrequencyPenalty int                 `json:"frequency_penalty,omitempty"`
 	PresencePenalty  int                 `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64    `json:"logit_bias,omitempty" validate:"omitempty"`
+	LogitBias        *map[int]float64    `json:"logit_bias,omitempty"`
 	User             interface{}         `json:"user,omitempty"`
-	Seed             interface{}         `json:"seed,omitempty" validate:"omitempty,gte=0"`
+	Seed             interface{}         `json:"seed,omitempty"`
 	Tools            []string            `json:"tools,omitempty"`
 	ToolChoice       interface{}         `json:"tool_choice,omitempty"`
 	ResponseFormat   interface{}         `json:"response_format,omitempty"`
@@ -69,13 +68,6 @@ type ChatChoice struct {
 	FinishReason string      `json:"finish_reason"`
 }
 
-// ChatUsage is the usage of a chat completion request.
-type ChatUsage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
-}
-
 // ChatResponse is a response to a chat request.
 type ChatResponse struct {
 	ID      string        `json:"id,omitempty"`
@@ -97,12 +89,12 @@ type ChatResponse struct {
 // Returns:
 // - *ChatResponse: a pointer to a ChatResponse
 // - error: An error if the request failed.
-func (c *ProviderClient) Chat() (*ChatResponse, error) {
+func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error) {
 	// Create a new chat request
 
 	slog.Info("creating chat request")
 
-	chatRequest := c.CreateChatRequest(c.UnifiedData)
+	chatRequest := CreateChatRequest(u)
 
 	slog.Info("chat request created")
 
@@ -110,26 +102,26 @@ func (c *ProviderClient) Chat() (*ChatResponse, error) {
 
 	slog.Info("sending chat request")
 
-	resp, err := c.CreateChatResponse(context.Background(), chatRequest)
+	resp, err := CreateChatResponse(context.Background(), chatRequest, u)
 
 	return resp, err
 }
 
-func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData) *ChatRequest {
+func CreateChatRequest(u *providers.UnifiedAPIData) *ChatRequest {
 	slog.Info("creating chatRequest from payload")
 
 	var messages []map[string]string
 
 	// Add items from messageHistory first
-	messages = append(messages, unifiedData.MessageHistory...)
+	messages = append(messages, u.MessageHistory...)
 
 	// Add msg variable last
-	messages = append(messages, unifiedData.Message)
+	messages = append(messages, u.Message)
 
 	// iterate throughunifiedData.Params and add them to the request otherwise leave the default value
 
 	chatRequest := &ChatRequest{
-		Model:            c.setModel(),
+		Model:            u.Model,
 		Messages:         messages,
 		Temperature:      0.8,
 		TopP:             1,
@@ -149,7 +141,7 @@ func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData)
 
 	// Use reflection to dynamically assign default parameter values
 	// TODO: refactor to avoid reflection(?)
-	defaultParams := unifiedData.Params
+	defaultParams := u.Params
 
 	chatRequestValue := reflect.ValueOf(chatRequest).Elem()
 	chatRequestType := chatRequestValue.Type()
@@ -167,10 +159,10 @@ func (c *ProviderClient) CreateChatRequest(unifiedData providers.UnifiedAPIData)
 }
 
 // CreateChatResponse creates chat Response.
-func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest) (*ChatResponse, error) {
+func CreateChatResponse(ctx context.Context, r *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
 	_ = ctx // keep this for future use
 
-	resp, err := c.createChatHTTP(r)
+	resp, err := createChatHTTP(r, u)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +172,7 @@ func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest)
 	return resp, nil
 }
 
-func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, error) {
+func createChatHTTP(payload *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
 	slog.Info("running createChatHttp")
 
 	if payload.StreamingFunc != nil {
@@ -193,13 +185,13 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 	}
 
 	// Build request
-	if c.BaseURL == "" {
+	if defaultBaseURL == "" {
 		slog.Error("baseURL not set")
 		return nil, errors.New("baseURL not set")
 	}
 
 	reqBody := bytes.NewBuffer(payloadBytes)
-	req, err := http.NewRequest("POST", c.buildURL(defaultEndpoint), reqBody)
+	req, err := http.NewRequest("POST", buildURL(defaultEndpoint), reqBody)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err
@@ -207,10 +199,10 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 
 	fmt.Println(reqBody.String())
 
-	req.Header.Set("Authorization", "Bearer "+c.UnifiedData.APIKey)
+	req.Header.Set("Authorization", "Bearer "+u.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := providers.HTTPClient.Do(req)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err
@@ -234,17 +226,9 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest) (*ChatResponse, er
 	return &response, json.NewDecoder(resp.Body).Decode(&response)
 }
 
-func (c *ProviderClient) buildURL(suffix string) string {
-	slog.Info("request url: " + fmt.Sprintf("%s%s", c.BaseURL, suffix))
+func buildURL(suffix string) string {
+	slog.Info("request url: " + fmt.Sprintf("%s%s", defaultBaseURL, suffix))
 
 	// open ai implement:
-	return fmt.Sprintf("%s%s", c.BaseURL, suffix)
-}
-
-func (c *ProviderClient) setModel() string {
-	if c.UnifiedData.Model == "" {
-		return defaultChatModel
-	}
-
-	return c.UnifiedData.Model
+	return fmt.Sprintf("%s%s", defaultBaseURL, suffix)
 }

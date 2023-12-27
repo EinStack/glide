@@ -29,12 +29,11 @@ var (
 // Returns:
 // - *Client: A pointer to the created client.
 // - error: An error if the client creation failed.
-func Client(UnifiedData providers.UnifiedAPIData) (*ProviderClient, error) {
+func Client() (*ProviderClient, error) {
 	// Create a new client
 	c := &ProviderClient{
-		BaseURL:     defaultBaseURL,
-		UnifiedData: UnifiedData,
-		HTTPClient:  providers.HTTPClient,
+		BaseURL:    defaultBaseURL,
+		HTTPClient: providers.HTTPClient,
 	}
 
 	return c, nil
