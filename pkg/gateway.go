@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"glide/pkg/config"
+
 	"glide/pkg/pools"
 
 	"glide/pkg/telemetry"
@@ -21,6 +23,8 @@ import (
 // Gateway represents an instance of running Glide gateway.
 // It loads configs, start API server(s), and listen to termination signals to shut down
 type Gateway struct {
+	// configProvider holds all configurations
+	configProvider *config.Provider
 	// telemetry holds logger, meter, and tracer
 	telemetry *telemetry.Telemetry
 	// serverManager controls API over different protocols
@@ -31,13 +35,10 @@ type Gateway struct {
 	shutdownC chan struct{}
 }
 
-func NewGateway() (*Gateway, error) {
-	// TODO: gonna be read from a config file
-	logConfig := telemetry.NewLogConfig()
-	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-	logConfig.Encoding = "console"
+func NewGateway(configProvider *config.Provider) (*Gateway, error) {
+	cfg := configProvider.Get()
 
-	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: logConfig})
+	tel, err := telemetry.NewTelemetry(&telemetry.Config{LogConfig: cfg.Telemetry.LogConfig})
 	if err != nil {
 		return nil, err
 	}
@@ -53,16 +54,17 @@ func NewGateway() (*Gateway, error) {
 	}
 
 	return &Gateway{
-		telemetry:     tel,
-		serverManager: serverManager,
-		signalC:       make(chan os.Signal, 3), // equal to number of signal types we expect to receive
-		shutdownC:     make(chan struct{}),
+		configProvider: configProvider,
+		telemetry:      tel,
+		serverManager:  serverManager,
+		signalC:        make(chan os.Signal, 3), // equal to number of signal types we expect to receive
+		shutdownC:      make(chan struct{}),
 	}, nil
 }
 
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
-	// TODO: init configs
+	gw.configProvider.Start()
 	gw.serverManager.Start()
 
 	signal.Notify(gw.signalC, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -73,7 +75,7 @@ LOOP:
 		select {
 		// TODO: Watch for config updates
 		case sig := <-gw.signalC:
-			gw.telemetry.Logger.Info("Received signal from OS", zap.String("signal", sig.String()))
+			gw.telemetry.Logger.Info("received signal from os", zap.String("signal", sig.String()))
 			break LOOP
 		case <-gw.shutdownC:
 			gw.telemetry.Logger.Info("received shutdown request")

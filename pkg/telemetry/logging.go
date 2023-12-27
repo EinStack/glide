@@ -9,7 +9,7 @@ import (
 
 type LogConfig struct {
 	// Level is the minimum enabled logging level.
-	Level zap.AtomicLevel `yaml:"level"`
+	Level zapcore.Level `yaml:"level"`
 
 	// Encoding sets the logger's encoding. Valid values are "json", "console"
 	Encoding string `yaml:"encoding"`
@@ -30,9 +30,9 @@ type LogConfig struct {
 	InitialFields map[string]interface{} `yaml:"initial_fields"`
 }
 
-func NewLogConfig() *LogConfig {
+func DefaultLogConfig() *LogConfig {
 	return &LogConfig{
-		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
+		Level:             zap.InfoLevel,
 		Encoding:          "json",
 		DisableCaller:     false,
 		DisableStacktrace: false,
@@ -53,7 +53,7 @@ func (c *LogConfig) ToZapConfig() *zap.Config {
 		zapConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
-	zapConfig.Level = c.Level
+	zapConfig.Level = zap.NewAtomicLevelAt(c.Level)
 	zapConfig.DisableCaller = c.DisableCaller
 	zapConfig.DisableStacktrace = c.DisableStacktrace
 	zapConfig.OutputPaths = c.OutputPaths

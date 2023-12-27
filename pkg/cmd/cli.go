@@ -2,18 +2,28 @@ package cmd
 
 import (
 	"glide/pkg"
+	"glide/pkg/config"
 
 	"github.com/spf13/cobra"
 )
+
+var cfgFile string
 
 // NewCLI Create a Glide CLI
 func NewCLI() *cobra.Command {
 	// TODO: Chances are we could use the build in flags module in this is all we need from CLI
 	cli := &cobra.Command{
-		Use:     "",
-		Version: pkg.GetVersion(),
+		Use:     "glide",
+		Short:   "🐦Glide is an open-source, lightweight, high-performance model gateway",
+		Long:    "TODO",
+		Version: pkg.FullVersion,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gateway, err := pkg.NewGateway()
+			configProvider, err := config.NewProvider().Load(cfgFile)
+			if err != nil {
+				return err
+			}
+
+			gateway, err := pkg.NewGateway(configProvider)
 			if err != nil {
 				return err
 			}
@@ -22,6 +32,8 @@ func NewCLI() *cobra.Command {
 		},
 		// SilenceUsage: true,
 	}
+
+	cli.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
 
 	return cli
 }
