@@ -15,6 +15,8 @@ import (
 	"glide/pkg/providers"
 
 	"glide/pkg/telemetry"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -97,21 +99,22 @@ func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error
 
 	c.Telemetry.Logger.Info("creating new chat request")
 
-	chatRequest := CreateChatRequest(u)
+	chatRequest := c.CreateChatRequest(u)
 
-	slog.Info("chat request created")
+	c.Telemetry.Logger.Info("chat request created")
 
 	// Send the chat request
 
 	slog.Info("sending chat request")
 
-	resp, err := CreateChatResponse(context.Background(), chatRequest, u)
+	resp, err := c.CreateChatResponse(context.Background(), chatRequest, u)
 
 	return resp, err
 }
 
-func CreateChatRequest(u *providers.UnifiedAPIData) *ChatRequest {
-	slog.Info("creating chatRequest from payload")
+func (c *ProviderClient) CreateChatRequest(u *providers.UnifiedAPIData) *ChatRequest {
+
+	c.Telemetry.Logger.Info("creating chatRequest from payload")
 
 	var messages []map[string]string
 
@@ -158,14 +161,16 @@ func CreateChatRequest(u *providers.UnifiedAPIData) *ChatRequest {
 		}
 	}
 
+	// c.Telemetry.Logger.Info("chatRequest created", zap.Any("chatRequest body", chatRequest))
+
 	return chatRequest
 }
 
 // CreateChatResponse creates chat Response.
-func CreateChatResponse(ctx context.Context, r *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
+func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
 	_ = ctx // keep this for future use
 
-	resp, err := createChatHTTP(r, u)
+	resp, err := c.createChatHTTP(r, u)
 	if err != nil {
 		return nil, err
 	}
@@ -175,8 +180,9 @@ func CreateChatResponse(ctx context.Context, r *ChatRequest, u *providers.Unifie
 	return resp, nil
 }
 
-func createChatHTTP(payload *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
-	slog.Info("running createChatHttp")
+func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
+
+	c.Telemetry.Logger.Info("running createChatHttp")
 
 	if payload.StreamingFunc != nil {
 		payload.Stream = true
@@ -189,39 +195,36 @@ func createChatHTTP(payload *ChatRequest, u *providers.UnifiedAPIData) (*ChatRes
 
 	// Build request
 	if defaultBaseURL == "" {
-		slog.Error("baseURL not set")
+		c.Telemetry.Logger.Error("defaultBaseURL not set")
 		return nil, errors.New("baseURL not set")
 	}
 
 	reqBody := bytes.NewBuffer(payloadBytes)
 	req, err := http.NewRequest("POST", buildURL(defaultEndpoint), reqBody)
 	if err != nil {
-		slog.Error(err.Error())
+		c.Telemetry.Logger.Error(err.Error())
 		return nil, err
 	}
-
-	fmt.Println(reqBody.String())
 
 	req.Header.Set("Authorization", "Bearer "+u.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := providers.HTTPClient.Do(req)
 	if err != nil {
-		slog.Error(err.Error())
+		c.Telemetry.Logger.Error(err.Error())
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	slog.Info(fmt.Sprintf("%d", resp.StatusCode))
+	c.Telemetry.Logger.Info("Response Code: ", zap.String("response_code", fmt.Sprintf("%d", resp.StatusCode)))
 
 	if resp.StatusCode != http.StatusOK {
 
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			slog.Error(err.Error())
+			c.Telemetry.Logger.Error(err.Error())
 		}
-		bodyString := string(bodyBytes)
-		slog.Warn(bodyString)
+		c.Telemetry.Logger.Warn("Response Body: ", zap.String("response_body", string(bodyBytes)))
 	}
 
 	// Parse response
