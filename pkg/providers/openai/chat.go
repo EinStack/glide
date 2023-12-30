@@ -195,6 +195,7 @@ func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.Unifi
 	}
 
 	reqBody := bytes.NewBuffer(payloadBytes)
+
 	req, err := http.NewRequest(http.MethodPost, buildURL(defaultEndpoint), reqBody)
 	if err != nil {
 		c.Telemetry.Logger.Error(err.Error())
