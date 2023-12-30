@@ -4,6 +4,7 @@
 </div>
 
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
+[![codecov](https://codecov.io/github/modelgateway/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/modelgateway/glide)
 
 Glide is a cloud-native open source high-performant model gateway. All LLMOps you needed is packed in one lightweight service.
 
