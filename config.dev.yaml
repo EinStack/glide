@@ -1,0 +1,8 @@
+telemetry:
+  logging:
+    level: debug  # debug, info, warn, error, fatal
+    encoding: console
+
+#api:
+#  http:
+#    ...
