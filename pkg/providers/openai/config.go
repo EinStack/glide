@@ -23,24 +23,24 @@ type Params struct {
 	// Stream           bool             `json:"stream,omitempty"` // TODO: we are not supporting this at the moment
 }
 
-// Defaults
-// Temperature:      0.8,
-// TopP:             1,
-// MaxTokens:        100,
-// N:                1,
-// StopWords:        []string{},
-// Stream:           false,
-// FrequencyPenalty: 0,
-// PresencePenalty:  0,
-// LogitBias:        nil,
-// User:             nil,
-// Seed:             nil,
-// Tools:            []string{},
-// ToolChoice:       nil,
-// ResponseFormat:   nil,
+func DefaultParams() Params {
+	return Params{
+		Temperature: 0.8,
+		TopP:        1,
+		MaxTokens:   100,
+		N:           1,
+		StopWords:   []string{},
+		Tools:       []string{},
+	}
+}
 
-// defaultChatModel = "gpt-3.5-turbo"
-// defaultEndpoint  = "/chat/completions"
+func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*p = DefaultParams()
+
+	type plain Params // to avoid recursion
+
+	return unmarshal((*plain)(p))
+}
 
 type Config struct {
 	BaseURL       string        `yaml:"base_url"`
@@ -50,4 +50,19 @@ type Config struct {
 	DefaultParams *Params       `yaml:"default_params,omitempty"`
 }
 
-// https://api.openai.com/v1
+// DefaultConfig for OpenAI models
+func DefaultConfig() Config {
+	return Config{
+		BaseURL:      "https://api.openai.com/v1",
+		ChatEndpoint: "/chat/completions",
+		Model:        "gpt-3.5-turbo",
+	}
+}
+
+func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*c = DefaultConfig()
+
+	type plain Config // to avoid recursion
+
+	return unmarshal((*plain)(c))
+}

@@ -1,0 +1,12 @@
+telemetry:
+  logging:
+    level: INFO  # DEBUG, INFO, WARNING, ERROR, FATAL
+    encoding: json # console, json
+
+routers:
+  language:
+    - id: simplerouter
+      strategy: priority
+      models:
+        - id: openaimodel
+
