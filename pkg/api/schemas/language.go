@@ -1,16 +1,13 @@
 package schemas
 
-// ChatRequest defines Glide's Chat Request Schema unified across all language models
-type ChatRequest struct {
-	Message []struct { // TODO: could we reuse ChatMessage?
-		Role    string `json:"role"`
-		Content string `json:"content"`
-	} `json:"message"`
-	MessageHistory []string `json:"messageHistory"`
+// UnifiedChatRequest defines Glide's Chat Request Schema unified across all language models
+type UnifiedChatRequest struct {
+	Message        ChatMessage   `json:"message"`
+	MessageHistory []ChatMessage `json:"messageHistory"`
 }
 
-// ChatResponse defines Glide's Chat Response Schema unified across all language models
-type ChatResponse struct {
+// UnifiedChatResponse defines Glide's Chat Response Schema unified across all language models
+type UnifiedChatResponse struct {
 	ID      string        `json:"id,omitempty"`
 	Created float64       `json:"created,omitempty"`
 	Choices []*ChatChoice `json:"choices,omitempty"`

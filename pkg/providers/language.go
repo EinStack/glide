@@ -8,5 +8,5 @@ import (
 
 // ChatModel defines the interface a provider should fulfill to be able to serve language chat requests
 type ChatModel interface {
-	Chat(ctx *context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error)
+	Chat(ctx *context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
 }

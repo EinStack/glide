@@ -12,28 +12,67 @@ import (
 	"go.uber.org/zap"
 )
 
-// ChatRequestSchema is an OpenAI-specific request schema
-type ChatRequestSchema struct {
-	Model            string              `json:"model"`
-	Messages         []map[string]string `json:"messages"`
-	Temperature      float64             `json:"temperature,omitempty"`
-	TopP             float64             `json:"top_p,omitempty"`
-	MaxTokens        int                 `json:"max_tokens,omitempty"`
-	N                int                 `json:"n,omitempty"`
-	StopWords        []string            `json:"stop,omitempty"`
-	Stream           bool                `json:"stream,omitempty"`
-	FrequencyPenalty int                 `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int                 `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64    `json:"logit_bias,omitempty"`
-	User             interface{}         `json:"user,omitempty"`
-	Seed             interface{}         `json:"seed,omitempty"`
-	Tools            []string            `json:"tools,omitempty"`
-	ToolChoice       interface{}         `json:"tool_choice,omitempty"`
-	ResponseFormat   interface{}         `json:"response_format,omitempty"`
+type ChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// ChatRequest is an OpenAI-specific request schema
+type ChatRequest struct {
+	Model            string           `json:"model"`
+	Messages         []ChatMessage    `json:"messages"`
+	Temperature      float64          `json:"temperature,omitempty"`
+	TopP             float64          `json:"top_p,omitempty"`
+	MaxTokens        int              `json:"max_tokens,omitempty"`
+	N                int              `json:"n,omitempty"`
+	StopWords        []string         `json:"stop,omitempty"`
+	Stream           bool             `json:"stream,omitempty"`
+	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int              `json:"presence_penalty,omitempty"`
+	LogitBias        *map[int]float64 `json:"logit_bias,omitempty"`
+	User             interface{}      `json:"user,omitempty"`
+	Seed             interface{}      `json:"seed,omitempty"`
+	Tools            []string         `json:"tools,omitempty"`
+	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
+	ResponseFormat   interface{}      `json:"response_format,omitempty"`
+}
+
+// NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
+func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
+	return &ChatRequest{
+		Model:            cfg.Model,
+		Temperature:      cfg.DefaultParams.Temperature,
+		TopP:             cfg.DefaultParams.TopP,
+		MaxTokens:        cfg.DefaultParams.MaxTokens,
+		N:                cfg.DefaultParams.N,
+		StopWords:        cfg.DefaultParams.StopWords,
+		Stream:           false, // unsupported right now
+		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
+		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
+		LogitBias:        cfg.DefaultParams.LogitBias,
+		User:             cfg.DefaultParams.User,
+		Seed:             cfg.DefaultParams.Seed,
+		Tools:            cfg.DefaultParams.Tools,
+		ToolChoice:       cfg.DefaultParams.ToolChoice,
+		ResponseFormat:   cfg.DefaultParams.ResponseFormat,
+	}
+}
+
+func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []ChatMessage {
+	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
+
+	// Add items from messageHistory first and the new chat message last
+	for _, message := range request.MessageHistory {
+		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
+	}
+
+	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
+
+	return messages
 }
 
 // Chat sends a chat request to the specified OpenAI model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
@@ -51,43 +90,15 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequestSchema {
-	var messages []map[string]string
-
-	// Add items from messageHistory first
-	messages = append(messages, request.MessageHistory...)
-
-	// Add msg variable last
-	messages = append(messages, request.Message)
-
-	// Iterate through unifiedData.Params and add them to the request, otherwise leave the default value
-	defaultParams := u.Params
-
-	chatRequest := &ChatRequestSchema{
-		Model:            c.config.Model,
-		Messages:         messages,
-		Temperature:      0.8,
-		TopP:             1,
-		MaxTokens:        100,
-		N:                1,
-		StopWords:        []string{},
-		Stream:           false,
-		FrequencyPenalty: 0,
-		PresencePenalty:  0,
-		LogitBias:        nil,
-		User:             nil,
-		Seed:             nil,
-		Tools:            []string{},
-		ToolChoice:       nil,
-		ResponseFormat:   nil,
-	}
-
-	// TODO: set params
+func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
+	// TODO: consider using objectpool to optimize memory allocation
+	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
+	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
 
 	return chatRequest
 }
 
-func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequestSchema) (*schemas.ChatResponse, error) {
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -134,7 +145,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequestSchema) 
 	}
 
 	// Parse response
-	var response schemas.ChatResponse
+	var response schemas.UnifiedChatResponse
 
 	return &response, json.NewDecoder(resp.Body).Decode(&response)
 }
