@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"glide/pkg/api/schemas"
+
 	"glide/pkg/routers"
 
 	"glide/pkg/telemetry"
@@ -32,12 +34,29 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *routers.R
 }
 
 func (srv *Server) Run() error {
-	srv.server.POST("/v1/language/{}/chat/", func(c context.Context, ctx *app.RequestContext) {
-		// TODO: call the lang router
+	srv.server.POST("/v1/language/:router/chat/", func(ctx context.Context, c *app.RequestContext) {
+		var req *schemas.UnifiedChatRequest
+
+		err := c.BindJSON(&req)
+		if err != nil {
+			c.JSON(consts.StatusBadRequest, ErrorSchema{
+				Message: err.Error(),
+			})
+
+			return
+		}
+
+		routerID := c.Param("router")
+
+		// TODO: call the model router and return the unified response
+
+		c.JSON(consts.StatusOK, utils.H{
+			"message": fmt.Sprintf("%v was requested", routerID),
+		})
 	})
 
-	srv.server.GET("/health", func(ctx context.Context, c *app.RequestContext) {
-		c.JSON(consts.StatusOK, utils.H{"healthy": true})
+	srv.server.GET("/v1/health/", func(ctx context.Context, c *app.RequestContext) {
+		c.JSON(consts.StatusOK, HealthSchema{Healthy: true})
 	})
 
 	return srv.server.Run()
