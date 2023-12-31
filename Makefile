@@ -38,7 +38,7 @@ vuln: install-checkers ## Check for vulnerabilities
 	@$(CHECKER_BIN)/gosec -quiet -exclude=G104 ./...
 
 run: ## Run Glide
-	@go run -ldflags $(LDFLAGS_COMMON) main.go
+	@go run -ldflags $(LDFLAGS_COMMON) main.go -c ./config.dev.yaml
 
 build: ## Build Glide
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide
