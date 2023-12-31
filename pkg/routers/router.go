@@ -1,4 +1,4 @@
-package pools
+package routers
 
 import "glide/pkg/telemetry"
 

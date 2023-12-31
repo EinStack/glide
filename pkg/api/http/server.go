@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"glide/pkg/pools"
+	"glide/pkg/routers"
+
 	"glide/pkg/telemetry"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -16,11 +17,11 @@ import (
 
 type Server struct {
 	telemetry *telemetry.Telemetry
-	router    *pools.Router
+	router    *routers.Router
 	server    *server.Hertz
 }
 
-func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *pools.Router) (*Server, error) {
+func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *routers.Router) (*Server, error) {
 	srv := config.ToServer()
 
 	return &Server{

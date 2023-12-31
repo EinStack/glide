@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"glide/pkg/config"
+	"glide/pkg/routers"
 
-	"glide/pkg/pools"
+	"glide/pkg/config"
 
 	"glide/pkg/telemetry"
 	"go.uber.org/zap"
@@ -43,7 +43,7 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 		return nil, err
 	}
 
-	router, err := pools.NewRouter(tel)
+	router, err := routers.NewRouter(tel)
 	if err != nil {
 		return nil, err
 	}
