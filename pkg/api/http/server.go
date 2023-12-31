@@ -32,6 +32,10 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *routers.R
 }
 
 func (srv *Server) Run() error {
+	srv.server.POST("/v1/language/{}/chat/", func(c context.Context, ctx *app.RequestContext) {
+		// TODO: call the lang router
+	})
+
 	srv.server.GET("/health", func(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusOK, utils.H{"healthy": true})
 	})

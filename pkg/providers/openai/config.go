@@ -1,7 +1,7 @@
 package openai
 
 import (
-	"glide/pkg/providers"
+	"glide/pkg/config/fields"
 )
 
 // Params defines OpenAI-specific model params with the specific validation of values
@@ -23,8 +23,31 @@ type Params struct {
 	// Stream           bool             `json:"stream,omitempty"` // TODO: we are not supporting this at the moment
 }
 
+// Defaults
+// Temperature:      0.8,
+// TopP:             1,
+// MaxTokens:        100,
+// N:                1,
+// StopWords:        []string{},
+// Stream:           false,
+// FrequencyPenalty: 0,
+// PresencePenalty:  0,
+// LogitBias:        nil,
+// User:             nil,
+// Seed:             nil,
+// Tools:            []string{},
+// ToolChoice:       nil,
+// ResponseFormat:   nil,
+
+// defaultChatModel = "gpt-3.5-turbo"
+// defaultEndpoint  = "/chat/completions"
+
 type Config struct {
-	Model         string           `yaml:"model"`
-	APIKey        providers.Secret `yaml:"api_key" validate:"required"`
-	DefaultParams *Params          `yaml:"default_params,omitempty"`
+	BaseURL       string        `yaml:"base_url"`
+	ChatEndpoint  string        `yaml:"chat_endpoint"`
+	Model         string        `yaml:"model"`
+	APIKey        fields.Secret `yaml:"api_key" validate:"required"`
+	DefaultParams *Params       `yaml:"default_params,omitempty"`
 }
+
+// https://api.openai.com/v1
