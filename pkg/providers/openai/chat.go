@@ -140,7 +140,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 		)
-
 		// TODO: return errors
 	}
 
