@@ -25,7 +25,7 @@ type ProviderResponse struct {
 }
 
 type TokenCount struct {
-	PromptTokens   float64`json:"prompt_tokens"`
+	PromptTokens   float64 `json:"prompt_tokens"`
 	ResponseTokens float64 `json:"response_tokens"`
 	TotalTokens    float64 `json:"total_tokens"`
 }

@@ -77,9 +77,8 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []Ch
 // Chat sends a chat request to the specified OpenAI model.
 func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
-	
 	chatRequest := c.createChatRequestSchema(request)
-	
+
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
 		return nil, err
@@ -156,19 +155,20 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Parse the response JSON
 	var responseJSON map[string]interface{}
+	
 	err = json.Unmarshal(bodyBytes, &responseJSON)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
 
-	
-
 	// Parse response
 	var response schemas.UnifiedChatResponse
+
 	var responsePayload schemas.ProviderResponse
+
 	var tokenCount schemas.TokenCount
-	
+
 	message := responseJSON["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})
 	messageStruct := schemas.ChatMessage{
 		Role:    message["role"].(string),
@@ -186,7 +186,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Message:    messageStruct,
 		TokenCount: tokenCount,
 	}
-
 
 	response = schemas.UnifiedChatResponse{
 		ID:               responseJSON["id"].(string),
