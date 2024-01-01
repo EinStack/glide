@@ -1,0 +1,21 @@
+meta {
+  name: [Lang] Chat
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/v1/language/myrouter/chat/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "message": {
+      "role": "user",
+      "content": "How are you doing?"
+    },
+    "messageHistory": []
+  }
+}

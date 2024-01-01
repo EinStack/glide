@@ -4,232 +4,151 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
-	"strconv"
-	"strings"
 
 	"glide/pkg/providers"
 
-	"glide/pkg/telemetry"
-
+	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
 )
 
-const (
-	defaultChatModel = "gpt-3.5-turbo"
-	defaultEndpoint  = "/chat/completions"
-)
-
-// Client is a client for the OpenAI API.
-type ProviderClient struct {
-	BaseURL    string               `json:"baseURL"`
-	HTTPClient *http.Client         `json:"httpClient"`
-	Telemetry  *telemetry.Telemetry `json:"telemetry"`
-}
-
-// ChatRequest is a request to complete a chat completion..
-type ChatRequest struct {
-	Model            string              `json:"model"`
-	Messages         []map[string]string `json:"messages"`
-	Temperature      float64             `json:"temperature,omitempty"`
-	TopP             float64             `json:"top_p,omitempty"`
-	MaxTokens        int                 `json:"max_tokens,omitempty"`
-	N                int                 `json:"n,omitempty"`
-	StopWords        []string            `json:"stop,omitempty"`
-	Stream           bool                `json:"stream,omitempty"`
-	FrequencyPenalty int                 `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int                 `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64    `json:"logit_bias,omitempty"`
-	User             interface{}         `json:"user,omitempty"`
-	Seed             interface{}         `json:"seed,omitempty"`
-	Tools            []string            `json:"tools,omitempty"`
-	ToolChoice       interface{}         `json:"tool_choice,omitempty"`
-	ResponseFormat   interface{}         `json:"response_format,omitempty"`
-
-	// StreamingFunc is a function to be called for each chunk of a streaming response.
-	// Return an error to stop streaming early.
-	StreamingFunc func(ctx context.Context, chunk []byte) error `json:"-"`
-}
-
-// ChatMessage is a message in a chat request.
 type ChatMessage struct {
-	// The role of the author of this message. One of system, user, or assistant.
-	Role string `json:"role"`
-	// The content of the message.
+	Role    string `json:"role"`
 	Content string `json:"content"`
-	// The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,
-	// with a maximum length of 64 characters.
-	Name string `json:"name,omitempty"`
 }
 
-// ChatChoice is a choice in a chat response.
-type ChatChoice struct {
-	Index        int         `json:"index"`
-	Message      ChatMessage `json:"message"`
-	FinishReason string      `json:"finish_reason"`
+// ChatRequest is an OpenAI-specific request schema
+type ChatRequest struct {
+	Model            string           `json:"model"`
+	Messages         []ChatMessage    `json:"messages"`
+	Temperature      float64          `json:"temperature,omitempty"`
+	TopP             float64          `json:"top_p,omitempty"`
+	MaxTokens        int              `json:"max_tokens,omitempty"`
+	N                int              `json:"n,omitempty"`
+	StopWords        []string         `json:"stop,omitempty"`
+	Stream           bool             `json:"stream,omitempty"`
+	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int              `json:"presence_penalty,omitempty"`
+	LogitBias        *map[int]float64 `json:"logit_bias,omitempty"`
+	User             *string          `json:"user,omitempty"`
+	Seed             *int             `json:"seed,omitempty"`
+	Tools            []string         `json:"tools,omitempty"`
+	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
+	ResponseFormat   interface{}      `json:"response_format,omitempty"`
 }
 
-// ChatResponse is a response to a chat request.
-type ChatResponse struct {
-	ID      string        `json:"id,omitempty"`
-	Created float64       `json:"created,omitempty"`
-	Choices []*ChatChoice `json:"choices,omitempty"`
-	Model   string        `json:"model,omitempty"`
-	Object  string        `json:"object,omitempty"`
-	Usage   struct {
-		CompletionTokens float64 `json:"completion_tokens,omitempty"`
-		PromptTokens     float64 `json:"prompt_tokens,omitempty"`
-		TotalTokens      float64 `json:"total_tokens,omitempty"`
-	} `json:"usage,omitempty"`
+// NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
+func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
+	return &ChatRequest{
+		Model:            cfg.Model,
+		Temperature:      cfg.DefaultParams.Temperature,
+		TopP:             cfg.DefaultParams.TopP,
+		MaxTokens:        cfg.DefaultParams.MaxTokens,
+		N:                cfg.DefaultParams.N,
+		StopWords:        cfg.DefaultParams.StopWords,
+		Stream:           false, // unsupported right now
+		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
+		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
+		LogitBias:        cfg.DefaultParams.LogitBias,
+		User:             cfg.DefaultParams.User,
+		Seed:             cfg.DefaultParams.Seed,
+		Tools:            cfg.DefaultParams.Tools,
+		ToolChoice:       cfg.DefaultParams.ToolChoice,
+		ResponseFormat:   cfg.DefaultParams.ResponseFormat,
+	}
+}
+
+func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []ChatMessage {
+	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
+
+	// Add items from messageHistory first and the new chat message last
+	for _, message := range request.MessageHistory {
+		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
+	}
+
+	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
+
+	return messages
 }
 
 // Chat sends a chat request to the specified OpenAI model.
-//
-// Parameters:
-// - payload: The user payload for the chat request.
-// Returns:
-// - *ChatResponse: a pointer to a ChatResponse
-// - error: An error if the request failed.
-func (c *ProviderClient) Chat(u *providers.UnifiedAPIData) (*ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
-	c.Telemetry.Logger.Info("creating new chat request")
+	chatRequest := c.createChatRequestSchema(request)
 
-	chatRequest := c.CreateChatRequest(u)
+	// TODO: this is suspicious we do zero remapping of OpenAI response and send it back as is.
+	//  Does it really work well across providers?
+	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	if err != nil {
+		return nil, err
+	}
 
-	c.Telemetry.Logger.Info("chat request created")
+	if len(chatResponse.Choices) == 0 {
+		return nil, ErrEmptyResponse
+	}
 
-	// Send the chat request
-
-	resp, err := c.CreateChatResponse(context.Background(), chatRequest, u)
-
-	return resp, err
+	return chatResponse, nil
 }
 
-func (c *ProviderClient) CreateChatRequest(u *providers.UnifiedAPIData) *ChatRequest {
-	c.Telemetry.Logger.Info("creating chatRequest from payload")
-
-	var messages []map[string]string
-
-	// Add items from messageHistory first
-	messages = append(messages, u.MessageHistory...)
-
-	// Add msg variable last
-	messages = append(messages, u.Message)
-
-	// Iterate through unifiedData.Params and add them to the request, otherwise leave the default value
-	defaultParams := u.Params
-
-	chatRequest := &ChatRequest{
-		Model:            u.Model,
-		Messages:         messages,
-		Temperature:      0.8,
-		TopP:             1,
-		MaxTokens:        100,
-		N:                1,
-		StopWords:        []string{},
-		Stream:           false,
-		FrequencyPenalty: 0,
-		PresencePenalty:  0,
-		LogitBias:        nil,
-		User:             nil,
-		Seed:             nil,
-		Tools:            []string{},
-		ToolChoice:       nil,
-		ResponseFormat:   nil,
-	}
-
-	chatRequestValue := reflect.ValueOf(chatRequest).Elem()
-	chatRequestType := chatRequestValue.Type()
-
-	for i := 0; i < chatRequestValue.NumField(); i++ {
-		jsonTags := strings.Split(chatRequestType.Field(i).Tag.Get("json"), ",")
-		jsonTag := jsonTags[0]
-
-		if value, ok := defaultParams[jsonTag]; ok {
-			fieldValue := chatRequestValue.Field(i)
-			fieldValue.Set(reflect.ValueOf(value))
-		}
-	}
-
-	// c.Telemetry.Logger.Info("chatRequest created", zap.Any("chatRequest body", chatRequest))
+func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
+	// TODO: consider using objectpool to optimize memory allocation
+	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
+	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
 
 	return chatRequest
 }
 
-// CreateChatResponse creates chat Response.
-func (c *ProviderClient) CreateChatResponse(ctx context.Context, r *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
-	_ = ctx // keep this for future use
-
-	resp, err := c.createChatHTTP(r, u)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(resp.Choices) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
-	return resp, nil
-}
-
-func (c *ProviderClient) createChatHTTP(payload *ChatRequest, u *providers.UnifiedAPIData) (*ChatResponse, error) {
-	c.Telemetry.Logger.Info("running createChatHttp")
-
-	if payload.StreamingFunc != nil {
-		payload.Stream = true
-	}
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Build request payload
-	payloadBytes, err := json.Marshal(payload)
+	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to marshal openai chat request payload: %w", err)
 	}
 
-	// Build request
-	if defaultBaseURL == "" {
-		c.Telemetry.Logger.Error("defaultBaseURL not set")
-		return nil, errors.New("baseURL not set")
-	}
-
-	reqBody := bytes.NewBuffer(payloadBytes)
-
-	req, err := http.NewRequest(http.MethodPost, buildURL(defaultEndpoint), reqBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		c.Telemetry.Logger.Error(err.Error())
-		return nil, err
+		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+u.APIKey)
+	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := providers.HTTPClient.Do(req)
-	if err != nil {
-		c.Telemetry.Logger.Error(err.Error())
-		return nil, err
-	}
-	defer resp.Body.Close()
+	// TODO: this could leak information from messages which may not be a desired thing to have
+	c.telemetry.Logger.Debug(
+		"openai chat request",
+		zap.String("chat_url", c.chatURL),
+		zap.Any("payload", payload),
+	)
 
-	c.Telemetry.Logger.Info("Response Code: ", zap.String("response_code", strconv.Itoa(resp.StatusCode)))
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send openai chat request: %w", err)
+	}
+
+	defer resp.Body.Close() // TODO: handle this error
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.Telemetry.Logger.Error(err.Error())
+			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
 		}
 
-		c.Telemetry.Logger.Warn("Response Body: ", zap.String("response_body", string(bodyBytes)))
+		// TODO: Handle failure conditions
+		// TODO: return errors
+		c.telemetry.Logger.Error(
+			"openai chat request failed",
+			zap.Int("status_code", resp.StatusCode),
+			zap.String("response", string(bodyBytes)),
+			zap.Any("headers", resp.Header),
+		)
+
+		return nil, providers.ErrProviderUnavailable
 	}
 
 	// Parse response
-	var response ChatResponse
+	var response schemas.UnifiedChatResponse
 
 	return &response, json.NewDecoder(resp.Body).Decode(&response)
-}
-
-func buildURL(suffix string) string {
-	// open ai implement:
-	return fmt.Sprintf("%s%s", defaultBaseURL, suffix)
 }
