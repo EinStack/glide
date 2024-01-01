@@ -34,6 +34,7 @@ func NewCLI() *cobra.Command {
 	}
 
 	cli.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
+	_ = cli.MarkPersistentFlagRequired("config")
 
 	return cli
 }

@@ -1,0 +1,6 @@
+{
+  "telemetry": {
+    "logging": {
+      "level": "debug",
+      "encoding": "console"
+

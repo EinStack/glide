@@ -25,7 +25,7 @@ func NewProvider() *Provider {
 func (p *Provider) Load(configPath string) (*Provider, error) {
 	content, err := os.ReadFile(filepath.Clean(configPath))
 	if err != nil {
-		return p, fmt.Errorf("unable to read the file %v: %w", configPath, err)
+		return p, fmt.Errorf("unable to read config file %v: %w", configPath, err)
 	}
 
 	// process raw config
