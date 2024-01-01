@@ -42,7 +42,6 @@ func (r *RouterManager) BuildRouters(routerConfigs []LangRouterConfig) error {
 
 		r.telemetry.Logger.Debug("init router", zap.String("routerID", routerConfig.ID))
 		router, err := NewLangRouter(&routerConfig, r.telemetry)
-
 		if err != nil {
 			errs = multierr.Append(errs, err)
 			continue
