@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	LanguageRouters []LangRouter `yaml:"language"`
+	LanguageRouters []LangRouterConfig `yaml:"language"`
 }
 
 type LangModel struct {
@@ -53,24 +53,24 @@ func (m *LangModel) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return m.validateOneProvider()
 }
 
-type LangRouter struct {
+type LangRouterConfig struct {
 	ID              string                   `yaml:"id"`
 	Enabled         bool                     `yaml:"enabled"`
 	RoutingStrategy strategy.RoutingStrategy `yaml:"strategy"`
 	Models          []LangModel              `yaml:"models"`
 }
 
-func DefaultLangRouterConfig() LangRouter {
-	return LangRouter{
+func DefaultLangRouterConfig() LangRouterConfig {
+	return LangRouterConfig{
 		Enabled:         true,
 		RoutingStrategy: strategy.Priority,
 	}
 }
 
-func (p *LangRouter) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (p *LangRouterConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	*p = DefaultLangRouterConfig()
 
-	type plain LangRouter // to avoid recursion
+	type plain LangRouterConfig // to avoid recursion
 
 	return unmarshal((*plain)(p))
 }

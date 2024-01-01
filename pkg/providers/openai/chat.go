@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"glide/pkg/providers"
 	"io"
 	"net/http"
 
@@ -139,7 +140,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			"openai chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
+			zap.Any("headers", resp.Header),
 		)
+
+		return nil, providers.ErrProviderUnavailable
 	}
 
 	// Parse response

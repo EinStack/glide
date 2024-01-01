@@ -43,12 +43,12 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 		return nil, err
 	}
 
-	router, err := routers.NewRouter(tel)
+	routerManager, err := routers.NewManager(&cfg.Routers, tel)
 	if err != nil {
 		return nil, err
 	}
 
-	serverManager, err := api.NewServerManager(&http.ServerConfig{}, tel, router)
+	serverManager, err := api.NewServerManager(&http.ServerConfig{}, tel, routerManager)
 	if err != nil {
 		return nil, err
 	}

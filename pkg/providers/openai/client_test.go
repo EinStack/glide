@@ -48,7 +48,7 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.BaseURL = openAIServer.URL
 
-	client, err := NewClient(&cfg, telemetry.NewTelemetryMock())
+	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{

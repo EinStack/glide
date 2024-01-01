@@ -51,10 +51,10 @@ type Config struct {
 }
 
 // DefaultConfig for OpenAI models
-func DefaultConfig() Config {
+func DefaultConfig() *Config {
 	defaultParams := DefaultParams()
 
-	return Config{
+	return &Config{
 		BaseURL:       "https://api.openai.com/v1",
 		ChatEndpoint:  "/chat/completions",
 		Model:         "gpt-3.5-turbo",
@@ -63,7 +63,7 @@ func DefaultConfig() Config {
 }
 
 func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	*c = DefaultConfig()
+	*c = *DefaultConfig()
 
 	type plain Config // to avoid recursion
 

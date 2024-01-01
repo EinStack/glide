@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,23 +14,22 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 type Server struct {
-	telemetry *telemetry.Telemetry
-	router    *routers.Router
-	server    *server.Hertz
+	telemetry     *telemetry.Telemetry
+	routerManager *routers.RouterManager
+	server        *server.Hertz
 }
 
-func NewServer(config *ServerConfig, tel *telemetry.Telemetry, router *routers.Router) (*Server, error) {
+func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *routers.RouterManager) (*Server, error) {
 	srv := config.ToServer()
 
 	return &Server{
-		telemetry: tel,
-		router:    router,
-		server:    srv,
+		telemetry:     tel,
+		routerManager: routerManager,
+		server:        srv,
 	}, nil
 }
 
@@ -47,12 +47,25 @@ func (srv *Server) Run() error {
 		}
 
 		routerID := c.Param("router")
+		router, err := srv.routerManager.GetLangRouter(routerID)
 
-		// TODO: call the model router and return the unified response
+		if errors.Is(err, routers.ErrRouterNotFound) {
+			c.JSON(consts.StatusNotFound, ErrorSchema{
+				Message: err.Error(),
+			})
+			return
+		}
 
-		c.JSON(consts.StatusOK, utils.H{
-			"message": fmt.Sprintf("%v was requested", routerID),
-		})
+		resp, err := router.Chat(ctx, req)
+		if err != nil {
+			// TODO: do a better handling, not everything is going to be an internal error
+			c.JSON(consts.StatusInternalServerError, ErrorSchema{
+				Message: err.Error(),
+			})
+			return
+		}
+
+		c.JSON(consts.StatusOK, resp)
 	})
 
 	srv.server.GET("/v1/health/", func(ctx context.Context, c *app.RequestContext) {
