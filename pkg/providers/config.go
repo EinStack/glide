@@ -12,7 +12,7 @@ import (
 var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
-	ID      string         `yaml:"id" json:"id"`
+	ID      string         `yaml:"id" json:"id" validate:"required"`
 	Enabled bool           `yaml:"enabled" json:"enabled"`
 	Timeout *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,integer"`
 	OpenAI  *openai.Config `yaml:"openai" json:"openai"`

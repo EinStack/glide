@@ -19,8 +19,6 @@ definitions:
     type: object
   openai.Config:
     properties:
-      apiKey:
-        type: string
       baseUrl:
         type: string
       chatEndpoint:
@@ -30,7 +28,9 @@ definitions:
       model:
         type: string
     required:
-    - apiKey
+    - baseUrl
+    - chatEndpoint
+    - model
     type: object
   openai.Params:
     properties:
@@ -76,6 +76,8 @@ definitions:
         $ref: '#/definitions/openai.Config'
       timeout:
         type: integer
+    required:
+    - id
     type: object
   routers.LangRouterConfig:
     properties:
@@ -89,6 +91,9 @@ definitions:
         type: string
       strategy:
         $ref: '#/definitions/strategy.RoutingStrategy'
+    required:
+    - models
+    - routers
     type: object
   schemas.ChatChoice:
     properties:

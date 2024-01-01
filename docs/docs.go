@@ -155,12 +155,11 @@ const docTemplate = `{
         "openai.Config": {
             "type": "object",
             "required": [
-                "apiKey"
+                "baseUrl",
+                "chatEndpoint",
+                "model"
             ],
             "properties": {
-                "apiKey": {
-                    "type": "string"
-                },
                 "baseUrl": {
                     "type": "string"
                 },
@@ -228,6 +227,9 @@ const docTemplate = `{
         },
         "providers.LangModelConfig": {
             "type": "object",
+            "required": [
+                "id"
+            ],
             "properties": {
                 "enabled": {
                     "type": "boolean"
@@ -245,6 +247,10 @@ const docTemplate = `{
         },
         "routers.LangRouterConfig": {
             "type": "object",
+            "required": [
+                "models",
+                "routers"
+            ],
             "properties": {
                 "enabled": {
                     "type": "boolean"

@@ -13,4 +13,4 @@ routers:
       models:
         - id: openai
           openai:
-            api_key: "${env:OPENAI_API_KEY}"
+            api_key: "ssss12"

@@ -152,12 +152,11 @@
         "openai.Config": {
             "type": "object",
             "required": [
-                "apiKey"
+                "baseUrl",
+                "chatEndpoint",
+                "model"
             ],
             "properties": {
-                "apiKey": {
-                    "type": "string"
-                },
                 "baseUrl": {
                     "type": "string"
                 },
@@ -225,6 +224,9 @@
         },
         "providers.LangModelConfig": {
             "type": "object",
+            "required": [
+                "id"
+            ],
             "properties": {
                 "enabled": {
                     "type": "boolean"
@@ -242,6 +244,10 @@
         },
         "routers.LangRouterConfig": {
             "type": "object",
+            "required": [
+                "models",
+                "routers"
+            ],
             "properties": {
                 "enabled": {
                     "type": "boolean"
