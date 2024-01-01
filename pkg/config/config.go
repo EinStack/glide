@@ -10,7 +10,7 @@ import (
 type Config struct {
 	Telemetry *telemetry.Config `yaml:"telemetry"`
 	API       *api.Config       `yaml:"api"`
-	Routers   routers.Config    `yaml:"routers"`
+	Routers   routers.Config    `yaml:"routers" validate:"required"`
 }
 
 func DefaultConfig() *Config {

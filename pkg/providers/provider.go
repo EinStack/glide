@@ -1,10 +1,17 @@
 package providers
 
-import "errors"
+import (
+	"context"
 
-var ErrProviderUnavailable = errors.New("provider is not available")
+	"glide/pkg/api/schemas"
+)
 
 // ModelProvider defines an interface all model providers should support
 type ModelProvider interface {
 	Provider() string
+}
+
+// LanguageModel defines the interface a provider should fulfill to be able to serve language chat requests
+type LanguageModel interface {
+	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
 }

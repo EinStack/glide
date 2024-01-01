@@ -6,3 +6,11 @@ telemetry:
 #api:
 #  http:
 #    ...
+
+routers:
+  language:
+    - id: myrouter
+      models:
+        - id: openai
+          openai:
+            api_key: "ssss12"

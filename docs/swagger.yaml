@@ -10,6 +10,91 @@ definitions:
       healthy:
         type: boolean
     type: object
+  http.RouterListSchema:
+    properties:
+      routers:
+        items:
+          $ref: '#/definitions/routers.LangRouterConfig'
+        type: array
+    type: object
+  openai.Config:
+    properties:
+      baseUrl:
+        type: string
+      chatEndpoint:
+        type: string
+      defaultParams:
+        $ref: '#/definitions/openai.Params'
+      model:
+        type: string
+    required:
+    - baseUrl
+    - chatEndpoint
+    - model
+    type: object
+  openai.Params:
+    properties:
+      frequency_penalty:
+        type: integer
+      logit_bias:
+        additionalProperties:
+          type: number
+        type: object
+      max_tokens:
+        type: integer
+      "n":
+        type: integer
+      presence_penalty:
+        type: integer
+      response_format:
+        description: 'TODO: should this be a part of the chat request API?'
+      seed:
+        type: integer
+      stop:
+        items:
+          type: string
+        type: array
+      temperature:
+        type: number
+      tool_choice: {}
+      tools:
+        items:
+          type: string
+        type: array
+      top_p:
+        type: number
+      user:
+        type: string
+    type: object
+  providers.LangModelConfig:
+    properties:
+      enabled:
+        type: boolean
+      id:
+        type: string
+      openai:
+        $ref: '#/definitions/openai.Config'
+      timeout:
+        type: integer
+    required:
+    - id
+    type: object
+  routers.LangRouterConfig:
+    properties:
+      enabled:
+        type: boolean
+      models:
+        items:
+          $ref: '#/definitions/providers.LangModelConfig'
+        type: array
+      routers:
+        type: string
+      strategy:
+        $ref: '#/definitions/strategy.RoutingStrategy'
+    required:
+    - models
+    - routers
+    type: object
   schemas.ChatChoice:
     properties:
       finish_reason:
@@ -70,6 +155,12 @@ definitions:
       total_tokens:
         type: number
     type: object
+  strategy.RoutingStrategy:
+    enum:
+    - priority
+    type: string
+    x-enum-varnames:
+    - Priority
 host: localhost:9099
 info:
   contact:
@@ -98,6 +189,22 @@ paths:
       summary: Gateway Health
       tags:
       - Operations
+  /v1/language/:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of configured language routers and their configurations
+      operationId: glide-language-routers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.RouterListSchema'
+      summary: Language Router List
+      tags:
+      - Language
   /v1/language/{router}/chat:
     post:
       consumes:

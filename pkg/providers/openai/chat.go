@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/providers"
+	"glide/pkg/providers/errs"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -144,7 +144,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Any("headers", resp.Header),
 		)
 
-		return nil, providers.ErrProviderUnavailable
+		return nil, errs.ErrProviderUnavailable
 	}
 
 	// Parse response

@@ -45,6 +45,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/language/": {
+            "get": {
+                "description": "Retrieve list of configured language routers and their configurations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Language"
+                ],
+                "summary": "Language Router List",
+                "operationId": "glide-language-routers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.RouterListSchema"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/language/{router}/chat": {
             "post": {
                 "description": "Talk to different LLMs Chat API via unified endpoint",
@@ -114,6 +138,134 @@ const docTemplate = `{
             "properties": {
                 "healthy": {
                     "type": "boolean"
+                }
+            }
+        },
+        "http.RouterListSchema": {
+            "type": "object",
+            "properties": {
+                "routers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/routers.LangRouterConfig"
+                    }
+                }
+            }
+        },
+        "openai.Config": {
+            "type": "object",
+            "required": [
+                "baseUrl",
+                "chatEndpoint",
+                "model"
+            ],
+            "properties": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/openai.Params"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "openai.Params": {
+            "type": "object",
+            "properties": {
+                "frequency_penalty": {
+                    "type": "integer"
+                },
+                "logit_bias": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    }
+                },
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "n": {
+                    "type": "integer"
+                },
+                "presence_penalty": {
+                    "type": "integer"
+                },
+                "response_format": {
+                    "description": "TODO: should this be a part of the chat request API?"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "tool_choice": {},
+                "tools": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "top_p": {
+                    "type": "number"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "providers.LangModelConfig": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "openai": {
+                    "$ref": "#/definitions/openai.Config"
+                },
+                "timeout": {
+                    "type": "integer"
+                }
+            }
+        },
+        "routers.LangRouterConfig": {
+            "type": "object",
+            "required": [
+                "models",
+                "routers"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/providers.LangModelConfig"
+                    }
+                },
+                "routers": {
+                    "type": "string"
+                },
+                "strategy": {
+                    "$ref": "#/definitions/strategy.RoutingStrategy"
                 }
             }
         },
@@ -202,6 +354,15 @@ const docTemplate = `{
                     "type": "number"
                 }
             }
+        },
+        "strategy.RoutingStrategy": {
+            "type": "string",
+            "enum": [
+                "priority"
+            ],
+            "x-enum-varnames": [
+                "Priority"
+            ]
         }
     }
 }`

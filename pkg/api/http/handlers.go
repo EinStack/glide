@@ -13,7 +13,6 @@ import (
 type Handler = func(ctx context.Context, c *app.RequestContext)
 
 // Swagger 101:
-//
 // - https://github.com/swaggo/swag/tree/master/example/celler
 
 // LangChatHandler
@@ -64,6 +63,28 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 		}
 
 		c.JSON(consts.StatusOK, resp)
+	}
+}
+
+// LangRoutersHandler
+// @id glide-language-routers
+// @Summary Language Router List
+// @Description Retrieve list of configured language routers and their configurations
+// @tags Language
+// @Accept json
+// @Produce json
+// @Success		200	{object}	http.RouterListSchema
+// @Router /v1/language/ [GET]
+func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
+	return func(ctx context.Context, c *app.RequestContext) {
+		configuredRouters := routerManager.GetLangRouters()
+		cfgs := make([]*routers.LangRouterConfig, 0, len(configuredRouters))
+
+		for _, router := range configuredRouters {
+			cfgs = append(cfgs, router.Config)
+		}
+
+		c.JSON(consts.StatusOK, RouterListSchema{Routers: cfgs})
 	}
 }
 
