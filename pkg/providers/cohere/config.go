@@ -7,30 +7,28 @@ import (
 // Params defines OpenAI-specific model params with the specific validation of values
 // TODO: Add validations
 type Params struct {
-	Temperature      float64          `yaml:"temperature,omitempty" json:"temperature"`
-	TopP             float64          `yaml:"top_p,omitempty" json:"top_p"`
-	MaxTokens        int              `yaml:"max_tokens,omitempty" json:"max_tokens"`
-	N                int              `yaml:"n,omitempty" json:"n"`
-	StopWords        []string         `yaml:"stop,omitempty" json:"stop"`
-	FrequencyPenalty int              `yaml:"frequency_penalty,omitempty" json:"frequency_penalty"`
-	PresencePenalty  int              `yaml:"presence_penalty,omitempty" json:"presence_penalty"`
-	LogitBias        *map[int]float64 `yaml:"logit_bias,omitempty" json:"logit_bias"`
-	User             *string          `yaml:"user,omitempty" json:"user"`
-	Seed             *int             `yaml:"seed,omitempty" json:"seed"`
-	Tools            []string         `yaml:"tools,omitempty" json:"tools"`
-	ToolChoice       interface{}      `yaml:"tool_choice,omitempty" json:"tool_choice"`
-	ResponseFormat   interface{}      `yaml:"response_format,omitempty" json:"response_format"` // TODO: should this be a part of the chat request API?
-	// Stream           bool             `json:"stream,omitempty"` // TODO: we are not supporting this at the moment
+	Temperature       float64             `json:"temperature,omitempty"`
+	Stream            bool                `json:"stream,omitempty"` // unsupported right now
+	PreambleOverride  string              `json:"preamble_override,omitempty"`
+	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
+	ConversationID    string              `json:"conversation_id,omitempty"`
+	PromptTruncation  string              `json:"prompt_truncation,omitempty"`
+	Connectors        []string            `json:"connectors,omitempty"`
+	SearchQueriesOnly bool                `json:"search_queries_only,omitempty"`
+	CitiationQuality  string              `json:"citiation_quality,omitempty"`
 }
 
 func DefaultParams() Params {
 	return Params{
-		Temperature: 0.8,
-		TopP:        1,
-		MaxTokens:   100,
-		N:           1,
-		StopWords:   []string{},
-		Tools:       []string{},
+		Temperature: 0.3,
+		Stream:            false,
+		PreambleOverride: "",
+		ChatHistory:       nil,
+		ConversationID:   "",
+		PromptTruncation: "",
+		Connectors:       []string{},
+		SearchQueriesOnly: false,
+		CitiationQuality:  "",
 	}
 }
 
