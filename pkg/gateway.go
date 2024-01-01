@@ -15,8 +15,6 @@ import (
 	"go.uber.org/zap"
 
 	"glide/pkg/api"
-	"glide/pkg/api/http"
-
 	"go.uber.org/multierr"
 )
 
@@ -48,7 +46,7 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 		return nil, err
 	}
 
-	serverManager, err := api.NewServerManager(&http.ServerConfig{}, tel, routerManager)
+	serverManager, err := api.NewServerManager(cfg.API, tel, routerManager)
 	if err != nil {
 		return nil, err
 	}

@@ -44,6 +44,10 @@ model failover, caching, etc.
 
 TBU
 
+### API Docs
+
+Glide comes with OpenAPI documentation that could be accessible via http://127.0.0.1:9099/v1/swagger/index.html
+
 ## Roadmap
 
 ### MVP (Coming soon)
