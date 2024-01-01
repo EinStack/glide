@@ -47,6 +47,7 @@ func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error
 				zap.String("router", r.config.ID),
 				zap.String("model", modelConfig.ID),
 			)
+
 			continue
 		}
 

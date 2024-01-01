@@ -12,9 +12,10 @@ import (
 var ErrRouterNotFound = errors.New("no router found with given ID")
 
 type RouterManager struct {
-	config      *Config
-	telemetry   *telemetry.Telemetry
-	langRouters *map[string]*LangRouter
+	config        *Config
+	telemetry     *telemetry.Telemetry
+	langRouterMap *map[string]*LangRouter
+	langRouters   []*LangRouter
 }
 
 // NewManager creates a new instance of Router Manager that creates, holds and returns all routers
@@ -30,7 +31,8 @@ func NewManager(cfg *Config, tel *telemetry.Telemetry) (*RouterManager, error) {
 }
 
 func (r *RouterManager) BuildRouters(routerConfigs []LangRouterConfig) error {
-	routers := make(map[string]*LangRouter, len(routerConfigs))
+	routerMap := make(map[string]*LangRouter, len(routerConfigs))
+	routers := make([]*LangRouter, 0, len(routerConfigs))
 
 	var errs error
 
@@ -48,21 +50,27 @@ func (r *RouterManager) BuildRouters(routerConfigs []LangRouterConfig) error {
 			continue
 		}
 
-		routers[routerConfig.ID] = router
+		routerMap[routerConfig.ID] = router
+		routers = append(routers, router)
 	}
 
 	if errs != nil {
 		return errs
 	}
 
-	r.langRouters = &routers
+	r.langRouterMap = &routerMap
+	r.langRouters = routers
 
 	return nil
 }
 
+func (r *RouterManager) GetLangRouters() []*LangRouter {
+	return r.langRouters
+}
+
 // GetLangRouter returns a router by type and ID
 func (r *RouterManager) GetLangRouter(routerID string) (*LangRouter, error) {
-	if router, found := (*r.langRouters)[routerID]; found {
+	if router, found := (*r.langRouterMap)[routerID]; found {
 		return router, nil
 	}
 
