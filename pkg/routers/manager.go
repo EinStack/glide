@@ -34,14 +34,15 @@ func (r *RouterManager) BuildRouters(routerConfigs []LangRouterConfig) error {
 
 	var errs error
 
-	for _, routerConfig := range routerConfigs {
+	for idx, routerConfig := range routerConfigs {
 		if !routerConfig.Enabled {
 			r.telemetry.Logger.Info("router is disabled, skipping", zap.String("routerID", routerConfig.ID))
 			continue
 		}
 
 		r.telemetry.Logger.Debug("init router", zap.String("routerID", routerConfig.ID))
-		router, err := NewLangRouter(&routerConfig, r.telemetry)
+
+		router, err := NewLangRouter(&routerConfigs[idx], r.telemetry)
 		if err != nil {
 			errs = multierr.Append(errs, err)
 			continue
