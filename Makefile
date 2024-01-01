@@ -17,6 +17,7 @@ install-checkers: ## Install static checkers
 	@GOBIN=$(CHECKER_BIN) go install mvdan.cc/gofumpt@latest
 	@GOBIN=$(CHECKER_BIN) go install golang.org/x/vuln/cmd/govulncheck@latest
 	@GOBIN=$(CHECKER_BIN) go install github.com/securego/gosec/v2/cmd/gosec@latest
+	@GOBIN=$(CHECKER_BIN) go install github.com/swaggo/swag/cmd/swag@latest
 
 lint: install-checkers ## Lint the source code
 	@echo "🧹 Cleaning go.mod.."
@@ -45,3 +46,6 @@ build: ## Build Glide
 
 tests: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+
+docs-api: ## Generate OpenAPI API docs
+	@$(CHECKER_BIN)/swag init

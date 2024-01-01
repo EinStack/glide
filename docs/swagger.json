@@ -1,0 +1,56 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "API documentation for Glide, an open-source lightweight high-performance model gateway",
+        "title": "Glide Gateway",
+        "contact": {
+            "name": "hertz-contrib",
+            "url": "https://github.com/modelgateway/glide"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://github.com/modelgateway/glide/blob/develop/LICENSE"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:9099",
+    "basePath": "/",
+    "paths": {
+        "/v1/health/": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "operations"
+                ],
+                "summary": "Gateway Health",
+                "operationId": "glide-health",
+                "responses": {}
+            }
+        },
+        "/v1/language/:router/chat": {
+            "post": {
+                "description": "Talk to different LLMs Chat API via unified endpoint",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lang"
+                ],
+                "summary": "Language Chat",
+                "operationId": "glide-language-chat",
+                "responses": {}
+            }
+        }
+    }
+}

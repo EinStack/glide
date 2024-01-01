@@ -2,19 +2,16 @@ package http
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/hertz-contrib/swagger"
+	swaggerFiles "github.com/swaggo/files"
 	"time"
-
-	"glide/pkg/api/schemas"
 
 	"glide/pkg/routers"
 
 	"glide/pkg/telemetry"
 
-	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 type Server struct {
@@ -34,43 +31,11 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 }
 
 func (srv *Server) Run() error {
-	srv.server.POST("/v1/language/:router/chat/", func(ctx context.Context, c *app.RequestContext) {
-		var req *schemas.UnifiedChatRequest
+	defaultGroup := srv.server.Group("/v1")
 
-		err := c.BindJSON(&req)
-		if err != nil {
-			c.JSON(consts.StatusBadRequest, ErrorSchema{
-				Message: err.Error(),
-			})
-
-			return
-		}
-
-		routerID := c.Param("router")
-		router, err := srv.routerManager.GetLangRouter(routerID)
-
-		if errors.Is(err, routers.ErrRouterNotFound) {
-			c.JSON(consts.StatusNotFound, ErrorSchema{
-				Message: err.Error(),
-			})
-			return
-		}
-
-		resp, err := router.Chat(ctx, req)
-		if err != nil {
-			// TODO: do a better handling, not everything is going to be an internal error
-			c.JSON(consts.StatusInternalServerError, ErrorSchema{
-				Message: err.Error(),
-			})
-			return
-		}
-
-		c.JSON(consts.StatusOK, resp)
-	})
-
-	srv.server.GET("/v1/health/", func(ctx context.Context, c *app.RequestContext) {
-		c.JSON(consts.StatusOK, HealthSchema{Healthy: true})
-	})
+	defaultGroup.POST("/language/:router/chat/", LangChatHandler(srv.routerManager))
+	defaultGroup.GET("/health/", HealthHandler)
+	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, swagger.URL("http://localhost:9099/v1/swagger/doc.json")))
 
 	return srv.server.Run()
 }

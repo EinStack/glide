@@ -1,0 +1,40 @@
+basePath: /
+host: localhost:9099
+info:
+  contact:
+    name: hertz-contrib
+    url: https://github.com/modelgateway/glide
+  description: API documentation for Glide, an open-source lightweight high-performance
+    model gateway
+  license:
+    name: Apache 2.0
+    url: https://github.com/modelgateway/glide/blob/develop/LICENSE
+  title: Glide Gateway
+  version: "1.0"
+paths:
+  /v1/health/:
+    get:
+      consumes:
+      - application/json
+      operationId: glide-health
+      produces:
+      - application/json
+      responses: {}
+      summary: Gateway Health
+      tags:
+      - operations
+  /v1/language/:router/chat:
+    post:
+      consumes:
+      - application/json
+      description: Talk to different LLMs Chat API via unified endpoint
+      operationId: glide-language-chat
+      produces:
+      - application/json
+      responses: {}
+      summary: Language Chat
+      tags:
+      - lang
+schemes:
+- http
+swagger: "2.0"
