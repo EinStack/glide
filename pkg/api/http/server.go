@@ -3,9 +3,11 @@ package http
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/hertz-contrib/swagger"
 	swaggerFiles "github.com/swaggo/files"
-	"time"
+	_ "glide/docs"
 
 	"glide/pkg/routers"
 
@@ -15,6 +17,7 @@ import (
 )
 
 type Server struct {
+	config        *ServerConfig
 	telemetry     *telemetry.Telemetry
 	routerManager *routers.RouterManager
 	server        *server.Hertz
@@ -24,6 +27,7 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 	srv := config.ToServer()
 
 	return &Server{
+		config:        config,
 		telemetry:     tel,
 		routerManager: routerManager,
 		server:        srv,
@@ -35,7 +39,9 @@ func (srv *Server) Run() error {
 
 	defaultGroup.POST("/language/:router/chat/", LangChatHandler(srv.routerManager))
 	defaultGroup.GET("/health/", HealthHandler)
-	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, swagger.URL("http://localhost:9099/v1/swagger/doc.json")))
+
+	schemaDocUrl := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.HostPort))
+	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, schemaDocUrl))
 
 	return srv.server.Run()
 }

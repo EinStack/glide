@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"errors"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"glide/pkg/api/schemas"
@@ -11,14 +12,23 @@ import (
 
 type Handler = func(ctx context.Context, c *app.RequestContext)
 
+// Swagger 101:
+//
+// - https://github.com/swaggo/swag/tree/master/example/celler
+
 // LangChatHandler
 // @id glide-language-chat
 // @Summary Language Chat
 // @Description Talk to different LLMs Chat API via unified endpoint
-// @tags lang
-// @Accept application/json
-// @Produce application/json
-// @Router /v1/language/:router/chat [post]
+// @tags Language
+// @Param			router	path		string	true	"Router ID"
+// @Param			payload	body		schemas.UnifiedChatRequest	true	"Request Data"
+// @Accept json
+// @Produce json
+// @Success		200	{object}	schemas.UnifiedChatResponse
+// @Failure		400	{object}	http.ErrorSchema
+// @Failure		404	{object}	http.ErrorSchema
+// @Router /v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(ctx context.Context, c *app.RequestContext) {
 		var req *schemas.UnifiedChatRequest
@@ -59,9 +69,10 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 // @id glide-health
 // @Summary Gateway Health
 // @Description
-// @tags operations
-// @Accept application/json
-// @Produce application/json
+// @tags Operations
+// @Accept json
+// @Produce json
+// @Success		200	{object}	http.HealthSchema
 // @Router /v1/health/ [get]
 func HealthHandler(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, HealthSchema{Healthy: true})

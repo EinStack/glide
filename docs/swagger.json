@@ -7,7 +7,7 @@
         "description": "API documentation for Glide, an open-source lightweight high-performance model gateway",
         "title": "Glide Gateway",
         "contact": {
-            "name": "hertz-contrib",
+            "name": "Glide Community",
             "url": "https://github.com/modelgateway/glide"
         },
         "license": {
@@ -28,14 +28,21 @@
                     "application/json"
                 ],
                 "tags": [
-                    "operations"
+                    "Operations"
                 ],
                 "summary": "Gateway Health",
                 "operationId": "glide-health",
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HealthSchema"
+                        }
+                    }
+                }
             }
         },
-        "/v1/language/:router/chat": {
+        "/v1/language/{router}/chat": {
             "post": {
                 "description": "Talk to different LLMs Chat API via unified endpoint",
                 "consumes": [
@@ -45,11 +52,152 @@
                     "application/json"
                 ],
                 "tags": [
-                    "lang"
+                    "Language"
                 ],
                 "summary": "Language Chat",
                 "operationId": "glide-language-chat",
-                "responses": {}
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Router ID",
+                        "name": "router",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request Data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UnifiedChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UnifiedChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorSchema"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorSchema"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "http.ErrorSchema": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.HealthSchema": {
+            "type": "object",
+            "properties": {
+                "healthy": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.ChatChoice": {
+            "type": "object",
+            "properties": {
+                "finish_reason": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "integer"
+                },
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                }
+            }
+        },
+        "schemas.ChatMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "description": "The content of the message.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,\nwith a maximum length of 64 characters.",
+                    "type": "string"
+                },
+                "role": {
+                    "description": "The role of the author of this message. One of system, user, or assistant.",
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.UnifiedChatRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "messageHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.ChatMessage"
+                    }
+                }
+            }
+        },
+        "schemas.UnifiedChatResponse": {
+            "type": "object",
+            "properties": {
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.ChatChoice"
+                    }
+                },
+                "created": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "object": {
+                    "description": "TODO: what does this mean \"Object\"?",
+                    "type": "string"
+                },
+                "usage": {
+                    "$ref": "#/definitions/schemas.Usage"
+                }
+            }
+        },
+        "schemas.Usage": {
+            "type": "object",
+            "properties": {
+                "completion_tokens": {
+                    "type": "number"
+                },
+                "prompt_tokens": {
+                    "type": "number"
+                },
+                "total_tokens": {
+                    "type": "number"
+                }
             }
         }
     }

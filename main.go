@@ -10,7 +10,7 @@ import (
 // @version 1.0
 // @description API documentation for Glide, an open-source lightweight high-performance model gateway
 
-// @contact.name hertz-contrib
+// @contact.name Glide Community
 // @contact.url https://github.com/modelgateway/glide
 
 // @license.name Apache 2.0

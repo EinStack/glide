@@ -1,8 +1,79 @@
 basePath: /
+definitions:
+  http.ErrorSchema:
+    properties:
+      message:
+        type: string
+    type: object
+  http.HealthSchema:
+    properties:
+      healthy:
+        type: boolean
+    type: object
+  schemas.ChatChoice:
+    properties:
+      finish_reason:
+        type: string
+      index:
+        type: integer
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+    type: object
+  schemas.ChatMessage:
+    properties:
+      content:
+        description: The content of the message.
+        type: string
+      name:
+        description: |-
+          The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,
+          with a maximum length of 64 characters.
+        type: string
+      role:
+        description: The role of the author of this message. One of system, user,
+          or assistant.
+        type: string
+    type: object
+  schemas.UnifiedChatRequest:
+    properties:
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+      messageHistory:
+        items:
+          $ref: '#/definitions/schemas.ChatMessage'
+        type: array
+    type: object
+  schemas.UnifiedChatResponse:
+    properties:
+      choices:
+        items:
+          $ref: '#/definitions/schemas.ChatChoice'
+        type: array
+      created:
+        type: number
+      id:
+        type: string
+      model:
+        type: string
+      object:
+        description: 'TODO: what does this mean "Object"?'
+        type: string
+      usage:
+        $ref: '#/definitions/schemas.Usage'
+    type: object
+  schemas.Usage:
+    properties:
+      completion_tokens:
+        type: number
+      prompt_tokens:
+        type: number
+      total_tokens:
+        type: number
+    type: object
 host: localhost:9099
 info:
   contact:
-    name: hertz-contrib
+    name: Glide Community
     url: https://github.com/modelgateway/glide
   description: API documentation for Glide, an open-source lightweight high-performance
     model gateway
@@ -19,22 +90,50 @@ paths:
       operationId: glide-health
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HealthSchema'
       summary: Gateway Health
       tags:
-      - operations
-  /v1/language/:router/chat:
+      - Operations
+  /v1/language/{router}/chat:
     post:
       consumes:
       - application/json
       description: Talk to different LLMs Chat API via unified endpoint
       operationId: glide-language-chat
+      parameters:
+      - description: Router ID
+        in: path
+        name: router
+        required: true
+        type: string
+      - description: Request Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UnifiedChatRequest'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.UnifiedChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorSchema'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorSchema'
       summary: Language Chat
       tags:
-      - lang
+      - Language
 schemes:
 - http
 swagger: "2.0"

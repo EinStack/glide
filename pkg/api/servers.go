@@ -16,8 +16,8 @@ type ServerManager struct {
 	shutdownWG *sync.WaitGroup
 }
 
-func NewServerManager(httpConfig *http.ServerConfig, tel *telemetry.Telemetry, router *routers.RouterManager) (*ServerManager, error) {
-	httpServer, err := http.NewServer(httpConfig, tel, router)
+func NewServerManager(cfg *Config, tel *telemetry.Telemetry, router *routers.RouterManager) (*ServerManager, error) {
+	httpServer, err := http.NewServer(cfg.HTTP, tel, router)
 	if err != nil {
 		return nil, err
 	}

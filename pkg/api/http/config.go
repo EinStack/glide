@@ -8,12 +8,12 @@ import (
 )
 
 type ServerConfig struct {
-	// TODO: add fields
+	HostPort string
 }
 
 func DefaultServerConfig() *ServerConfig {
 	return &ServerConfig{
-		// TODO: set defaults
+		HostPort: "127.0.0.1:9099",
 	}
 }
 
@@ -21,7 +21,7 @@ func (cfg *ServerConfig) ToServer() *server.Hertz {
 	// TODO: do real server build based on provided config
 	return server.Default(
 		server.WithIdleTimeout(1*time.Second),
-		server.WithHostPorts("127.0.0.1:9099"),
+		server.WithHostPorts(cfg.HostPort),
 		server.WithMaxRequestBodySize(20<<20),
 		server.WithTransport(netpoll.NewTransporter),
 	)
