@@ -57,7 +57,6 @@ func DefaultConfig() *Config {
 		ChatEndpoint:  "/chat",
 		Model:         "command-light",
 		DefaultParams: &defaultParams,
-		APIKey:        "BAtxMh9XQvSPBebdVn6ISYfMlyiTelHDa8n1pKCr",
 	}
 }
 
