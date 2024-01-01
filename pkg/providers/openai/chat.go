@@ -105,7 +105,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("unable to marshal openai chat request payload: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
 	}
@@ -134,13 +134,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		}
 
 		// TODO: Handle failure conditions
-
+		// TODO: return errors
 		c.telemetry.Logger.Error(
 			"openai chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 		)
-		// TODO: return errors
 	}
 
 	// Parse response

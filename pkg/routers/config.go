@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+
 	"glide/pkg/providers/openai"
 	"glide/pkg/routers/strategy"
 )
@@ -23,11 +24,10 @@ func (m *LangModel) validateOneProvider() error {
 	providersConfigured := 0
 
 	if m.OpenAI != nil {
-		providersConfigured += 1
+		providersConfigured++
 	}
 
 	// check other providers here
-
 	if providersConfigured == 0 {
 		return fmt.Errorf("exactly one provider must be cofigured for model \"%v\", none is configured", m.ID)
 	}

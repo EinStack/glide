@@ -15,8 +15,8 @@ type Params struct {
 	FrequencyPenalty int              `yaml:"frequency_penalty,omitempty"`
 	PresencePenalty  int              `yaml:"presence_penalty,omitempty"`
 	LogitBias        *map[int]float64 `yaml:"logit_bias,omitempty"`
-	User             interface{}      `yaml:"user,omitempty"`
-	Seed             interface{}      `yaml:"seed,omitempty"`
+	User             *string          `yaml:"user,omitempty"`
+	Seed             *int             `yaml:"seed,omitempty"`
 	Tools            []string         `yaml:"tools,omitempty"`
 	ToolChoice       interface{}      `yaml:"tool_choice,omitempty"`
 	ResponseFormat   interface{}      `yaml:"response_format,omitempty"` // TODO: should this be a part of the chat request API?
@@ -52,10 +52,13 @@ type Config struct {
 
 // DefaultConfig for OpenAI models
 func DefaultConfig() Config {
+	defaultParams := DefaultParams()
+
 	return Config{
-		BaseURL:      "https://api.openai.com/v1",
-		ChatEndpoint: "/chat/completions",
-		Model:        "gpt-3.5-turbo",
+		BaseURL:       "https://api.openai.com/v1",
+		ChatEndpoint:  "/chat/completions",
+		Model:         "gpt-3.5-turbo",
+		DefaultParams: &defaultParams,
 	}
 }
 

@@ -2,8 +2,8 @@ package openai
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"glide/pkg/telemetry"
@@ -34,10 +34,14 @@ type Client struct {
 
 // NewClient creates a new OpenAI client for the OpenAI API.
 func NewClient(cfg *Config, tel *telemetry.Telemetry) (*Client, error) {
-	// Create a new client
+	chatURL, err := url.JoinPath(cfg.BaseURL, cfg.ChatEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
 	c := &Client{
 		baseURL:             cfg.BaseURL,
-		chatURL:             fmt.Sprintf("%s%s", cfg.BaseURL, cfg.ChatEndpoint),
+		chatURL:             chatURL,
 		config:              cfg,
 		chatRequestTemplate: NewChatRequestFromConfig(cfg),
 		httpClient: &http.Client{
