@@ -88,7 +88,6 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 
 	// Build the Cohere specific ChatHistory
 	if len(request.MessageHistory) > 0 {
-
 		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
 		for i, message := range request.MessageHistory {
 			chatRequest.ChatHistory[i] = ChatHistory{
@@ -198,7 +197,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ID:               responseJSON["response_id"].(string),
 		Created:          float64(time.Now().Unix()),
 		Provider:         "cohere",
-		Router:           "chat", //TODO: change this to router name
+		Router:           "chat",        // TODO: change this to router name
 		Model:            payload.Model, // Should this be derived from somehwhere else? Cohere doesn't specify it in response
 		Cached:           false,
 		ProviderResponse: responsePayload,

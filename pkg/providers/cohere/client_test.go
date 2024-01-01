@@ -13,7 +13,6 @@ import (
 )
 
 func TestOpenAIClient_ChatRequest(t *testing.T) {
-	
 	ctx := context.Background()
 	cfg := DefaultConfig()
 
@@ -30,5 +29,5 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 
 	fmt.Print(response)
 
-	//require.Equal(t, "chatcmpl-123", response.ID)
+	// require.Equal(t, "chatcmpl-123", response.ID)
 }
