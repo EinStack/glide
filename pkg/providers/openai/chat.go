@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"glide/pkg/providers"
 	"io"
 	"net/http"
+
+	"glide/pkg/providers"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
