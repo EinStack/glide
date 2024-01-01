@@ -30,8 +30,8 @@ type ChatRequest struct {
 	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
 	PresencePenalty  int              `json:"presence_penalty,omitempty"`
 	LogitBias        *map[int]float64 `json:"logit_bias,omitempty"`
-	User             interface{}      `json:"user,omitempty"`
-	Seed             interface{}      `json:"seed,omitempty"`
+	User             *string          `json:"user,omitempty"`
+	Seed             *int             `json:"seed,omitempty"`
 	Tools            []string         `json:"tools,omitempty"`
 	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
 	ResponseFormat   interface{}      `json:"response_format,omitempty"`
