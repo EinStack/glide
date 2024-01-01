@@ -37,7 +37,9 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 func (srv *Server) Run() error {
 	defaultGroup := srv.server.Group("/v1")
 
+	defaultGroup.GET("/language/", LangRoutersHandler(srv.routerManager))
 	defaultGroup.POST("/language/:router/chat/", LangChatHandler(srv.routerManager))
+
 	defaultGroup.GET("/health/", HealthHandler)
 
 	schemaDocURL := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.HostPort))

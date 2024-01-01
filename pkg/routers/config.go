@@ -10,10 +10,10 @@ type Config struct {
 }
 
 type LangRouterConfig struct {
-	ID              string                      `yaml:"id"`
-	Enabled         bool                        `yaml:"enabled"`
-	RoutingStrategy strategy.RoutingStrategy    `yaml:"strategy"`
-	Models          []providers.LangModelConfig `yaml:"models"`
+	ID              string                      `yaml:"id" json:"routers"`
+	Enabled         bool                        `yaml:"enabled" json:"enabled"`
+	RoutingStrategy strategy.RoutingStrategy    `yaml:"strategy" json:"strategy"`
+	Models          []providers.LangModelConfig `yaml:"models" json:"models"`
 }
 
 func DefaultLangRouterConfig() LangRouterConfig {

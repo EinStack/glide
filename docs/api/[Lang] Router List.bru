@@ -1,0 +1,21 @@
+meta {
+  name: [Lang] Router List
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/v1/language/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "message": {
+      "role": "user",
+      "content": "How are you doing?"
+    },
+    "messageHistory": []
+  }
+}

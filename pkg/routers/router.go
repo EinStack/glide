@@ -15,14 +15,14 @@ import (
 var ErrNoModels = errors.New("no models configured for router")
 
 type LangRouter struct {
-	config    *LangRouterConfig
+	Config    *LangRouterConfig
 	models    []providers.LanguageModel
 	telemetry *telemetry.Telemetry
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
 	router := &LangRouter{
-		config:    cfg,
+		Config:    cfg,
 		telemetry: tel,
 	}
 
@@ -44,7 +44,7 @@ func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error
 		if !modelConfig.Enabled {
 			r.telemetry.Logger.Info(
 				"model is disabled, skipping",
-				zap.String("router", r.config.ID),
+				zap.String("router", r.Config.ID),
 				zap.String("model", modelConfig.ID),
 			)
 
@@ -53,7 +53,7 @@ func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error
 
 		r.telemetry.Logger.Debug(
 			"init lang model",
-			zap.String("router", r.config.ID),
+			zap.String("router", r.Config.ID),
 			zap.String("model", modelConfig.ID),
 		)
 

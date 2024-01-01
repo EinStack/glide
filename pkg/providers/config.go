@@ -12,10 +12,10 @@ import (
 var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
-	ID      string         `yaml:"id"`
-	Enabled bool           `yaml:"enabled"`
-	Timeout *time.Duration `yaml:"timeout,omitempty"`
-	OpenAI  *openai.Config
+	ID      string         `yaml:"id" json:"id"`
+	Enabled bool           `yaml:"enabled" json:"enabled"`
+	Timeout *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,integer"`
+	OpenAI  *openai.Config `yaml:"openai" json:"openai"`
 	// Add other providers like
 	// Cohere *cohere.Config
 	// Anthropic *anthropic.Config
