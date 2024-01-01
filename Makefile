@@ -47,5 +47,5 @@ build: ## Build Glide
 tests: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
-docs-api: ## Generate OpenAPI API docs
+docs-api: install-checkers ## Generate OpenAPI API docs
 	@$(CHECKER_BIN)/swag init
