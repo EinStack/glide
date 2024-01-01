@@ -24,7 +24,6 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 		var data interface{}
 		// Parse the JSON body
 		err := json.Unmarshal(rawPayload, &data)
-
 		if err != nil {
 			t.Errorf("error decoding payload (%q): %v", string(rawPayload), err)
 		}
