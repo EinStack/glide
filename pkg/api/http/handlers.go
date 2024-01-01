@@ -49,6 +49,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 			c.JSON(consts.StatusNotFound, ErrorSchema{
 				Message: err.Error(),
 			})
+
 			return
 		}
 
@@ -58,6 +59,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 			c.JSON(consts.StatusInternalServerError, ErrorSchema{
 				Message: err.Error(),
 			})
+
 			return
 		}
 
@@ -74,6 +76,6 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 // @Produce json
 // @Success		200	{object}	http.HealthSchema
 // @Router /v1/health/ [get]
-func HealthHandler(ctx context.Context, c *app.RequestContext) {
+func HealthHandler(_ context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, HealthSchema{Healthy: true})
 }

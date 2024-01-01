@@ -7,7 +7,7 @@ import (
 
 	"github.com/hertz-contrib/swagger"
 	swaggerFiles "github.com/swaggo/files"
-	_ "glide/docs"
+	_ "glide/docs" // importing docs package to include them into the binary
 
 	"glide/pkg/routers"
 
@@ -40,8 +40,8 @@ func (srv *Server) Run() error {
 	defaultGroup.POST("/language/:router/chat/", LangChatHandler(srv.routerManager))
 	defaultGroup.GET("/health/", HealthHandler)
 
-	schemaDocUrl := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.HostPort))
-	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, schemaDocUrl))
+	schemaDocURL := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.HostPort))
+	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, schemaDocURL))
 
 	return srv.server.Run()
 }
