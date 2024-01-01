@@ -2,22 +2,22 @@ package http
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	"glide/pkg/api/schemas"
+	"github.com/hertz-contrib/swagger"
+	swaggerFiles "github.com/swaggo/files"
+	_ "glide/docs" // importing docs package to include them into the binary
 
 	"glide/pkg/routers"
 
 	"glide/pkg/telemetry"
 
-	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 type Server struct {
+	config        *ServerConfig
 	telemetry     *telemetry.Telemetry
 	routerManager *routers.RouterManager
 	server        *server.Hertz
@@ -27,6 +27,7 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 	srv := config.ToServer()
 
 	return &Server{
+		config:        config,
 		telemetry:     tel,
 		routerManager: routerManager,
 		server:        srv,
@@ -34,43 +35,13 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 }
 
 func (srv *Server) Run() error {
-	srv.server.POST("/v1/language/:router/chat/", func(ctx context.Context, c *app.RequestContext) {
-		var req *schemas.UnifiedChatRequest
+	defaultGroup := srv.server.Group("/v1")
 
-		err := c.BindJSON(&req)
-		if err != nil {
-			c.JSON(consts.StatusBadRequest, ErrorSchema{
-				Message: err.Error(),
-			})
+	defaultGroup.POST("/language/:router/chat/", LangChatHandler(srv.routerManager))
+	defaultGroup.GET("/health/", HealthHandler)
 
-			return
-		}
-
-		routerID := c.Param("router")
-		router, err := srv.routerManager.GetLangRouter(routerID)
-
-		if errors.Is(err, routers.ErrRouterNotFound) {
-			c.JSON(consts.StatusNotFound, ErrorSchema{
-				Message: err.Error(),
-			})
-			return
-		}
-
-		resp, err := router.Chat(ctx, req)
-		if err != nil {
-			// TODO: do a better handling, not everything is going to be an internal error
-			c.JSON(consts.StatusInternalServerError, ErrorSchema{
-				Message: err.Error(),
-			})
-			return
-		}
-
-		c.JSON(consts.StatusOK, resp)
-	})
-
-	srv.server.GET("/v1/health/", func(ctx context.Context, c *app.RequestContext) {
-		c.JSON(consts.StatusOK, HealthSchema{Healthy: true})
-	})
+	schemaDocURL := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.HostPort))
+	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, schemaDocURL))
 
 	return srv.server.Run()
 }

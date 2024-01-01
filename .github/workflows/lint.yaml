@@ -109,3 +109,18 @@ jobs:
           token: ${{secrets.CODECOV_TOKEN}}  # set in repository settings
           file: ./coverage.txt  # file from the previous step
           fail_ci_if_error: false
+
+  api-docs:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+          check-latest: true
+
+      - name: Generate OpenAPI Schema
+        run: make docs-api && git diff --exit-code
