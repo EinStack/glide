@@ -3,8 +3,8 @@ package routers
 import (
 	"context"
 	"errors"
+
 	"glide/pkg/providers"
-	"glide/pkg/providers/factory"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
@@ -12,9 +12,7 @@ import (
 	"glide/pkg/telemetry"
 )
 
-var (
-	ErrNoModels = errors.New("no models configured for router")
-)
+var ErrNoModels = errors.New("no models configured for router")
 
 type LangRouter struct {
 	config    *LangRouterConfig
@@ -35,6 +33,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 
 func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error {
 	var errs error
+
 	models := make([]providers.LanguageModel, 0, len(modelConfigs))
 
 	for _, modelConfig := range modelConfigs {
@@ -45,8 +44,7 @@ func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error
 
 		r.telemetry.Logger.Debug("init lang model", zap.String("modelID", modelConfig.ID))
 
-		model, err := factory.NewModelFromConfig(modelConfig, r.telemetry)
-
+		model, err := modelConfig.ToModel(r.telemetry)
 		if err != nil {
 			errs = multierr.Append(errs, err)
 			continue

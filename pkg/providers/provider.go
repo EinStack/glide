@@ -2,11 +2,9 @@ package providers
 
 import (
 	"context"
-	"errors"
+
 	"glide/pkg/api/schemas"
 )
-
-var ErrProviderUnavailable = errors.New("provider is not available")
 
 // ModelProvider defines an interface all model providers should support
 type ModelProvider interface {

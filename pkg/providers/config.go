@@ -3,14 +3,13 @@ package providers
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"glide/pkg/providers/openai"
 	"glide/pkg/telemetry"
-	"time"
 )
 
-var (
-	ErrProviderNotFound = errors.New("provider not found")
-)
+var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
 	ID      string         `yaml:"id"`
@@ -34,7 +33,6 @@ func DefaultLangModelConfig() *LangModelConfig {
 func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (LanguageModel, error) {
 	if c.OpenAI != nil {
 		client, err := openai.NewClient(c.OpenAI, tel)
-
 		if err != nil {
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}
@@ -45,22 +43,22 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (LanguageModel, erro
 	return nil, ErrProviderNotFound
 }
 
-func (m *LangModelConfig) validateOneProvider() error {
+func (c *LangModelConfig) validateOneProvider() error {
 	providersConfigured := 0
 
-	if m.OpenAI != nil {
+	if c.OpenAI != nil {
 		providersConfigured++
 	}
 
 	// check other providers here
 	if providersConfigured == 0 {
-		return fmt.Errorf("exactly one provider must be cofigured for model \"%v\", none is configured", m.ID)
+		return fmt.Errorf("exactly one provider must be cofigured for model \"%v\", none is configured", c.ID)
 	}
 
 	if providersConfigured > 1 {
 		return fmt.Errorf(
 			"exactly one provider must be cofigured for model \"%v\", %v are configured",
-			m.ID,
+			c.ID,
 			providersConfigured,
 		)
 	}
@@ -68,14 +66,14 @@ func (m *LangModelConfig) validateOneProvider() error {
 	return nil
 }
 
-func (m *LangModelConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	*m = *DefaultLangModelConfig()
+func (c *LangModelConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*c = *DefaultLangModelConfig()
 
 	type plain LangModelConfig // to avoid recursion
 
-	if err := unmarshal((*plain)(m)); err != nil {
+	if err := unmarshal((*plain)(c)); err != nil {
 		return err
 	}
 
-	return m.validateOneProvider()
+	return c.validateOneProvider()
 }
