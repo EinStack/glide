@@ -34,6 +34,10 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error {
 	var errs error
 
+	if len(modelConfigs) == 0 {
+		return ErrNoModels
+	}
+
 	models := make([]providers.LanguageModel, 0, len(modelConfigs))
 
 	for _, modelConfig := range modelConfigs {
