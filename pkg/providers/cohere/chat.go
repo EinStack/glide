@@ -28,17 +28,17 @@ type ChatHistory struct {
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
-	Model             string              `json:"model"`
-	Message          string              `json:"message"`
-	Temperature       float64             `json:"temperature,omitempty"`
+	Model       string  `json:"model"`
+	Message     string  `json:"message"`
+	Temperature float64 `json:"temperature,omitempty"`
 	// Stream            bool                `json:"stream,omitempty"`
-	PreambleOverride  string              `json:"preamble_override,omitempty"`
+	PreambleOverride  string        `json:"preamble_override,omitempty"`
 	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
-	ConversationID    string              `json:"conversation_id,omitempty"`
-	PromptTruncation  string              `json:"prompt_truncation,omitempty"`
-	Connectors        []string            `json:"connectors,omitempty"`
-	SearchQueriesOnly bool                `json:"search_queries_only,omitempty"`
-	CitiationQuality  string              `json:"citiation_quality,omitempty"`
+	ConversationID    string        `json:"conversation_id,omitempty"`
+	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
+	Connectors        []string      `json:"connectors,omitempty"`
+	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
+	CitiationQuality  string        `json:"citiation_quality,omitempty"`
 }
 
 type Connectors struct {
@@ -51,13 +51,13 @@ type Connectors struct {
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
-		Temperature:      cfg.DefaultParams.Temperature,
-		PreambleOverride: cfg.DefaultParams.PreambleOverride,
-		ChatHistory:      cfg.DefaultParams.ChatHistory,
-		ConversationID:   cfg.DefaultParams.ConversationID,
-		PromptTruncation: cfg.DefaultParams.PromptTruncation,
-		Connectors:       cfg.DefaultParams.Connectors,
+		Model:             cfg.Model,
+		Temperature:       cfg.DefaultParams.Temperature,
+		PreambleOverride:  cfg.DefaultParams.PreambleOverride,
+		ChatHistory:       cfg.DefaultParams.ChatHistory,
+		ConversationID:    cfg.DefaultParams.ConversationID,
+		PromptTruncation:  cfg.DefaultParams.PromptTruncation,
+		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
 		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
 	}
@@ -91,9 +91,9 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 		chatRequest.ChatHistory[i] = ChatHistory{
 			// Copy the necessary fields from message to ChatHistory
 			// For example, if ChatHistory has a field called "Text", you can do:
-			Role: message.Role,
+			Role:    message.Role,
 			Message: message.Content,
-			User: "",
+			User:    "",
 		}
 	}
 
@@ -156,7 +156,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Parse the response JSON
 	var responseJSON map[string]interface{}
-	
+
 	err = json.Unmarshal(bodyBytes, &responseJSON)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
