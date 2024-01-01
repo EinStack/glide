@@ -25,9 +25,9 @@ type ProviderResponse struct {
 }
 
 type TokenCount struct {
-	PromptTokens   int `json:"prompt_tokens"`
-	ResponseTokens int `json:"response_tokens"`
-	TotalTokens    int `json:"total_tokens"`
+	PromptTokens   float64`json:"prompt_tokens"`
+	ResponseTokens float64 `json:"response_tokens"`
+	TotalTokens    float64 `json:"total_tokens"`
 }
 
 // ChatMessage is a message in a chat request.

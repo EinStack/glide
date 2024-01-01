@@ -77,16 +77,15 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []Ch
 // Chat sends a chat request to the specified OpenAI model.
 func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
+	
 	chatRequest := c.createChatRequestSchema(request)
-
-	// TODO: this is suspicious we do zero remapping of OpenAI response and send it back as is.
-	//  Does it really work well across providers?
+	
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.Choices) == 0 {
+	if len(chatResponse.ProviderResponse.Message.Content) == 0 {
 		return nil, ErrEmptyResponse
 	}
 
@@ -163,6 +162,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
+	
+
 	// Parse response
 	var response schemas.UnifiedChatResponse
 	var responsePayload schemas.ProviderResponse
@@ -175,9 +176,9 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	tokenCount = schemas.TokenCount{
-		PromptTokens:   responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(int),
-		ResponseTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(int),
-		TotalTokens:    responseJSON["usage"].(map[string]interface{})["total_tokens"].(int),
+		PromptTokens:   responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(float64),
+		ResponseTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(float64),
+		TotalTokens:    responseJSON["usage"].(map[string]interface{})["total_tokens"].(float64),
 	}
 
 	responsePayload = schemas.ProviderResponse{
@@ -192,10 +193,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Created:          float64(time.Now().Unix()),
 		Provider:         "openai",
 		Router:           "chat",
-		Model:            payload.Model,
+		Model:            responseJSON["model"].(string),
 		Cached:           false,
 		ProviderResponse: responsePayload,
 	}
 
-	return &response, json.NewDecoder(resp.Body).Decode(&response)
+	return &response, nil
 }

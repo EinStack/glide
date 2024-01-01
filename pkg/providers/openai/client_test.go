@@ -12,8 +12,9 @@ import (
 
 	"glide/pkg/api/schemas"
 
-	"github.com/stretchr/testify/require"
 	"glide/pkg/telemetry"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestOpenAIClient_ChatRequest(t *testing.T) {
