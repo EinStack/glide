@@ -42,11 +42,19 @@ func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error
 
 	for _, modelConfig := range modelConfigs {
 		if !modelConfig.Enabled {
-			r.telemetry.Logger.Info("model is disabled, skipping", zap.String("modelID", modelConfig.ID))
+			r.telemetry.Logger.Info(
+				"model is disabled, skipping",
+				zap.String("router", r.config.ID),
+				zap.String("model", modelConfig.ID),
+			)
 			continue
 		}
 
-		r.telemetry.Logger.Debug("init lang model", zap.String("modelID", modelConfig.ID))
+		r.telemetry.Logger.Debug(
+			"init lang model",
+			zap.String("router", r.config.ID),
+			zap.String("model", modelConfig.ID),
+		)
 
 		model, err := modelConfig.ToModel(r.telemetry)
 		if err != nil {
