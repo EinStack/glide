@@ -17,7 +17,7 @@ const (
 	providerName = "openai"
 )
 
-// ErrEmptyResponse is returned when the OpenAI API returns an empty response.
+// ErrEmptyResponse is returned when the Cohere API returns an empty response.
 var (
 	ErrEmptyResponse = errors.New("empty response")
 )

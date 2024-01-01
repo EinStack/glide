@@ -28,10 +28,9 @@ type ChatHistory struct {
 
 // ChatRequest is a request to complete a chat completion..
 type ChatRequest struct {
-	Model       string  `json:"model"`
-	Message     string  `json:"message"`
-	Temperature float64 `json:"temperature,omitempty"`
-	// Stream            bool                `json:"stream,omitempty"`
+	Model             string        `json:"model"`
+	Message           string        `json:"message"`
+	Temperature       float64       `json:"temperature,omitempty"`
 	PreambleOverride  string        `json:"preamble_override,omitempty"`
 	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
 	ConversationID    string        `json:"conversation_id,omitempty"`
@@ -39,6 +38,8 @@ type ChatRequest struct {
 	Connectors        []string      `json:"connectors,omitempty"`
 	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
 	CitiationQuality  string        `json:"citiation_quality,omitempty"`
+
+	// Stream            bool                `json:"stream,omitempty"`
 }
 
 type Connectors struct {
@@ -86,14 +87,17 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 	chatRequest.Message = request.Message.Content
 
 	// Build the Cohere specific ChatHistory
-	chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
-	for i, message := range request.MessageHistory {
-		chatRequest.ChatHistory[i] = ChatHistory{
-			// Copy the necessary fields from message to ChatHistory
-			// For example, if ChatHistory has a field called "Text", you can do:
-			Role:    message.Role,
-			Message: message.Content,
-			User:    "",
+	if len(request.MessageHistory) > 0 {
+
+		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
+		for i, message := range request.MessageHistory {
+			chatRequest.ChatHistory[i] = ChatHistory{
+				// Copy the necessary fields from message to ChatHistory
+				// For example, if ChatHistory has a field called "Text", you can do:
+				Role:    message.Role,
+				Message: message.Content,
+				User:    "",
+			}
 		}
 	}
 
@@ -170,30 +174,32 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	var tokenCount schemas.TokenCount
 
-	message := responseJSON["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})
 	messageStruct := schemas.ChatMessage{
-		Role:    message["role"].(string),
-		Content: message["content"].(string),
+		Role:    "Model",
+		Content: responseJSON["text"].(string),
 	}
 
 	tokenCount = schemas.TokenCount{
-		PromptTokens:   responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(float64),
-		ResponseTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(float64),
-		TotalTokens:    responseJSON["usage"].(map[string]interface{})["total_tokens"].(float64),
+		PromptTokens:   responseJSON["token_count"].(map[string]interface{})["prompt_tokens"].(float64),
+		ResponseTokens: responseJSON["token_count"].(map[string]interface{})["response_tokens"].(float64),
+		TotalTokens:    responseJSON["token_count"].(map[string]interface{})["total_tokens"].(float64),
 	}
 
 	responsePayload = schemas.ProviderResponse{
-		ResponseId: map[string]string{"system_fingerprint": responseJSON["system_fingerprint"].(string)},
+		ResponseId: map[string]string{
+			"response_id":   responseJSON["response_id"].(string),
+			"generation_id": responseJSON["generation_id"].(string),
+		},
 		Message:    messageStruct,
 		TokenCount: tokenCount,
 	}
 
 	response = schemas.UnifiedChatResponse{
-		ID:               responseJSON["id"].(string),
+		ID:               responseJSON["response_id"].(string),
 		Created:          float64(time.Now().Unix()),
 		Provider:         "cohere",
-		Router:           "chat",
-		Model:            responseJSON["model"].(string),
+		Router:           "chat", //TODO: change this to router name
+		Model:            payload.Model, // Should this be derived from somehwhere else? Cohere doesn't specify it in response
 		Cached:           false,
 		ProviderResponse: responsePayload,
 	}

@@ -53,10 +53,11 @@ func DefaultConfig() *Config {
 	defaultParams := DefaultParams()
 
 	return &Config{
-		BaseURL:       "https://api.openai.com/v1",
-		ChatEndpoint:  "/chat/completions",
-		Model:         "gpt-3.5-turbo",
+		BaseURL:       "https://api.cohere.ai/v1",
+		ChatEndpoint:  "/chat",
+		Model:         "command-light",
 		DefaultParams: &defaultParams,
+		APIKey:        "BAtxMh9XQvSPBebdVn6ISYfMlyiTelHDa8n1pKCr",
 	}
 }
 
