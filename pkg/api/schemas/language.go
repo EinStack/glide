@@ -19,7 +19,7 @@ type UnifiedChatResponse struct {
 
 // ProviderResponse contains data from the chosen provider
 type ProviderResponse struct {
-	ResponseId map[string]string `json:"response_id,omitempty"`
+	ResponseID map[string]string `json:"response_id,omitempty"`
 	Message    ChatMessage       `json:"message"`
 	TokenCount TokenCount        `json:"token_count"`
 }
