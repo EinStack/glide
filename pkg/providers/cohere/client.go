@@ -32,7 +32,7 @@ type Client struct {
 	telemetry           *telemetry.Telemetry
 }
 
-// NewClient creates a new OpenAI client for the OpenAI API.
+// NewClient creates a new Cohere client for the Cohere API.
 func NewClient(cfg *Config, tel *telemetry.Telemetry) (*Client, error) {
 	chatURL, err := url.JoinPath(cfg.BaseURL, cfg.ChatEndpoint)
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"glide/pkg/config/fields"
 )
 
-// Params defines OpenAI-specific model params with the specific validation of values
+// Params defines Cohere-specific model params with the specific validation of values
 // TODO: Add validations
 type Params struct {
 	Temperature       float64       `json:"temperature,omitempty"`
@@ -48,7 +48,7 @@ type Config struct {
 	DefaultParams *Params       `yaml:"default_params,omitempty" json:"defaultParams"`
 }
 
-// DefaultConfig for OpenAI models
+// DefaultConfig for Cohere models
 func DefaultConfig() *Config {
 	defaultParams := DefaultParams()
 
