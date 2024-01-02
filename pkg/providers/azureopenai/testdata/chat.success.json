@@ -1,21 +1,21 @@
 {
-  "id": "chatcmpl-123",
+  "id": "chatcmpl-8cdqrFT2lBQlHz0EDvvq6oQcRxNcZ",
   "object": "chat.completion",
-  "created": 1677652288,
-  "model": "gpt-3.5-turbo-0613",
-  "system_fingerprint": "fp_44709d6fcb",
-  "choices": [{
-    "index": 0,
-    "message": {
-      "role": "assistant",
-      "content": "\n\nHello there, how may I assist you today?"
-    },
-    "logprobs": null,
-    "finish_reason": "stop"
-  }],
+  "created": 1704220345,
+  "model": "gpt-35-turbo",
+  "choices": [
+      {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+              "role": "assistant",
+              "content": "The biggest animal is the blue whale, which can grow up to 100 feet long and weigh as much as 200 tons."
+          }
+      }
+  ],
   "usage": {
-    "prompt_tokens": 9,
-    "completion_tokens": 12,
-    "total_tokens": 21
+      "prompt_tokens": 14,
+      "completion_tokens": 26,
+      "total_tokens": 40
   }
 }
