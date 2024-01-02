@@ -2,8 +2,8 @@ package azureopenai
 
 import (
 	"errors"
-	"net/http"
 	"fmt"
+	"net/http"
 	"time"
 
 	"glide/pkg/telemetry"
@@ -37,7 +37,7 @@ func NewClient(cfg *Config, tel *telemetry.Telemetry) (*Client, error) {
 	chatURL := fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=%s", cfg.BaseURL, cfg.Model, cfg.APIVersion)
 
 	fmt.Println("chatURL", chatURL)
-	
+
 	c := &Client{
 		baseURL:             cfg.BaseURL,
 		chatURL:             chatURL,
