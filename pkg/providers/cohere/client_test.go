@@ -1,3 +1,4 @@
+// pkg/providers/cohere/client_test.go
 package cohere
 
 import (
@@ -17,9 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestOpenAIClient_ChatRequest(t *testing.T) {
-	// Cohere Chat API: https://docs.cohere.com/reference/chat
-	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func TestCohereClient_ChatRequest(t *testing.T) {
+	cohereMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawPayload, _ := io.ReadAll(r.Body)
 
 		var data interface{}
@@ -31,7 +31,7 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 
 		chatResponse, err := os.ReadFile(filepath.Clean("./testdata/chat.success.json"))
 		if err != nil {
-			t.Errorf("error reading openai chat mock response: %v", err)
+			t.Errorf("error reading cohere chat mock response: %v", err)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -42,12 +42,12 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 		}
 	})
 
-	openAIServer := httptest.NewServer(openAIMock)
-	defer openAIServer.Close()
+	cohereServer := httptest.NewServer(cohereMock)
+	defer cohereServer.Close()
 
 	ctx := context.Background()
 	cfg := DefaultConfig()
-	cfg.BaseURL = openAIServer.URL
+	cfg.BaseURL = cohereServer.URL
 
 	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
@@ -60,5 +60,5 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	response, err := client.Chat(ctx, &request)
 	require.NoError(t, err)
 
-	require.Equal(t, "chatcmpl-123", response.ID)
+	require.Equal(t, "ec9eb88b-2da5-462e-8f0f-0899d243aa2e", response.ID)
 }

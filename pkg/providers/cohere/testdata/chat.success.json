@@ -1,0 +1,21 @@
+{
+  "response_id": "ec9eb88b-2da5-462e-8f0f-0899d243aa2e",
+  "text": "It's difficult to definitively determine the \"biggest\" animal, as different animals have varying physical characteristics and occupy different ecological niches. However, some animals that are commonly recognized as large and impressive in size include:\n\n- Polar bears: Polar bears are large carnivorous mammals native to the Arctic. They have powerful front legs and a robust body structure, allowing them to prey upon seals and other prey in their environment. Polar bears can reach up to 1,300 kg (2,700 lb) in weight and stand up to 1.8 meters (5 ft 11 in) in height on their hind legs.\n\n- Elephants: Elephants are large mammals belonging to the family Elephantidae. They are known for their enormous size, intelligence, and strong social bonds. African elephants, the largest species, can reach up to 2.8 meters (9.2 ft) in height and weigh up to 3.5 tons (7,716 lb). They are highly adapted to their environment and play a significant role in the ecosystems of the African continent.\n\n- Giraffes: Giraffes are tall, long-necked mammals found in Africa. They have distinctive patterns and long necks and legs. Giraffes can reach up to 6.7 meters (22 ft) in height and weigh up to 600 kg (1,320 lb). Their size and distinctive appearance make them notable creatures in the wild.\n\nThese animals are not generally considered the biggest in terms of weight or body mass, as they often inhabit specific ecological niches within their environments. Instead, they are recognized for their impressive size, strength, and other physical adaptations that enable them to successfully survive and thrive in their respective habitats. \n\nWould you like me to provide more information on any of these animals?",
+  "generation_id": "ee579745-ab9c-410c-a28c-d9b9aa6a0fcc",
+  "token_count": {
+      "prompt_tokens": 68,
+      "response_tokens": 360,
+      "total_tokens": 428,
+      "billed_tokens": 417
+  },
+  "meta": {
+      "api_version": {
+          "version": "1"
+      },
+      "billed_units": {
+          "input_tokens": 57,
+          "output_tokens": 360
+      }
+  },
+  "tool_inputs": null
+}
