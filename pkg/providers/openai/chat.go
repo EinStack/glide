@@ -155,7 +155,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Parse the response JSON
 	var responseJSON map[string]interface{}
-	
+
 	err = json.Unmarshal(bodyBytes, &responseJSON)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
