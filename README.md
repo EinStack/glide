@@ -6,21 +6,21 @@
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
 [![codecov](https://codecov.io/github/modelgateway/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/modelgateway/glide)
 
-Glide is a cloud-native open source high-performant model gateway. All LLMOps you needed is packed in one lightweight service.
+Glide is your go-to cloud-native model gateway, delivering high-performance LLMLOps in a lightweight, all-in-one package.
 
-We take all problems and toll of managing and communicating with external providers out of your applications,
-so you could focus solving your core problems.
+We take all problems of managing and communicating with external providers out of your applications,
+so you can dive into tackling your core challenges.
 
-Glide sits between your application and model providers that you use to seamlessly handle various LLMOps tasks like
-model failover, caching, etc. 
+Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
+model failover, caching, key management, etc. 
 
 > [!Warning]
 > Glide is under active development right now. Give us a star to support the project ✨
 
 ## Features
 
-- **Unified REST API** across providers. Avoid vendor lock-ins and changes in your applications when you adopt new providers.
-- **High availability** and **resiliency** working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
+- **Unified REST API** across providers. Avoid vendor lock-in and changes in your applications when you adopt new providers.
+- **High availability** and **resiliency** when working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
@@ -61,6 +61,7 @@ Glide comes with OpenAPI documentation that could be accessible via http://127.0
 
 - Exact & Semantic Caching
 - Cost Management & Budgeting
+- Python SDK
 - and many more!
 
 Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
@@ -75,7 +76,7 @@ if there is a feature or an enhancement you'd like to see in Glide.
 - Maintainers
     
     - [Roman Hlushko](https://github.com/roma-glushko), Software Engineer, Distributed Systems & MLOps
-    - [Max Krueger](https://github.com/mkrueger12), Data Engineer, Data Scientist
+    - [Max Krueger](https://github.com/mkrueger12), Data & ML Engineer
 
 Thanks everyone for already put their effort to make Glide better and more feature-rich: 
 
