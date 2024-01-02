@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"glide/pkg/providers/errs"
 
@@ -78,14 +79,12 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
-	// TODO: this is suspicious we do zero remapping of OpenAI response and send it back as is.
-	//  Does it really work well across providers?
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.Choices) == 0 {
+	if len(chatResponse.ProviderResponse.Message.Content) == 0 {
 		return nil, ErrEmptyResponse
 	}
 
@@ -147,8 +146,56 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, errs.ErrProviderUnavailable
 	}
 
+	// Read the response body into a byte slice
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+		return nil, err
+	}
+
+	// Parse the response JSON
+	var responseJSON map[string]interface{}
+
+	err = json.Unmarshal(bodyBytes, &responseJSON)
+	if err != nil {
+		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		return nil, err
+	}
+
 	// Parse response
 	var response schemas.UnifiedChatResponse
 
-	return &response, json.NewDecoder(resp.Body).Decode(&response)
+	var responsePayload schemas.ProviderResponse
+
+	var tokenCount schemas.TokenCount
+
+	message := responseJSON["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})
+	messageStruct := schemas.ChatMessage{
+		Role:    message["role"].(string),
+		Content: message["content"].(string),
+	}
+
+	tokenCount = schemas.TokenCount{
+		PromptTokens:   responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(float64),
+		ResponseTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(float64),
+		TotalTokens:    responseJSON["usage"].(map[string]interface{})["total_tokens"].(float64),
+	}
+
+	responsePayload = schemas.ProviderResponse{
+		ResponseId: map[string]string{"system_fingerprint": responseJSON["system_fingerprint"].(string)},
+		Message:    messageStruct,
+		TokenCount: tokenCount,
+	}
+
+	response = schemas.UnifiedChatResponse{
+		ID:               responseJSON["id"].(string),
+		Created:          float64(time.Now().Unix()),
+		Provider:         "openai",
+		Router:           "chat",
+		Model:            responseJSON["model"].(string),
+		Cached:           false,
+		ProviderResponse: responsePayload,
+	}
+
+	return &response, nil
 }

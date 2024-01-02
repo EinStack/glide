@@ -8,12 +8,26 @@ type UnifiedChatRequest struct {
 
 // UnifiedChatResponse defines Glide's Chat Response Schema unified across all language models
 type UnifiedChatResponse struct {
-	ID      string        `json:"id,omitempty"`
-	Created float64       `json:"created,omitempty"`
-	Choices []*ChatChoice `json:"choices,omitempty"`
-	Model   string        `json:"model,omitempty"`
-	Object  string        `json:"object,omitempty"` // TODO: what does this mean "Object"?
-	Usage   Usage         `json:"usage,omitempty"`
+	ID               string           `json:"id,omitempty"`
+	Created          float64          `json:"created,omitempty"`
+	Provider         string           `json:"provider,omitempty"`
+	Router           string           `json:"router,omitempty"`
+	Model            string           `json:"model,omitempty"`
+	Cached           bool             `json:"cached,omitempty"`
+	ProviderResponse ProviderResponse `json:"provider_response,omitempty"`
+}
+
+// ProviderResponse contains data from the chosen provider
+type ProviderResponse struct {
+	ResponseId map[string]string `json:"response_id,omitempty"`
+	Message    ChatMessage       `json:"message"`
+	TokenCount TokenCount        `json:"token_count"`
+}
+
+type TokenCount struct {
+	PromptTokens   float64 `json:"prompt_tokens"`
+	ResponseTokens float64 `json:"response_tokens"`
+	TotalTokens    float64 `json:"total_tokens"`
 }
 
 // ChatMessage is a message in a chat request.
