@@ -182,7 +182,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	responsePayload = schemas.ProviderResponse{
-		ResponseId: map[string]string{"system_fingerprint": responseJSON["system_fingerprint"].(string)},
+		ResponseID: map[string]string{"system_fingerprint": responseJSON["system_fingerprint"].(string)},
 		Message:    messageStruct,
 		TokenCount: tokenCount,
 	}
