@@ -74,6 +74,11 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 	ctx := context.Background()
 	cfg := DefaultConfig()
 	cfg.BaseURL = azureOpenAIServer.URL
+	// Verify the default configuration values
+	require.Equal(t, "/chat/completions", cfg.ChatEndpoint)
+	require.Equal(t, "", cfg.Model)
+	require.Equal(t, "2023-05-15", cfg.APIVersion)
+	require.NotNil(t, cfg.DefaultParams)
 
 	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
