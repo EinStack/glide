@@ -37,7 +37,6 @@ model failover, caching, key management, etc.
 | <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
 | <img src="docs/images/cohere.png" width="18" />     | Cohere        | 🏗️ Coming Soon |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
-| <img src="docs/images/localai.webp" width="18" />   | LocalAI       | 🏗️ Coming Soon |
 
 
 ## Get Started
