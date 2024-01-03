@@ -181,7 +181,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	responsePayload = schemas.ProviderResponse{
-		ResponseId: map[string]string{"id": responseJSON["id"].(string)},
+		ResponseID: map[string]string{"id": responseJSON["id"].(string)},
 		Message:    messageStruct,
 		TokenCount: tokenCount,
 	}
