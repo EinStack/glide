@@ -1,4 +1,4 @@
-# Glide
+# Glide: Cloud-Native LLM Gateway for Seamless LLMLOps
 <div align="center">
     <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
 </div>
@@ -83,4 +83,3 @@ Thanks everyone for already put their effort to make Glide better and more featu
 <a href="https://github.com/modelgateway/glide/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=modelgateway/glide" />
 </a>
-
