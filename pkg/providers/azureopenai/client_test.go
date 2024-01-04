@@ -92,3 +92,31 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, response)
 }
+
+func TestDoChatRequest_ErrorResponse(t *testing.T) {
+	// Create a mock HTTP server that returns a non-OK status code
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+
+	defer mockServer.Close()
+
+	// Create a new client with the mock server URL
+	client := &Client{
+		httpClient: http.DefaultClient,
+		chatURL:    mockServer.URL,
+		config:     &Config{APIKey: "dummy_key"},
+		telemetry:  telemetry.NewTelemetryMock(),
+	}
+
+	// Create a chat request payload
+	payload := &ChatRequest{
+		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
+	}
+
+	// Call the doChatRequest function
+	_, err := client.doChatRequest(context.Background(), payload)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "provider is not available")
+}
