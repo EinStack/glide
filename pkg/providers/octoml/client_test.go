@@ -3,7 +3,6 @@ package octoml
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -126,5 +125,6 @@ func TestDoChatRequest_ErrorResponse(t *testing.T) {
 	// Call the doChatRequest function
 	_, err := client.doChatRequest(context.Background(), payload)
 
-	fmt.Print(err)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "provider is not available")
 }
