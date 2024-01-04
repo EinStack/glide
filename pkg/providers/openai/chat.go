@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"glide/pkg/providers/errs"
 
@@ -84,7 +83,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 		return nil, err
 	}
 
-	if len(chatResponse.ProviderResponse.Message.Content) == 0 {
+	if len(chatResponse.ModelResponse.Message.Content) == 0 {
 		return nil, ErrEmptyResponse
 	}
 
@@ -165,9 +164,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Parse response
 	var response schemas.UnifiedChatResponse
 
-	var responsePayload schemas.ProviderResponse
+	var responsePayload schemas.OpenAIChatCompletion
 
-	var tokenCount schemas.TokenCount
+	var tokenCount schemas.Usage
+
+	var choices []schemas.Choice
 
 	message := responseJSON["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})
 	messageStruct := schemas.ChatMessage{
@@ -175,26 +176,52 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Content: message["content"].(string),
 	}
 
-	tokenCount = schemas.TokenCount{
-		PromptTokens:   responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(float64),
-		ResponseTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(float64),
-		TotalTokens:    responseJSON["usage"].(map[string]interface{})["total_tokens"].(float64),
+	choices = append(choices, schemas.Choice{
+		Index:        0,
+		Message:      messageStruct,
+		Logprobs:     responseJSON["choices"].([]interface{})[0].(map[string]interface{})["logprobs"],
+		FinishReason: responseJSON["choices"].([]interface{})[0].(map[string]interface{})["finish_reason"].(string),
+	})
+
+	tokenCount = schemas.Usage{
+		PromptTokens:     responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(float64),
+		CompletionTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(float64),
+		TotalTokens:      responseJSON["usage"].(map[string]interface{})["total_tokens"].(float64),
 	}
 
-	responsePayload = schemas.ProviderResponse{
-		ResponseID: map[string]string{"system_fingerprint": responseJSON["system_fingerprint"].(string)},
-		Message:    messageStruct,
-		TokenCount: tokenCount,
+	// Map response to  OpenAIChatCompletion schema
+	responsePayload = schemas.OpenAIChatCompletion{
+		ID:                responseJSON["id"].(string),
+		Created:           responseJSON["object"].(string),
+		Model:             responseJSON["model"].(string),
+		SystemFingerprint: responseJSON["system_fingerprint"].(string),
+		Choices:           choices,
+		Usage:             tokenCount,
 	}
 
+	// Map response to UnifiedChatResponse schema
 	response = schemas.UnifiedChatResponse{
-		ID:               responseJSON["id"].(string),
-		Created:          float64(time.Now().Unix()),
-		Provider:         "openai",
-		Router:           "chat",
-		Model:            responseJSON["model"].(string),
-		Cached:           false,
-		ProviderResponse: responsePayload,
+		ID:       responsePayload.ID,
+		Created:  responsePayload.Created,
+		Provider: providerName,
+		Router:   "chat", // TODO: this will be the router used
+		Model:    responsePayload.Model,
+		Cached:   false,
+		ModelResponse: schemas.ProviderResponse{
+			ResponseID: map[string]string{
+				"system_fingerprint": responsePayload.SystemFingerprint,
+			},
+			Message: schemas.ChatMessage{
+				Role:    responsePayload.Choices[0].Message.Role,
+				Content: responsePayload.Choices[0].Message.Content,
+				Name:    "",
+			},
+			TokenCount: schemas.TokenCount{
+				PromptTokens:   responsePayload.Usage.PromptTokens,
+				ResponseTokens: responsePayload.Usage.CompletionTokens,
+				TotalTokens:    responsePayload.Usage.TotalTokens,
+			},
+		},
 	}
 
 	return &response, nil
