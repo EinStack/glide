@@ -7,12 +7,12 @@ import (
 // Params defines OctoML-specific model params with the specific validation of values
 // TODO: Add validations
 type Params struct {
-	Temperature      float64          `yaml:"temperature,omitempty" json:"temperature"`
-	TopP             float64          `yaml:"top_p,omitempty" json:"top_p"`
-	MaxTokens        int              `yaml:"max_tokens,omitempty" json:"max_tokens"`
-	StopWords        []string         `yaml:"stop,omitempty" json:"stop"`
-	FrequencyPenalty int              `yaml:"frequency_penalty,omitempty" json:"frequency_penalty"`
-	PresencePenalty  int              `yaml:"presence_penalty,omitempty" json:"presence_penalty"`
+	Temperature      float64  `yaml:"temperature,omitempty" json:"temperature"`
+	TopP             float64  `yaml:"top_p,omitempty" json:"top_p"`
+	MaxTokens        int      `yaml:"max_tokens,omitempty" json:"max_tokens"`
+	StopWords        []string `yaml:"stop,omitempty" json:"stop"`
+	FrequencyPenalty int      `yaml:"frequency_penalty,omitempty" json:"frequency_penalty"`
+	PresencePenalty  int      `yaml:"presence_penalty,omitempty" json:"presence_penalty"`
 	// Stream           bool             `json:"stream,omitempty"` // TODO: we are not supporting this at the moment
 }
 
