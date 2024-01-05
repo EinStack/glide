@@ -194,13 +194,27 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	response = schemas.UnifiedChatResponse{
-		ID:               responseJSON["response_id"].(string),
-		Created:          float64(time.Now().Unix()),
-		Provider:         "cohere",
-		Router:           "chat",        // TODO: change this to router name
-		Model:            payload.Model, // Should this be derived from somehwhere else? Cohere doesn't specify it in response
-		Cached:           false,
-		ProviderResponse: responsePayload,
+		ID:       responsePayload.ID,
+		Created:  responsePayload.Created,
+		Provider: providerName,
+		Router:   "chat", // TODO: this will be the router used
+		Model:    responsePayload.Model,
+		Cached:   false,
+		ModelResponse: schemas.ProviderResponse{
+			ResponseID: map[string]string{
+				"system_fingerprint": responsePayload.SystemFingerprint,
+			},
+			Message: schemas.ChatMessage{
+				Role:    responsePayload.Choices[0].Message.Role,
+				Content: responsePayload.Choices[0].Message.Content,
+				Name:    "",
+			},
+			TokenCount: schemas.TokenCount{
+				PromptTokens:   responsePayload.Usage.PromptTokens,
+				ResponseTokens: responsePayload.Usage.CompletionTokens,
+				TotalTokens:    responsePayload.Usage.TotalTokens,
+			},
+		},
 	}
 
 	return &response, nil
