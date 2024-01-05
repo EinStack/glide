@@ -74,7 +74,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 		return nil, err
 	}
 
-	if len(chatResponse.ProviderResponse.Message.Content) == 0 {
+	if len(chatResponse.ModelResponse.Message.Content) == 0 {
 		return nil, ErrEmptyResponse
 	}
 
@@ -166,41 +166,39 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	// Parse response
-	var response schemas.UnifiedChatResponse
+	// Parse the response JSON
+	var cohereCompletion schemas.CohereChatCompletion
 
-	var responsePayload schemas.ProviderResponse
-
-	var tokenCount schemas.TokenCount
-
-	messageStruct := schemas.ChatMessage{
-		Role:    "Model",
-		Content: responseJSON["text"].(string),
+	err = json.Unmarshal(bodyBytes, &cohereCompletion)
+	if err != nil {
+		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		return nil, err
 	}
 
-	tokenCount = schemas.TokenCount{
-		PromptTokens:   responseJSON["token_count"].(map[string]interface{})["prompt_tokens"].(float64),
-		ResponseTokens: responseJSON["token_count"].(map[string]interface{})["response_tokens"].(float64),
-		TotalTokens:    responseJSON["token_count"].(map[string]interface{})["total_tokens"].(float64),
-	}
-
-	responsePayload = schemas.ProviderResponse{
-		ResponseID: map[string]string{
-			"response_id":   responseJSON["response_id"].(string),
-			"generation_id": responseJSON["generation_id"].(string),
+	// Map response to UnifiedChatResponse schema
+	response := schemas.UnifiedChatResponse{
+		ID:       cohereCompletion.ResponseID,
+		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
+		Provider: providerName,
+		Router:   "chat",          // TODO: this will be the router used
+		Model:    "command-light", // TODO: this needs to come from config or router as Cohere doesn't provide this
+		Cached:   false,
+		ModelResponse: schemas.ProviderResponse{
+			ResponseID: map[string]string{
+				"generationId": cohereCompletion.GenerationID,
+				"responseId":   cohereCompletion.ResponseID,
+			},
+			Message: schemas.ChatMessage{
+				Role:    "model", // TODO: Does this need to change?
+				Content: cohereCompletion.Text,
+				Name:    "",
+			},
+			TokenCount: schemas.TokenCount{
+				PromptTokens:   cohereCompletion.TokenCount.PromptTokens,
+				ResponseTokens: cohereCompletion.TokenCount.ResponseTokens,
+				TotalTokens:    cohereCompletion.TokenCount.TotalTokens,
+			},
 		},
-		Message:    messageStruct,
-		TokenCount: tokenCount,
-	}
-
-	response = schemas.UnifiedChatResponse{
-		ID:               responseJSON["response_id"].(string),
-		Created:          float64(time.Now().Unix()),
-		Provider:         "cohere",
-		Router:           "chat",        // TODO: change this to router name
-		Model:            payload.Model, // Should this be derived from somehwhere else? Cohere doesn't specify it in response
-		Cached:           false,
-		ProviderResponse: responsePayload,
 	}
 
 	return &response, nil
