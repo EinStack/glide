@@ -1,0 +1,24 @@
+{
+  "id": "cmpl-8ea213aece0747aca6d0608b02b57196",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The biggest animal that has ever lived is the blue whale (Balaenoptera musculus). Blue whales can reach lengths of up to 100 feet (30.5 meters) and weights of as much as 200 tons (181 metric tonnes). Their tongues alone can weigh as much as an elephant, and their hearts can be the size of a small car. Blue whales feed primarily on krill, which they filter from",
+        "function_call": null
+      },
+      "delta": null,
+      "finish_reason": "length"
+    }
+  ],
+  "created": 5399,
+  "model": "mistral-7b-instruct-fp16",
+  "object": "chat.completion",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 150,
+    "prompt_tokens": 571,
+    "total_tokens": 721
+  }
+}
