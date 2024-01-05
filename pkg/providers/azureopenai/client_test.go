@@ -18,7 +18,7 @@ import (
 )
 
 func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
-	// AuzureOpenAI Chat API: https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#chat-completions
+	// AzureOpenAI Chat API: https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#chat-completions
 	azureOpenAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawPayload, _ := io.ReadAll(r.Body)
 
