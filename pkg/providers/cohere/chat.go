@@ -177,11 +177,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	
 	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{
-		ID:       cohereCompletion.GenerationID,
-		Created:  int(time.Now().UTC().Unix()),
+		ID:       cohereCompletion.ResponseID,
+		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
 		Provider: providerName,
 		Router:   "chat", // TODO: this will be the router used
-		Model:    "command-light", // TODO: this needs to come from config or router
+		Model:    "command-light", // TODO: this needs to come from config or router as Cohere doesn't provide this
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			ResponseID: map[string]string{
@@ -189,7 +189,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    "assistant", // TODO: this needs to come from input message?
+				Role:    "model", // TODO: Does this need to change?
 				Content: cohereCompletion.Text,
 				Name:    "",
 			},
