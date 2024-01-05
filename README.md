@@ -35,7 +35,7 @@ model failover, caching, key management, etc.
 | <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
 | <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
 | <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported  |
-| <img src="docs/images/octoml.png" width="18" />     | OctoML        | 👍  Supported  |
+| <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
 | <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 
