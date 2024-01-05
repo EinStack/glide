@@ -174,13 +174,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
-	
+
 	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{
 		ID:       cohereCompletion.ResponseID,
 		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
 		Provider: providerName,
-		Router:   "chat", // TODO: this will be the router used
+		Router:   "chat",          // TODO: this will be the router used
 		Model:    "command-light", // TODO: this needs to come from config or router as Cohere doesn't provide this
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
