@@ -1,0 +1,15 @@
+{
+  "model": "gpt-3.5-turbo",
+  "messages": [
+    {
+      "role": "human",
+      "content": "What's the biggest animal?"
+    }
+  ],
+  "temperature": 0.8,
+  "top_p": 1,
+  "max_tokens": 100,
+  "n": 1,
+  "user": null,
+  "seed": null
+}

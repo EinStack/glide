@@ -20,7 +20,7 @@ type UnifiedChatResponse struct {
 // ProviderResponse is the unified response from the provider.
 
 type ProviderResponse struct {
-	ResponseID map[string]string `json:"responseID,omitempty"`
+	ResponseID map[string]string `json:"responseId,omitempty"`
 	Message    ChatMessage       `json:"message"`
 	TokenCount TokenCount        `json:"tokenCount"`
 }
