@@ -1,4 +1,4 @@
-package openai
+package azureopenai
 
 import (
 	"bytes"
@@ -19,9 +19,8 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
-// ChatRequest is an OpenAI-specific request schema
+// ChatRequest is an Azure openai-specific request schema
 type ChatRequest struct {
-	Model            string           `json:"model"`
 	Messages         []ChatMessage    `json:"messages"`
 	Temperature      float64          `json:"temperature,omitempty"`
 	TopP             float64          `json:"top_p,omitempty"`
@@ -42,7 +41,6 @@ type ChatRequest struct {
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
 		Temperature:      cfg.DefaultParams.Temperature,
 		TopP:             cfg.DefaultParams.TopP,
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
@@ -73,7 +71,7 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []Ch
 	return messages
 }
 
-// Chat sends a chat request to the specified OpenAI model.
+// Chat sends a chat request to the specified azure openai model.
 func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
@@ -102,27 +100,27 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal openai chat request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal azure openai chat request payload: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
+		return nil, fmt.Errorf("unable to create azure openai chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
+	req.Header.Set("api-key", string(c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"openai chat request",
+		"azure openai chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send openai chat request: %w", err)
+		return nil, fmt.Errorf("failed to send azure openai chat request: %w", err)
 	}
 
 	defer resp.Body.Close() // TODO: handle this error
@@ -130,13 +128,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+			c.telemetry.Logger.Error("failed to read azure openai chat response", zap.Error(err))
 		}
 
 		// TODO: Handle failure conditions
 		// TODO: return errors
 		c.telemetry.Logger.Error(
-			"openai chat request failed",
+			"azure openai chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
@@ -148,7 +146,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("failed to read azure openai chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -160,6 +158,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
+
+	openAICompletion.SystemFingerprint = "" // Azure OpenAI doesn't return this
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{

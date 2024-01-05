@@ -1,4 +1,4 @@
-package openai
+package azureopenai
 
 import (
 	"glide/pkg/config/fields"
@@ -43,11 +43,12 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
-	BaseURL       string        `yaml:"baseUrl" json:"baseUrl" validate:"required"`
-	ChatEndpoint  string        `yaml:"chatEndpoint" json:"chatEndpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
-	APIKey        fields.Secret `yaml:"apiKey" json:"-" validate:"required"`
-	DefaultParams *Params       `yaml:"defaultParams,omitempty" json:"defaultParams"`
+	BaseURL       string        `yaml:"base_url" json:"baseUrl" validate:"required"` // The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)
+	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chatEndpoint"`
+	Model         string        `yaml:"model" json:"model" validate:"required"`            // The name of your model deployment. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)
+	APIVersion    string        `yaml:"api_version" json:"apiVersion" validate:"required"` // The API version to use for this operation. This follows the YYYY-MM-DD format (e.g 2023-05-15)
+	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
+	DefaultParams *Params       `yaml:"default_params,omitempty" json:"defaultParams"`
 }
 
 // DefaultConfig for OpenAI models
@@ -55,9 +56,10 @@ func DefaultConfig() *Config {
 	defaultParams := DefaultParams()
 
 	return &Config{
-		BaseURL:       "https://api.openai.com/v1",
+		BaseURL:       "", // This needs to come from config
 		ChatEndpoint:  "/chat/completions",
-		Model:         "gpt-3.5-turbo",
+		Model:         "", // This needs to come from config
+		APIVersion:    "2023-05-15",
 		DefaultParams: &defaultParams,
 	}
 }
