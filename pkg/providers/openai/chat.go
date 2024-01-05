@@ -160,7 +160,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
-	
+
 	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{
 		ID:       openAICompletion.ID,
