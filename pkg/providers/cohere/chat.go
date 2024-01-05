@@ -74,7 +74,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 		return nil, err
 	}
 
-	if len(chatResponse.ProviderResponse.Message.Content) == 0 {
+	if len(chatResponse.ModelResponse.Message.Content) == 0 {
 		return nil, ErrEmptyResponse
 	}
 
@@ -166,53 +166,37 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	// Parse response
-	var response schemas.UnifiedChatResponse
+	// Parse the response JSON
+	var cohereCompletion schemas.CohereChatCompletion
 
-	var responsePayload schemas.ProviderResponse
-
-	var tokenCount schemas.TokenCount
-
-	messageStruct := schemas.ChatMessage{
-		Role:    "Model",
-		Content: responseJSON["text"].(string),
+	err = json.Unmarshal(bodyBytes, &cohereCompletion)
+	if err != nil {
+		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		return nil, err
 	}
-
-	tokenCount = schemas.TokenCount{
-		PromptTokens:   responseJSON["token_count"].(map[string]interface{})["prompt_tokens"].(float64),
-		ResponseTokens: responseJSON["token_count"].(map[string]interface{})["response_tokens"].(float64),
-		TotalTokens:    responseJSON["token_count"].(map[string]interface{})["total_tokens"].(float64),
-	}
-
-	responsePayload = schemas.ProviderResponse{
-		ResponseID: map[string]string{
-			"response_id":   responseJSON["response_id"].(string),
-			"generation_id": responseJSON["generation_id"].(string),
-		},
-		Message:    messageStruct,
-		TokenCount: tokenCount,
-	}
-
-	response = schemas.UnifiedChatResponse{
-		ID:       responsePayload.ID,
-		Created:  responsePayload.Created,
+	
+	// Map response to UnifiedChatResponse schema
+	response := schemas.UnifiedChatResponse{
+		ID:       cohereCompletion.GenerationID,
+		Created:  int(time.Now().UTC().Unix()),
 		Provider: providerName,
 		Router:   "chat", // TODO: this will be the router used
-		Model:    responsePayload.Model,
+		Model:    "command-light", // TODO: this needs to come from config or router
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			ResponseID: map[string]string{
-				"system_fingerprint": responsePayload.SystemFingerprint,
+				"generationId": cohereCompletion.GenerationID,
+				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    responsePayload.Choices[0].Message.Role,
-				Content: responsePayload.Choices[0].Message.Content,
+				Role:    "assistant", // TODO: this needs to come from input message?
+				Content: cohereCompletion.Text,
 				Name:    "",
 			},
 			TokenCount: schemas.TokenCount{
-				PromptTokens:   responsePayload.Usage.PromptTokens,
-				ResponseTokens: responsePayload.Usage.CompletionTokens,
-				TotalTokens:    responsePayload.Usage.TotalTokens,
+				PromptTokens:   cohereCompletion.TokenCount.PromptTokens,
+				ResponseTokens: cohereCompletion.TokenCount.ResponseTokens,
+				TotalTokens:    cohereCompletion.TokenCount.TotalTokens,
 			},
 		},
 	}
