@@ -1,4 +1,4 @@
-# Glide
+# Glide: Cloud-Native LLM Gateway for Seamless LLMLOps
 <div align="center">
     <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
 </div>
@@ -37,7 +37,6 @@ model failover, caching, key management, etc.
 | <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
 | <img src="docs/images/cohere.png" width="18" />     | Cohere        | 🏗️ Coming Soon |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
-| <img src="docs/images/localai.webp" width="18" />   | LocalAI       | 🏗️ Coming Soon |
 
 
 ## Get Started
@@ -46,7 +45,7 @@ TBU
 
 ### API Docs
 
-Glide comes with OpenAPI documentation that could be accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
 
 ## Roadmap
 
@@ -83,4 +82,3 @@ Thanks everyone for already put their effort to make Glide better and more featu
 <a href="https://github.com/modelgateway/glide/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=modelgateway/glide" />
 </a>
-
