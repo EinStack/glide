@@ -9,7 +9,7 @@ type UnifiedChatRequest struct {
 // UnifiedChatResponse defines Glide's Chat Response Schema unified across all language models
 type UnifiedChatResponse struct {
 	ID               string           `json:"id,omitempty"`
-	Created          string          `json:"created,omitempty"`
+	Created          int          `json:"created,omitempty"`
 	Provider         string           `json:"provider,omitempty"`
 	Router           string           `json:"router,omitempty"`
 	Model            string           `json:"model,omitempty"`
@@ -47,7 +47,7 @@ type ChatMessage struct {
 type OpenAIChatCompletion struct {
     ID                string             `json:"id"`
     Object            string             `json:"object"`
-    Created           string              `json:"created"`
+    Created           int              `json:"created"`
     Model             string             `json:"model"`
     SystemFingerprint string             `json:"system_fingerprint"`
     Choices           []Choice           `json:"choices"`

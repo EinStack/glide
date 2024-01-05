@@ -153,73 +153,35 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	// Parse the response JSON
-	var responseJSON map[string]interface{}
+	var openAICompletion schemas.OpenAIChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &responseJSON)
+	err = json.Unmarshal(bodyBytes, &openAICompletion)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
-
-	// Parse response
-	var response schemas.UnifiedChatResponse
-
-	var responsePayload schemas.OpenAIChatCompletion
-
-	var tokenCount schemas.Usage
-
-	var choices []schemas.Choice
-
-	message := responseJSON["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})
-	messageStruct := schemas.ChatMessage{
-		Role:    message["role"].(string),
-		Content: message["content"].(string),
-	}
-
-	choices = append(choices, schemas.Choice{
-		Index:        0,
-		Message:      messageStruct,
-		Logprobs:     responseJSON["choices"].([]interface{})[0].(map[string]interface{})["logprobs"],
-		FinishReason: responseJSON["choices"].([]interface{})[0].(map[string]interface{})["finish_reason"].(string),
-	})
-
-	tokenCount = schemas.Usage{
-		PromptTokens:     responseJSON["usage"].(map[string]interface{})["prompt_tokens"].(float64),
-		CompletionTokens: responseJSON["usage"].(map[string]interface{})["completion_tokens"].(float64),
-		TotalTokens:      responseJSON["usage"].(map[string]interface{})["total_tokens"].(float64),
-	}
-
-	// Map response to  OpenAIChatCompletion schema
-	responsePayload = schemas.OpenAIChatCompletion{
-		ID:                responseJSON["id"].(string),
-		Created:           responseJSON["object"].(string),
-		Model:             responseJSON["model"].(string),
-		SystemFingerprint: responseJSON["system_fingerprint"].(string),
-		Choices:           choices,
-		Usage:             tokenCount,
-	}
-
+	
 	// Map response to UnifiedChatResponse schema
-	response = schemas.UnifiedChatResponse{
-		ID:       responsePayload.ID,
-		Created:  responsePayload.Created,
+	response := schemas.UnifiedChatResponse{
+		ID:       openAICompletion.ID,
+		Created:  openAICompletion.Created,
 		Provider: providerName,
 		Router:   "chat", // TODO: this will be the router used
-		Model:    responsePayload.Model,
+		Model:    openAICompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			ResponseID: map[string]string{
-				"system_fingerprint": responsePayload.SystemFingerprint,
+				"system_fingerprint": openAICompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
-				Role:    responsePayload.Choices[0].Message.Role,
-				Content: responsePayload.Choices[0].Message.Content,
+				Role:    openAICompletion.Choices[0].Message.Role,
+				Content: openAICompletion.Choices[0].Message.Content,
 				Name:    "",
 			},
 			TokenCount: schemas.TokenCount{
-				PromptTokens:   responsePayload.Usage.PromptTokens,
-				ResponseTokens: responsePayload.Usage.CompletionTokens,
-				TotalTokens:    responsePayload.Usage.TotalTokens,
+				PromptTokens:   openAICompletion.Usage.PromptTokens,
+				ResponseTokens: openAICompletion.Usage.CompletionTokens,
+				TotalTokens:    openAICompletion.Usage.TotalTokens,
 			},
 		},
 	}
