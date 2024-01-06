@@ -95,15 +95,6 @@ definitions:
     - models
     - routers
     type: object
-  schemas.ChatChoice:
-    properties:
-      finish_reason:
-        type: string
-      index:
-        type: integer
-      message:
-        $ref: '#/definitions/schemas.ChatMessage'
-    type: object
   schemas.ChatMessage:
     properties:
       content:
@@ -119,6 +110,26 @@ definitions:
           or assistant.
         type: string
     type: object
+  schemas.ProviderResponse:
+    properties:
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+      responseId:
+        additionalProperties:
+          type: string
+        type: object
+      tokenCount:
+        $ref: '#/definitions/schemas.TokenCount'
+    type: object
+  schemas.TokenCount:
+    properties:
+      promptTokens:
+        type: number
+      responseTokens:
+        type: number
+      totalTokens:
+        type: number
+    type: object
   schemas.UnifiedChatRequest:
     properties:
       message:
@@ -130,30 +141,20 @@ definitions:
     type: object
   schemas.UnifiedChatResponse:
     properties:
-      choices:
-        items:
-          $ref: '#/definitions/schemas.ChatChoice'
-        type: array
+      cached:
+        type: boolean
       created:
-        type: number
+        type: integer
       id:
         type: string
       model:
         type: string
-      object:
-        description: 'TODO: what does this mean "Object"?'
+      modelResponse:
+        $ref: '#/definitions/schemas.ProviderResponse'
+      provider:
         type: string
-      usage:
-        $ref: '#/definitions/schemas.Usage'
-    type: object
-  schemas.Usage:
-    properties:
-      completion_tokens:
-        type: number
-      prompt_tokens:
-        type: number
-      total_tokens:
-        type: number
+      router:
+        type: string
     type: object
   strategy.RoutingStrategy:
     enum:
