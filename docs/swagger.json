@@ -266,20 +266,6 @@
                 }
             }
         },
-        "schemas.ChatChoice": {
-            "type": "object",
-            "properties": {
-                "finish_reason": {
-                    "type": "string"
-                },
-                "index": {
-                    "type": "integer"
-                },
-                "message": {
-                    "$ref": "#/definitions/schemas.ChatMessage"
-                }
-            }
-        },
         "schemas.ChatMessage": {
             "type": "object",
             "properties": {
@@ -294,6 +280,37 @@
                 "role": {
                     "description": "The role of the author of this message. One of system, user, or assistant.",
                     "type": "string"
+                }
+            }
+        },
+        "schemas.ProviderResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "responseId": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "tokenCount": {
+                    "$ref": "#/definitions/schemas.TokenCount"
+                }
+            }
+        },
+        "schemas.TokenCount": {
+            "type": "object",
+            "properties": {
+                "promptTokens": {
+                    "type": "number"
+                },
+                "responseTokens": {
+                    "type": "number"
+                },
+                "totalTokens": {
+                    "type": "number"
                 }
             }
         },
@@ -314,14 +331,11 @@
         "schemas.UnifiedChatResponse": {
             "type": "object",
             "properties": {
-                "choices": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/schemas.ChatChoice"
-                    }
+                "cached": {
+                    "type": "boolean"
                 },
                 "created": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "id": {
                     "type": "string"
@@ -329,26 +343,14 @@
                 "model": {
                     "type": "string"
                 },
-                "object": {
-                    "description": "TODO: what does this mean \"Object\"?",
+                "modelResponse": {
+                    "$ref": "#/definitions/schemas.ProviderResponse"
+                },
+                "provider": {
                     "type": "string"
                 },
-                "usage": {
-                    "$ref": "#/definitions/schemas.Usage"
-                }
-            }
-        },
-        "schemas.Usage": {
-            "type": "object",
-            "properties": {
-                "completion_tokens": {
-                    "type": "number"
-                },
-                "prompt_tokens": {
-                    "type": "number"
-                },
-                "total_tokens": {
-                    "type": "number"
+                "router": {
+                    "type": "string"
                 }
             }
         },
