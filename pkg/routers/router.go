@@ -87,5 +87,4 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 
 		r.telemetry.Logger.Warn("")
 	}
-
 }

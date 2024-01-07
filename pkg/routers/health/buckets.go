@@ -6,11 +6,10 @@ import (
 	"time"
 )
 
-var (
-	ErrNoTokens = errors.New("not enough tokens in the bucket")
-)
+var ErrNoTokens = errors.New("not enough tokens in the bucket")
 
-// TokenBucket concurrency-safe implementation based on atomic operations for the max performance
+// TokenBucket is a lock-free concurrency-safe implementation of token bucket algo
+// based on atomic operations for the max performance
 //
 //	We are not tracking the number of tokens directly,
 //	but rather the time that has passed since the last token consumption
@@ -64,11 +63,11 @@ func (b *TokenBucket) Take(tokens uint64) error {
 }
 
 func (b *TokenBucket) HasTokens() bool {
-	return b.Tokens() >= 1
+	return b.Tokens() >= 1.0
 }
 
 // Tokens returns number of available tokens in the bucket
-func (b *TokenBucket) Tokens() uint64 {
+func (b *TokenBucket) Tokens() float64 {
 	timePointer := atomic.LoadUint64(&b.timePointer)
 	now := uint64(time.Now().UnixNano() / 1000)
 	minTime := now - b.timePerBurst
@@ -80,5 +79,5 @@ func (b *TokenBucket) Tokens() uint64 {
 		newTime = minTime
 	}
 
-	return newTime / b.timePerToken
+	return float64(now-newTime) / float64(b.timePerToken)
 }
