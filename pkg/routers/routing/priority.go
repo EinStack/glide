@@ -3,7 +3,7 @@ package routing
 import (
 	"sync/atomic"
 
-	"glide/pkg/routers/health"
+	"glide/pkg/providers"
 )
 
 const (
@@ -15,10 +15,10 @@ const (
 //	Priority of models are defined as position of the model on the list
 //	(e.g. the first model definition has the highest priority, then the second model definition and so on)
 type PriorityRouting struct {
-	models *[]health.LangModelHealthTracker
+	models []*providers.LangModel
 }
 
-func NewPriorityRouting(models *[]health.LangModelHealthTracker) *PriorityRouting {
+func NewPriorityRouting(models []*providers.LangModel) *PriorityRouting {
 	return &PriorityRouting{
 		models: models,
 	}
@@ -35,11 +35,11 @@ func (r *PriorityRouting) Iterator() LangModelIterator {
 
 type PriorityIterator struct {
 	idx    *atomic.Uint64
-	models *[]health.LangModelHealthTracker
+	models []*providers.LangModel
 }
 
-func (r PriorityIterator) Next() (*health.LangModelHealthTracker, error) {
-	models := *r.models
+func (r PriorityIterator) Next() (*providers.LangModel, error) {
+	models := r.models
 	idx := r.idx.Load()
 
 	for int(idx) < len(models) {
@@ -48,7 +48,7 @@ func (r PriorityIterator) Next() (*health.LangModelHealthTracker, error) {
 		r.idx.Add(1)
 
 		if model.Healthy() {
-			return &model, nil
+			return model, nil
 		}
 
 		// otherwise, try to pick the next model on the list

@@ -49,10 +49,10 @@ type LangRouterConfig struct {
 }
 
 // BuildModels creates LanguageModel slice out of the given config
-func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.LanguageModel, error) {
+func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.LangModel, error) {
 	var errs error
 
-	models := make([]providers.LanguageModel, 0, len(c.Models))
+	models := make([]*providers.LangModel, 0, len(c.Models))
 
 	for _, modelConfig := range c.Models {
 		if !modelConfig.Enabled {

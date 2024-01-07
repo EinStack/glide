@@ -31,14 +31,14 @@ func DefaultLangModelConfig() *LangModelConfig {
 	}
 }
 
-func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (LanguageModel, error) {
+func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) {
 	if c.OpenAI != nil {
 		client, err := openai.NewClient(c.OpenAI, tel)
 		if err != nil {
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}
 
-		return client, nil
+		return NewLangModel(c.ID, client), nil
 	}
 
 	return nil, ErrProviderNotFound

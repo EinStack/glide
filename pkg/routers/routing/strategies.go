@@ -3,7 +3,7 @@ package routing
 import (
 	"errors"
 
-	"glide/pkg/routers/health"
+	"glide/pkg/providers"
 )
 
 var ErrNoHealthyModels = errors.New("no healthy models found")
@@ -16,5 +16,5 @@ type LangModelRouting interface {
 }
 
 type LangModelIterator interface {
-	Next() (*health.LangModelHealthTracker, error)
+	Next() (*providers.LangModel, error)
 }
