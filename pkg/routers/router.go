@@ -3,8 +3,8 @@ package routers
 import (
 	"context"
 	"errors"
-
 	"glide/pkg/providers"
+	"glide/pkg/routers/routing"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
@@ -16,48 +16,40 @@ var ErrNoModels = errors.New("no models configured for router")
 
 type LangRouter struct {
 	Config    *LangRouterConfig
-	models    []providers.LanguageModel
+	routing   routing.LangModelRouting
+	models    *[]providers.LanguageModel
 	telemetry *telemetry.Telemetry
 }
 
-func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
-	router := &LangRouter{
-		Config:    cfg,
-		telemetry: tel,
-	}
-
-	err := router.BuildModels(cfg.Models)
-
-	return router, err
-}
-
-func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error {
+// buildModels creates LanguageModel slice out of the given config
+// TODO: consider moving it on the config struct level
+func buildModels(modelConfigs []providers.LangModelConfig, routerID string, tel *telemetry.Telemetry) (*[]providers.LanguageModel, error) {
 	var errs error
 
 	if len(modelConfigs) == 0 {
-		return ErrNoModels
+		return nil, ErrNoModels
 	}
 
 	models := make([]providers.LanguageModel, 0, len(modelConfigs))
 
 	for _, modelConfig := range modelConfigs {
 		if !modelConfig.Enabled {
-			r.telemetry.Logger.Info(
+			tel.Logger.Info(
 				"model is disabled, skipping",
-				zap.String("router", r.Config.ID),
+				zap.String("router", routerID),
 				zap.String("model", modelConfig.ID),
 			)
 
 			continue
 		}
 
-		r.telemetry.Logger.Debug(
+		tel.Logger.Debug(
 			"init lang model",
-			zap.String("router", r.Config.ID),
+			zap.String("router", routerID),
 			zap.String("model", modelConfig.ID),
 		)
 
-		model, err := modelConfig.ToModel(r.telemetry)
+		model, err := modelConfig.ToModel(tel)
 		if err != nil {
 			errs = multierr.Append(errs, err)
 			continue
@@ -67,24 +59,50 @@ func (r *LangRouter) BuildModels(modelConfigs []providers.LangModelConfig) error
 	}
 
 	if errs != nil {
-		return errs
+		return nil, errs
 	}
 
-	r.models = models
+	return &models, nil
+}
 
-	return nil
+func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
+	models, err := buildModels(cfg.Models, cfg.ID, tel)
+
+	router := &LangRouter{
+		Config:    cfg,
+		models:    models,
+		routing:   routing.NewPriorityRouting(models),
+		telemetry: tel,
+	}
+
+	return router, err
 }
 
 func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
-	if len(r.models) == 0 {
+	if len(*r.models) == 0 {
 		return nil, ErrNoModels
 	}
 
-	maxRetries := 3 // TODO: move to configs
+	//maxRetries := 3 // TODO: move to configs
+	modelIterator := r.routing.Iterator()
 
-	for try := 0; try < maxRetries; try++ {
-		return r.models[try].Chat(ctx, request)
+	for {
+		model, err := modelIterator.Next()
 
-		r.telemetry.Logger.Warn("")
+		if errors.Is(err, routing.ErrNoHealthyModels) {
+			// no healthy model in the pool. Let's retry after some time
+			//r.telemetry.Logger.Warn("")
+			break
+		}
+
+		resp, err := model.Chat()
+
+		// TODO:
+		if err != nil {
+
+		}
+
+		return resp, nil
 	}
+	// TODO: wait and retry define number of times
 }
