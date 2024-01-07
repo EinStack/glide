@@ -20,14 +20,16 @@ type TokenBucket struct {
 }
 
 func NewTokenBucket(rate, burstSize uint64) *TokenBucket {
+	timePerToken := 1_000_000 / rate // microseconds
+
 	return &TokenBucket{
 		timePointer:  0,
-		timePerToken: 1_000_000 / rate,
-		timePerBurst: burstSize * (1_000_000 / rate),
+		timePerToken: timePerToken,
+		timePerBurst: burstSize * timePerToken,
 	}
 }
 
-// Take one bucket from the bucket
+// Take one token from the bucket
 func (b *TokenBucket) Take(tokens uint64) error {
 	oldTime := atomic.LoadUint64(&b.timePointer)
 	newTime := oldTime
@@ -35,7 +37,7 @@ func (b *TokenBucket) Take(tokens uint64) error {
 	timeNeeded := tokens * b.timePerToken
 
 	for {
-		now := uint64(time.Now().UnixNano() / 1000)
+		now := b.nowInMicro()
 		minTime := now - b.timePerBurst
 
 		// Take into account burst size.
@@ -69,7 +71,7 @@ func (b *TokenBucket) HasTokens() bool {
 // Tokens returns number of available tokens in the bucket
 func (b *TokenBucket) Tokens() float64 {
 	timePointer := atomic.LoadUint64(&b.timePointer)
-	now := uint64(time.Now().UnixNano() / 1000)
+	now := b.nowInMicro()
 	minTime := now - b.timePerBurst
 
 	newTime := timePointer
@@ -80,4 +82,8 @@ func (b *TokenBucket) Tokens() float64 {
 	}
 
 	return float64(now-newTime) / float64(b.timePerToken)
+}
+
+func (b *TokenBucket) nowInMicro() uint64 {
+	return uint64(time.Now().UnixNano() / 1000.0)
 }
