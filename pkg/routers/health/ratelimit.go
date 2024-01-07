@@ -19,7 +19,7 @@ func (t *RateLimitTracker) Limited() bool {
 		t.resetAt = nil
 	}
 
-	return t.resetAt == nil
+	return t.resetAt != nil
 }
 
 func (t *RateLimitTracker) SetLimited(untilReset time.Duration) {

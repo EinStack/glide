@@ -2,12 +2,11 @@ package routing
 
 import (
 	"errors"
-	"glide/pkg/providers"
+
+	"glide/pkg/routers/health"
 )
 
-var (
-	ErrNoHealthyModels = errors.New("no healthy models found")
-)
+var ErrNoHealthyModels = errors.New("no healthy models found")
 
 // Strategy defines supported routing strategies for language routers
 type Strategy string
@@ -17,5 +16,5 @@ type LangModelRouting interface {
 }
 
 type LangModelIterator interface {
-	Next() (providers.LanguageModel, error)
+	Next() (*health.LangModelHealthTracker, error)
 }

@@ -3,6 +3,9 @@ package routers
 import (
 	"glide/pkg/providers"
 	"glide/pkg/routers/routing"
+	"glide/pkg/telemetry"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -14,6 +17,45 @@ type LangRouterConfig struct {
 	Enabled         bool                        `yaml:"enabled" json:"enabled"`
 	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy"`
 	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"`
+}
+
+// BuildModels creates LanguageModel slice out of the given config
+func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.LanguageModel, error) {
+	var errs error
+
+	models := make([]providers.LanguageModel, 0, len(c.Models))
+
+	for _, modelConfig := range c.Models {
+		if !modelConfig.Enabled {
+			tel.Logger.Info(
+				"model is disabled, skipping",
+				zap.String("router", c.ID),
+				zap.String("model", modelConfig.ID),
+			)
+
+			continue
+		}
+
+		tel.Logger.Debug(
+			"init lang model",
+			zap.String("router", c.ID),
+			zap.String("model", modelConfig.ID),
+		)
+
+		model, err := modelConfig.ToModel(tel)
+		if err != nil {
+			errs = multierr.Append(errs, err)
+			continue
+		}
+
+		models = append(models, model)
+	}
+
+	if errs != nil {
+		return nil, errs
+	}
+
+	return models, nil
 }
 
 func DefaultLangRouterConfig() LangRouterConfig {

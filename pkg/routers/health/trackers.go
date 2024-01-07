@@ -2,9 +2,14 @@ package health
 
 import (
 	"context"
+
 	"glide/pkg/api/schemas"
 	"glide/pkg/providers"
 )
+
+type HealthTracker interface {
+	Healthy() bool
+}
 
 // LangModelHealthTracker decorates the LangModel struct to add health/availability tracking
 type LangModelHealthTracker struct {
