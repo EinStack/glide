@@ -1,8 +1,10 @@
 package strategy
 
+import "glide/pkg/providers"
+
 // RoutingStrategy defines supported routing strategies for language routers
 type RoutingStrategy string
 
-const (
-	Priority RoutingStrategy = "priority"
-)
+type Strategy interface {
+	Next() (*providers.LanguageModel, error)
+}

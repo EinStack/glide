@@ -80,6 +80,12 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 		return nil, ErrNoModels
 	}
 
-	// TODO: implement actual routing & fallback logic
-	return r.models[0].Chat(ctx, request)
+	maxRetries := 3 // TODO: move to configs
+
+	for try := 0; try < maxRetries; try++ {
+		return r.models[try].Chat(ctx, request)
+
+		r.telemetry.Logger.Warn("")
+	}
+
 }
