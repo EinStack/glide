@@ -12,6 +12,35 @@ type Config struct {
 	LanguageRouters []LangRouterConfig `yaml:"language"`
 }
 
+func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, error) {
+	routers := make([]*LangRouter, 0, len(c.LanguageRouters))
+
+	var errs error
+
+	for idx, routerConfig := range c.LanguageRouters {
+		if !routerConfig.Enabled {
+			tel.Logger.Info("router is disabled, skipping", zap.String("routerID", routerConfig.ID))
+			continue
+		}
+
+		tel.Logger.Debug("init router", zap.String("routerID", routerConfig.ID))
+
+		router, err := NewLangRouter(&c.LanguageRouters[idx], tel)
+		if err != nil {
+			errs = multierr.Append(errs, err)
+			continue
+		}
+
+		routers = append(routers, router)
+	}
+
+	if errs != nil {
+		return nil, errs
+	}
+
+	return routers, nil
+}
+
 type LangRouterConfig struct {
 	ID              string                      `yaml:"id" json:"routers" validate:"required"`
 	Enabled         bool                        `yaml:"enabled" json:"enabled"`

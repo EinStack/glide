@@ -13,5 +13,6 @@ type ModelProvider interface {
 
 // LanguageModel defines the interface a provider should fulfill to be able to serve language chat requests
 type LanguageModel interface {
+	ID() string
 	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
 }

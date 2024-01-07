@@ -12,10 +12,11 @@ import (
 var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
-	ID      string         `yaml:"id" json:"id" validate:"required"`
-	Enabled bool           `yaml:"enabled" json:"enabled"`
-	Timeout *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,integer"`
-	OpenAI  *openai.Config `yaml:"openai" json:"openai"`
+	ID          string         `yaml:"id" json:"id" validate:"required"`
+	Enabled     bool           `yaml:"enabled" json:"enabled"`
+	ErrorBudget string         `yaml:"error_budget" json:"error_budget"` // TODO: make a custom filed to accept budget in the following format "10/m"
+	Timeout     *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,integer"`
+	OpenAI      *openai.Config `yaml:"openai" json:"openai"`
 	// Add other providers like
 	// Cohere *cohere.Config
 	// Anthropic *anthropic.Config

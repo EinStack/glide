@@ -41,6 +41,10 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 	return router, err
 }
 
+func (r *LangRouter) ID() string {
+	return r.Config.ID
+}
+
 func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	if len(*r.models) == 0 {
 		return nil, ErrNoModels

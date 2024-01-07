@@ -30,6 +30,10 @@ func (t *LangModelHealthTracker) Healthy() bool {
 	return !t.rateLimit.Limited() && t.errorBudget.HasTokens()
 }
 
+func (t *LangModelHealthTracker) ID() string {
+	return t.Model.ID()
+}
+
 func (t *LangModelHealthTracker) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	resp, err := t.Model.Chat(ctx, request)
 

@@ -1,6 +1,8 @@
 package routing
 
 import (
+	"sync/atomic"
+
 	"glide/pkg/routers/health"
 )
 
@@ -24,7 +26,7 @@ func NewPriorityRouting(models *[]health.LangModelHealthTracker) *PriorityRoutin
 
 func (r *PriorityRouting) Iterator() LangModelIterator {
 	iterator := PriorityIterator{
-		idx:    0,
+		idx:    &atomic.Uint64{},
 		models: r.models,
 	}
 
@@ -32,17 +34,18 @@ func (r *PriorityRouting) Iterator() LangModelIterator {
 }
 
 type PriorityIterator struct {
-	idx    int
+	idx    *atomic.Uint64
 	models *[]health.LangModelHealthTracker
 }
 
 func (r PriorityIterator) Next() (*health.LangModelHealthTracker, error) {
 	models := *r.models
+	idx := r.idx.Load()
 
-	for r.idx < len(models) {
-		model := models[r.idx]
+	for int(idx) < len(models) {
+		model := models[idx]
 
-		r.idx++
+		r.idx.Add(1)
 
 		if model.Healthy() {
 			return &model, nil
