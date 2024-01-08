@@ -90,6 +90,8 @@ definitions:
     type: object
   retry.ExpRetryConfig:
     properties:
+      base_multiplier:
+        type: integer
       max_delay:
         type: integer
       max_retries:
@@ -110,7 +112,7 @@ definitions:
       retry:
         allOf:
         - $ref: '#/definitions/retry.ExpRetryConfig'
-        description: 'TODO: how to specify other backoff strategies?'
+        description: retry when no healthy model is available to router
       routers:
         description: Unique router ID
         type: string

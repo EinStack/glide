@@ -261,6 +261,9 @@ const docTemplate = `{
         "retry.ExpRetryConfig": {
             "type": "object",
             "properties": {
+                "base_multiplier": {
+                    "type": "integer"
+                },
                 "max_delay": {
                     "type": "integer"
                 },
@@ -291,7 +294,7 @@ const docTemplate = `{
                     }
                 },
                 "retry": {
-                    "description": "TODO: how to specify other backoff strategies?",
+                    "description": "retry when no healthy model is available to router",
                     "allOf": [
                         {
                             "$ref": "#/definitions/retry.ExpRetryConfig"
