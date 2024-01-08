@@ -50,8 +50,6 @@ func (r PriorityIterator) Next() (*providers.LangModel, error) {
 		if model.Healthy() {
 			return model, nil
 		}
-
-		// otherwise, try to pick the next model on the list
 	}
 
 	return nil, ErrNoHealthyModels

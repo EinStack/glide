@@ -22,12 +22,12 @@ type LangModel struct {
 	errorBudget *health.TokenBucket // TODO: centralize provider API health tracking in the registry
 }
 
-func NewLangModel(modelID string, client LangModelProvider) *LangModel {
+func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget) *LangModel {
 	return &LangModel{
 		modelID:     modelID,
 		client:      client,
 		rateLimit:   health.NewRateLimitTracker(),
-		errorBudget: health.NewTokenBucket(1, 10), // TODO: set from configs
+		errorBudget: health.NewTokenBucket(uint64(budget.RecoveryRate()), uint64(budget.Budget())),
 	}
 }
 

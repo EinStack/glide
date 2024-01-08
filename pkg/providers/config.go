@@ -40,7 +40,7 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}
 
-		return NewLangModel(c.ID, client), nil
+		return NewLangModel(c.ID, client, c.ErrorBudget), nil
 	}
 
 	return nil, ErrProviderNotFound

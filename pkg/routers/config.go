@@ -97,10 +97,10 @@ func DefaultLangRouterConfig() LangRouterConfig {
 	}
 }
 
-func (p *LangRouterConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	*p = DefaultLangRouterConfig()
+func (c *LangRouterConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*c = DefaultLangRouterConfig()
 
 	type plain LangRouterConfig // to avoid recursion
 
-	return unmarshal((*plain)(p))
+	return unmarshal((*plain)(c))
 }

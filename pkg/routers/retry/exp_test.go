@@ -19,6 +19,7 @@ func TestExpRetry_RetryLoop(t *testing.T) {
 
 	for iterator.HasNext() {
 		idx++
+
 		require.NoError(t, iterator.WaitNext(ctx))
 	}
 

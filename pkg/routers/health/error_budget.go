@@ -23,13 +23,13 @@ func DefaultErrorBudget() ErrorBudget {
 }
 
 // Budget defines max allows number of errors per given time period
-func (e *ErrorBudget) Budget() int {
-	return e.budget
+func (b *ErrorBudget) Budget() int {
+	return b.budget
 }
 
 // RecoveryRate defines how much time do we need to wait to get one error token recovered (in microseconds)
-func (e *ErrorBudget) RecoveryRate() int {
-	return e.budget / e.unitToMicro(e.unit)
+func (b *ErrorBudget) RecoveryRate() int {
+	return b.budget / b.unitToMicro(b.unit)
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -62,7 +62,7 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 	return nil
 }
 
-func (e *ErrorBudget) unitToMicro(unit string) int {
+func (b *ErrorBudget) unitToMicro(unit string) int {
 	switch unit {
 	case "ms":
 		return 1000 // 1 ms = 1000 microseconds

@@ -73,6 +73,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 					zap.String("provider", model.Provider()),
 					zap.Error(err),
 				)
+
 				continue
 			}
 

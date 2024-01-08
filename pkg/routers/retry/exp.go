@@ -65,6 +65,7 @@ func (i *ExpRetryIterator) getNextWaitDuration(attempt int) time.Duration {
 func (i *ExpRetryIterator) WaitNext(ctx context.Context) error {
 	t := time.NewTimer(i.getNextWaitDuration(i.attempt))
 	i.attempt++
+
 	defer t.Stop()
 
 	select {

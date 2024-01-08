@@ -33,8 +33,10 @@ func TestTokenBucket_TakeConcurrently(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
+
 		go func() {
 			defer wg.Done()
+
 			for k := 0; k < 10; k++ {
 				for bucket.Take(1) != nil {
 					time.Sleep(10 * time.Millisecond)
