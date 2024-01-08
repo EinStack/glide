@@ -15,9 +15,9 @@ import (
 var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
-	ID          string                `yaml:"id" json:"id" validate:"required"`
-	Enabled     bool                  `yaml:"enabled" json:"enabled"`
-	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget"`
+	ID          string                `yaml:"id" json:"id" validate:"required"` // Model instance ID (unique in scope of the router)
+	Enabled     bool                  `yaml:"enabled" json:"enabled"`           // Is the model enabled?
+	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
 	// Add other providers like

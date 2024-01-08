@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	LanguageRouters []LangRouterConfig `yaml:"language"`
+	LanguageRouters []LangRouterConfig `yaml:"language"` // the list of language routers
 }
 
 func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, error) {
@@ -43,11 +43,12 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 }
 
 type LangRouterConfig struct {
-	ID              string                      `yaml:"id" json:"routers" validate:"required"`
-	Enabled         bool                        `yaml:"enabled" json:"enabled"`
-	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"` // TODO: how to specify other backoff strategies?
-	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy"`
-	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"`
+	ID      string `yaml:"id" json:"routers" validate:"required"` // Unique router ID
+	Enabled bool   `yaml:"enabled" json:"enabled"`                // Is router enabled?
+	// TODO: how to specify other backoff strategies?
+	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"`                       // retry when no healthy model is available to router
+	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy"`                 // strategy on picking the next model to serve the request
+	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"` // the list of models that could handle requests
 }
 
 // BuildModels creates LanguageModel slice out of the given config
