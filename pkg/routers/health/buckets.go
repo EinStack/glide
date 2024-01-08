@@ -19,9 +19,7 @@ type TokenBucket struct {
 	timePerBurst uint64
 }
 
-func NewTokenBucket(rate, burstSize uint64) *TokenBucket {
-	timePerToken := 1_000_000 / rate // microseconds
-
+func NewTokenBucket(timePerToken, burstSize uint64) *TokenBucket {
 	return &TokenBucket{
 		timePointer:  0,
 		timePerToken: timePerToken,

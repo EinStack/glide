@@ -8,28 +8,44 @@ import (
 
 const budgetSeparator = "/"
 
+type Unit string
+
+const (
+	MILLI Unit = "ms"
+	MIN   Unit = "m"
+	SEC   Unit = "s"
+	HOUR  Unit = "h"
+)
+
 // ErrorBudget parses human-friendly error budget representation and return it as errors & update rate pair
 // Error budgets could be set as a string in the following format: "10/s", "5/ms", "100/m" "1500/h"
 type ErrorBudget struct {
 	budget int
-	unit   string
+	unit   Unit
+}
+
+func NewErrorBudget(budget int, unit Unit) *ErrorBudget {
+	return &ErrorBudget{
+		budget: budget,
+		unit:   unit,
+	}
 }
 
 func DefaultErrorBudget() ErrorBudget {
 	return ErrorBudget{
 		budget: 10,
-		unit:   "m",
+		unit:   MIN,
 	}
 }
 
 // Budget defines max allows number of errors per given time period
-func (b *ErrorBudget) Budget() int {
-	return b.budget
+func (b *ErrorBudget) Budget() uint64 {
+	return uint64(b.budget)
 }
 
-// RecoveryRate defines how much time do we need to wait to get one error token recovered (in microseconds)
-func (b *ErrorBudget) RecoveryRate() int {
-	return b.budget / b.unitToMicro(b.unit)
+// TimePerTokenMicro defines how much time do we need to wait to get one error token recovered (in microseconds)
+func (b *ErrorBudget) TimePerTokenMicro() uint64 {
+	return uint64(b.unitToMicro(b.unit) / b.budget)
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -50,9 +66,9 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 		return fmt.Errorf("error parsing error number: %v", err)
 	}
 
-	unit := parts[1]
+	unit := Unit(parts[1])
 
-	if unit != "ms" && unit != "s" && unit != "m" && unit != "h" {
+	if unit != MILLI && unit != SEC && unit != MIN && unit != HOUR {
 		return fmt.Errorf("invalid unit (supported: ms, s, m, h)")
 	}
 
@@ -62,22 +78,22 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 	return nil
 }
 
-func (b *ErrorBudget) unitToMicro(unit string) int {
+func (b *ErrorBudget) unitToMicro(unit Unit) int {
 	switch unit {
-	case "ms":
-		return 1000 // 1 ms = 1000 microseconds
-	case "s":
-		return 1000000 // 1 s = 1,000,000 microseconds
-	case "m":
-		return 60000000 // 1 m = 60,000,000 microseconds
-	case "h":
-		return 3600000000 // 1 h = 3,600,000,000 microseconds
+	case MILLI:
+		return 1_000 // 1 ms = 1000 microseconds
+	case SEC:
+		return 1_000_000 // 1 s = 1,000,000 microseconds
+	case MIN:
+		return 60_000_000 // 1 m = 60,000,000 microseconds
+	case HOUR:
+		return 3_600_000_000 // 1 h = 3,600,000,000 microseconds
 	default:
-		return 0 // or handle error
+		return 1
 	}
 }
 
 // String returns the ID string representation as "type[/name]" format.
 func (b *ErrorBudget) String() string {
-	return strconv.Itoa(b.budget) + budgetSeparator + b.unit
+	return strconv.Itoa(b.budget) + budgetSeparator + string(b.unit)
 }

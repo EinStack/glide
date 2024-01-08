@@ -20,6 +20,7 @@ var (
 )
 
 type LangRouter struct {
+	routerID  string
 	Config    *LangRouterConfig
 	routing   routing.LangModelRouting
 	retry     *retry.ExpRetry
@@ -34,6 +35,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 	}
 
 	router := &LangRouter{
+		routerID:  cfg.ID,
 		Config:    cfg,
 		models:    models,
 		retry:     cfg.BuildRetry(),
@@ -45,7 +47,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 }
 
 func (r *LangRouter) ID() string {
-	return r.Config.ID
+	return r.routerID
 }
 
 func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
@@ -77,6 +79,8 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 
 				continue
 			}
+
+			resp.Router = r.routerID
 
 			return resp, nil
 		}

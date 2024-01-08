@@ -27,7 +27,7 @@ func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorB
 		modelID:     modelID,
 		client:      client,
 		rateLimit:   health.NewRateLimitTracker(),
-		errorBudget: health.NewTokenBucket(uint64(budget.RecoveryRate()), uint64(budget.Budget())),
+		errorBudget: health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
 	}
 }
 
@@ -48,6 +48,8 @@ func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatReques
 
 	if err == nil {
 		// successful response
+		resp.Model = m.modelID
+
 		return resp, err
 	}
 
