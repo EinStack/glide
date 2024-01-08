@@ -36,6 +36,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 	router := &LangRouter{
 		Config:    cfg,
 		models:    models,
+		retry:     cfg.BuildRetry(),
 		routing:   routing.NewPriorityRouting(models),
 		telemetry: tel,
 	}

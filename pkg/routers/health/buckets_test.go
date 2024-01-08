@@ -54,10 +54,10 @@ func TestTokenBucket_TakeConcurrently(t *testing.T) {
 
 func TestTokenBucket_TokenNumberIsCorrect(t *testing.T) {
 	bucket := NewTokenBucket(1, 10)
-	require.Equal(t, 10, bucket.Tokens())
+	require.Equal(t, 10.0, bucket.Tokens())
 
 	require.NoError(t, bucket.Take(2))
-	require.InEpsilon(t, 8, bucket.Tokens(), 0.0001)
+	require.InEpsilon(t, 8.0, bucket.Tokens(), 0.0001)
 
 	require.NoError(t, bucket.Take(2))
 	require.InEpsilon(t, 6.0, bucket.Tokens(), 0.0001)

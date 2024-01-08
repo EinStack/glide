@@ -42,10 +42,11 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 	return routers, nil
 }
 
+// TODO: how to specify other backoff strategies?
+// LangRouterConfig
 type LangRouterConfig struct {
-	ID      string `yaml:"id" json:"routers" validate:"required"` // Unique router ID
-	Enabled bool   `yaml:"enabled" json:"enabled"`                // Is router enabled?
-	// TODO: how to specify other backoff strategies?
+	ID              string                      `yaml:"id" json:"routers" validate:"required"`    // Unique router ID
+	Enabled         bool                        `yaml:"enabled" json:"enabled"`                   // Is router enabled?
 	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"`                       // retry when no healthy model is available to router
 	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy"`                 // strategy on picking the next model to serve the request
 	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"` // the list of models that could handle requests
@@ -88,6 +89,17 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 	}
 
 	return models, nil
+}
+
+func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
+	retryConfig := c.Retry
+
+	return retry.NewExpRetry(
+		retryConfig.MaxRetries,
+		retryConfig.BaseMultiplier,
+		retryConfig.MinDelay,
+		retryConfig.MaxDelay,
+	)
 }
 
 func DefaultLangRouterConfig() LangRouterConfig {
