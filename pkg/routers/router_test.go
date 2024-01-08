@@ -88,6 +88,37 @@ func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 	}
 }
 
+func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
+	budget := health.NewErrorBudget(3, health.SEC)
+	models := []*providers.LangModel{
+		providers.NewLangModel(
+			"first",
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}),
+			*budget,
+		),
+		providers.NewLangModel(
+			"second",
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "1"}}),
+			*budget,
+		),
+	}
+
+	router := LangRouter{
+		routerID:  "test_router",
+		Config:    &LangRouterConfig{},
+		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
+		routing:   routing.NewPriorityRouting(models),
+		models:    models,
+		telemetry: telemetry.NewTelemetryMock(),
+	}
+
+	resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
+
+	require.NoError(t, err)
+	require.Equal(t, "first", resp.Model)
+	require.Equal(t, "test_router", resp.Router)
+}
+
 func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
 	models := []*providers.LangModel{
@@ -112,10 +143,7 @@ func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
-	ctx := context.Background()
-	req := schemas.NewChatFromStr("tell me a dad joke")
-
-	_, err := router.Chat(ctx, req)
+	_, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
 
 	require.Error(t, err)
 }

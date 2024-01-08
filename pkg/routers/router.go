@@ -56,9 +56,10 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 	}
 
 	retryIterator := r.retry.Iterator()
-	modelIterator := r.routing.Iterator()
 
 	for retryIterator.HasNext() {
+		modelIterator := r.routing.Iterator()
+
 		for {
 			model, err := modelIterator.Next()
 
