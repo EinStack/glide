@@ -37,7 +37,7 @@ func NewProviderMock(responses []ResponseMock) *ProviderMock {
 	}
 }
 
-func (c *ProviderMock) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *ProviderMock) Chat(_ context.Context, _ *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	response := c.responses[c.idx]
 	c.idx++
 
