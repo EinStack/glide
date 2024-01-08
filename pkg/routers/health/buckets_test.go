@@ -10,7 +10,7 @@ import (
 
 func TestTokenBucket_Take(t *testing.T) {
 	bucketSize := 10
-	bucket := NewTokenBucket(1, uint64(bucketSize))
+	bucket := NewTokenBucket(1000, uint64(bucketSize))
 
 	for i := 0; i < bucketSize-1; i++ {
 		require.NoError(t, bucket.Take(1))
@@ -26,7 +26,7 @@ func TestTokenBucket_Take(t *testing.T) {
 }
 
 func TestTokenBucket_TakeConcurrently(t *testing.T) {
-	bucket := NewTokenBucket(100, 1)
+	bucket := NewTokenBucket(10_000, 1)
 	wg := &sync.WaitGroup{}
 
 	before := time.Now()
@@ -53,7 +53,7 @@ func TestTokenBucket_TakeConcurrently(t *testing.T) {
 }
 
 func TestTokenBucket_TokenNumberIsCorrect(t *testing.T) {
-	bucket := NewTokenBucket(1, 10)
+	bucket := NewTokenBucket(1_000_000, 10)
 	require.InEpsilon(t, 10.0, bucket.Tokens(), 0.0001)
 
 	require.NoError(t, bucket.Take(2))
