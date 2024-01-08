@@ -3,7 +3,10 @@ package providers
 import (
 	"errors"
 	"fmt"
-	"time"
+
+	"glide/pkg/providers/clients"
+
+	"glide/pkg/routers/health"
 
 	"glide/pkg/providers/openai"
 	"glide/pkg/telemetry"
@@ -12,28 +15,27 @@ import (
 var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
-	ID          string         `yaml:"id" json:"id" validate:"required"`
-	Enabled     bool           `yaml:"enabled" json:"enabled"`
-	ErrorBudget string         `yaml:"error_budget" json:"error_budget"` // TODO: make a custom filed to accept budget in the following format "10/m"
-	Timeout     *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,integer"`
-	OpenAI      *openai.Config `yaml:"openai" json:"openai"`
+	ID          string                `yaml:"id" json:"id" validate:"required"`
+	Enabled     bool                  `yaml:"enabled" json:"enabled"`
+	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget"`
+	Client      *clients.ClientConfig `yaml:"client" json:"client"`
+	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
 	// Add other providers like
 	// Cohere *cohere.Config
 	// Anthropic *anthropic.Config
 }
 
 func DefaultLangModelConfig() *LangModelConfig {
-	defaultTimeout := 10 * time.Second
-
 	return &LangModelConfig{
-		Enabled: true,
-		Timeout: &defaultTimeout,
+		Enabled:     true,
+		Client:      clients.DefaultClientConfig(),
+		ErrorBudget: health.DefaultErrorBudget(),
 	}
 }
 
 func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) {
 	if c.OpenAI != nil {
-		client, err := openai.NewClient(c.OpenAI, tel)
+		client, err := openai.NewClient(c.OpenAI, c.Client, tel)
 		if err != nil {
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}

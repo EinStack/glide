@@ -2,6 +2,7 @@ package routers
 
 import (
 	"glide/pkg/providers"
+	"glide/pkg/routers/retry"
 	"glide/pkg/routers/routing"
 	"glide/pkg/telemetry"
 	"go.uber.org/multierr"
@@ -44,6 +45,7 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 type LangRouterConfig struct {
 	ID              string                      `yaml:"id" json:"routers" validate:"required"`
 	Enabled         bool                        `yaml:"enabled" json:"enabled"`
+	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"` // TODO: how to specify other backoff strategies?
 	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy"`
 	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"`
 }
@@ -91,6 +93,7 @@ func DefaultLangRouterConfig() LangRouterConfig {
 	return LangRouterConfig{
 		Enabled:         true,
 		RoutingStrategy: routing.Priority,
+		Retry:           retry.DefaultExpRetryConfig(),
 	}
 }
 

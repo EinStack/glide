@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"glide/pkg/routers/retry"
+	"go.uber.org/zap"
+
 	"glide/pkg/providers"
 
 	"glide/pkg/api/schemas"
@@ -11,11 +14,15 @@ import (
 	"glide/pkg/telemetry"
 )
 
-var ErrNoModels = errors.New("no models configured for router")
+var (
+	ErrNoModels         = errors.New("no models configured for router")
+	ErrNoModelAvailable = errors.New("could not handle request because all providers are not available")
+)
 
 type LangRouter struct {
 	Config    *LangRouterConfig
 	routing   routing.LangModelRouting
+	retry     *retry.ExpRetry
 	models    []*providers.LangModel
 	telemetry *telemetry.Telemetry
 }
@@ -45,24 +52,46 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 		return nil, ErrNoModels
 	}
 
-	// maxRetries := 3 // TODO: move to configs
+	retryIterator := r.retry.Iterator()
 	modelIterator := r.routing.Iterator()
 
-	for {
-		model, err := modelIterator.Next()
+	for retryIterator.HasNext() {
+		for {
+			model, err := modelIterator.Next()
 
-		if errors.Is(err, routing.ErrNoHealthyModels) {
-			// no healthy model in the pool. Let's retry after some time
-			// r.telemetry.Logger.Warn("")
-			break
+			if errors.Is(err, routing.ErrNoHealthyModels) {
+				// no healthy model in the pool. Let's retry after some time
+				break
+			}
+
+			resp, err := model.Chat(ctx, request)
+			if err != nil {
+				r.telemetry.Logger.Warn(
+					"lang model failed processing chat request",
+					zap.String("routerID", r.ID()),
+					zap.String("modelID", model.ID()),
+					zap.String("provider", model.Provider()),
+					zap.Error(err),
+				)
+				continue
+			}
+
+			return resp, nil
 		}
 
-		resp, err := model.Chat(ctx, request)
-		// TODO:
+		// no providers were available to handle the request,
+		//  so we have to wait a bit with a hope there is some available next time
+		r.telemetry.Logger.Warn("no healthy model found, wait and retry", zap.String("routerID", r.ID()))
+
+		err := retryIterator.WaitNext(ctx)
 		if err != nil {
+			// something has cancelled the context
+			return nil, err
 		}
-
-		return resp, nil
 	}
-	// TODO: wait and retry define number of times
+
+	// if we reach this part, then we are in trouble
+	r.telemetry.Logger.Error("no model was available to handle request", zap.String("routerID", r.ID()))
+
+	return nil, ErrNoModelAvailable
 }
