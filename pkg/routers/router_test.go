@@ -46,7 +46,7 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		resp, err := router.Chat(ctx, req)
 
-		require.Equal(t, "first", resp.Model)
+		require.Equal(t, "first", resp.ModelID)
 		require.Equal(t, "test_router", resp.RouterID)
 		require.NoError(t, err)
 	}
