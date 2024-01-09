@@ -404,6 +404,9 @@ const docTemplate = `{
                 "modelResponse": {
                     "$ref": "#/definitions/schemas.ProviderResponse"
                 },
+                "model_id": {
+                    "type": "string"
+                },
                 "provider": {
                     "type": "string"
                 },

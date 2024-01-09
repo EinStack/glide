@@ -184,6 +184,8 @@ definitions:
         type: string
       model:
         type: string
+      model_id:
+        type: string
       modelResponse:
         $ref: '#/definitions/schemas.ProviderResponse'
       provider:
