@@ -59,11 +59,11 @@ func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatReques
 
 	if errors.As(err, &rle) {
 		m.rateLimit.SetLimited(rle.UntilReset())
+
+		return resp, err
 	}
 
-	if errors.Is(err, clients.ErrProviderUnavailable) {
-		_ = m.errorBudget.Take(1)
-	}
+	_ = m.errorBudget.Take(1)
 
 	return resp, err
 }

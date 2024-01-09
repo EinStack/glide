@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"glide/pkg/providers/clients"
+
 	"github.com/stretchr/testify/require"
 	"glide/pkg/api/schemas"
 	"glide/pkg/providers"
@@ -117,6 +119,39 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "first", resp.ModelID)
 	require.Equal(t, "test_router", resp.RouterID)
+}
+
+func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
+	budget := health.NewErrorBudget(1, health.MIN)
+	models := []*providers.LangModel{
+		providers.NewLangModel(
+			"first",
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &clients.ErrProviderUnavailable}, {Msg: "3"}}),
+			*budget,
+		),
+		providers.NewLangModel(
+			"second",
+			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
+			*budget,
+		),
+	}
+
+	router := LangRouter{
+		routerID:  "test_router",
+		Config:    &LangRouterConfig{},
+		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
+		routing:   routing.NewPriorityRouting(models),
+		models:    models,
+		telemetry: telemetry.NewTelemetryMock(),
+	}
+
+	for i := 0; i < 2; i++ {
+		resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
+
+		require.NoError(t, err)
+		require.Equal(t, "second", resp.ModelID)
+		require.Equal(t, "test_router", resp.RouterID)
+	}
 }
 
 func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {

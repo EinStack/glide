@@ -43,6 +43,7 @@ func (r PriorityIterator) Next() (*providers.LangModel, error) {
 	idx := r.idx.Load()
 
 	for int(idx) < len(models) {
+		idx = r.idx.Load()
 		model := models[idx]
 
 		r.idx.Add(1)
