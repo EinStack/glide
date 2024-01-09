@@ -2,7 +2,9 @@ package providers
 
 import (
 	"context"
+	"errors"
 
+	"glide/pkg/providers/clients"
 	"glide/pkg/routers/health"
 
 	"glide/pkg/api/schemas"
@@ -48,12 +50,18 @@ func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatReques
 
 	if err == nil {
 		// successful response
-		resp.Model = m.modelID
-
 		return resp, err
 	}
 
-	// TODO: track all availability issues
+	var rle *clients.RateLimitError
+
+	if errors.As(err, &rle) {
+		m.rateLimit.SetLimited(rle.UntilReset())
+	}
+
+	if errors.Is(err, clients.ErrProviderUnavailable) {
+		_ = m.errorBudget.Take(1)
+	}
 
 	return resp, err
 }
