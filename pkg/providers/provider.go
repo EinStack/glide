@@ -50,6 +50,8 @@ func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatReques
 
 	if err == nil {
 		// successful response
+		resp.ModelID = m.modelID
+
 		return resp, err
 	}
 

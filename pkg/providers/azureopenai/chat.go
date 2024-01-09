@@ -166,7 +166,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ID:       openAICompletion.ID,
 		Created:  openAICompletion.Created,
 		Provider: providerName,
-		Router:   "chat", // TODO: this will be the router used
 		Model:    openAICompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{

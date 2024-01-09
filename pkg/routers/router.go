@@ -81,7 +81,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 				continue
 			}
 
-			resp.Router = r.routerID
+			resp.RouterID = r.routerID
 
 			return resp, nil
 		}
