@@ -19,12 +19,12 @@ model failover, caching, key management, etc.
 
 ## Features
 
-- **Unified REST API** across providers. Avoid vendor lock-in and changes in your applications when you adopt new providers.
+- **Unified REST API** across providers. Avoid vendor lock-in and changes in your applications when you swap model providers.
 - **High availability** and **resiliency** when working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
-- Straightforward and simple maintenance and configuration, API key rotation, etc.
+- Straightforward and simple maintenance and configuration, centrilized API key control & management & rotation, etc.
 
 ## Supported Providers
 
@@ -55,12 +55,17 @@ Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9
 - Unified LLM Chat REST API
 - Support for most popular LLM providers
 - Seamless model fallbacking
-- The Main Load Balancing: Priority, Round Robin, Weighted Round Robin, Latency
+- Routing Strategies: Priority, Round Robin, Weighted Round Robin, Least Latency
 
 ### Future
 
 - Exact & Semantic Caching
 - Cost Management & Budgeting
+- Language Model Streaming
+- Speech-to-text & Text-to-speech models
+- Embeddings
+- Safety & Control Over Inputs & Outputs
+- Smart Routing
 - Python SDK
 - and many more!
 
