@@ -180,7 +180,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ID:       cohereCompletion.ResponseID,
 		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
 		Provider: providerName,
-		Model:    "command-light", // TODO: this needs to come from config or router as Cohere doesn't provide this
+		Model:    c.config.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			ResponseID: map[string]string{
