@@ -66,6 +66,10 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 		return fmt.Errorf("error parsing error number: %v", err)
 	}
 
+	if budget <= 0 {
+		return fmt.Errorf("error number should be greater then 0 (%v given)", budget)
+	}
+
 	unit := Unit(parts[1])
 
 	if unit != MILLI && unit != SEC && unit != MIN && unit != HOUR {
