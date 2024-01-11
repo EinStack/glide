@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/providers/errs"
+	"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -128,7 +128,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Any("headers", resp.Header),
 		)
 
-		return nil, errs.ErrProviderUnavailable
+		return nil, clients.ErrProviderUnavailable
 	}
 
 	// Read the response body into a byte slice
@@ -152,7 +152,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ID:       openAICompletion.ID,
 		Created:  openAICompletion.Created,
 		Provider: providerName,
-		Router:   "chat", // TODO: this will be the router used
 		Model:    openAICompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"glide/pkg/providers/errs"
+	"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -147,7 +147,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Any("headers", resp.Header),
 		)
 
-		return nil, errs.ErrProviderUnavailable
+		return nil, clients.ErrProviderUnavailable
 	}
 
 	// Read the response body into a byte slice
@@ -180,8 +180,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ID:       cohereCompletion.ResponseID,
 		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
 		Provider: providerName,
-		Router:   "chat",          // TODO: this will be the router used
-		Model:    "command-light", // TODO: this needs to come from config or router as Cohere doesn't provide this
+		Model:    c.config.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			ResponseID: map[string]string{

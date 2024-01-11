@@ -14,7 +14,7 @@ import (
 // TODO: Explore Hertz TLS & resource pooling
 
 const (
-	providerName = "openai"
+	providerName = "cohere"
 )
 
 // ErrEmptyResponse is returned when the Cohere API returns an empty response.

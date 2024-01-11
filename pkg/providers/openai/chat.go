@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/providers/errs"
+	"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -125,7 +125,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("failed to send openai chat request: %w", err)
 	}
 
-	defer resp.Body.Close() // TODO: handle this error
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -133,8 +133,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
 		}
 
-		// TODO: Handle failure conditions
-		// TODO: return errors
 		c.telemetry.Logger.Error(
 			"openai chat request failed",
 			zap.Int("status_code", resp.StatusCode),
@@ -142,7 +140,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Any("headers", resp.Header),
 		)
 
-		return nil, errs.ErrProviderUnavailable
+		if resp.StatusCode == http.StatusTooManyRequests {
+			return nil, clients.NewRateLimitError(nil) // TODO: read real cooldown delay from headers
+		}
+
+		// Server & client errors result in the same error to keep gateway resilient
+		return nil, clients.ErrProviderUnavailable
 	}
 
 	// Read the response body into a byte slice
@@ -166,7 +169,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ID:       openAICompletion.ID,
 		Created:  openAICompletion.Created,
 		Provider: providerName,
-		Router:   "chat", // TODO: this will be the router used
 		Model:    openAICompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
