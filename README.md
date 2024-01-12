@@ -48,33 +48,12 @@ TBU
 
 Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
 
-## Roadmap
-
-### MVP (Coming soon)
-
-- Unified LLM Chat REST API
-- Support for most popular LLM providers
-- Seamless model fallbacking
-- Routing Strategies: Priority, Round Robin, Weighted Round Robin, Least Latency
-
-### Future
-
-- Exact & Semantic Caching
-- Cost Management & Budgeting
-- Language Model Streaming
-- Speech-to-text & Text-to-speech models
-- Embeddings
-- Safety & Control Over Inputs & Outputs
-- Smart Routing
-- Python SDK
-- and many more!
-
-Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
-if there is a feature or an enhancement you'd like to see in Glide.
-
 ## Community
 
 - Join Discord for real-time discussions
+
+Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
+if there is a feature or an enhancement you'd like to see in Glide.
 
 ## Contribute
 
