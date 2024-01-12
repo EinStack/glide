@@ -50,7 +50,7 @@ Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9
 
 ## Community
 
-- Join Discord for real-time discussions
+- Join [Discord](https://discord.gg/z4DmAbJP) for real-time discussion
 
 Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
 if there is a feature or an enhancement you'd like to see in Glide.
