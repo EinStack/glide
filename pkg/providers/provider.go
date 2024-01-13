@@ -6,6 +6,7 @@ import (
 	"glide/pkg/providers/clients"
 	"glide/pkg/routers/health"
 	"glide/pkg/routers/latency"
+	"time"
 
 	"glide/pkg/api/schemas"
 )
@@ -52,7 +53,12 @@ func (m *LangModel) Healthy() bool {
 }
 
 func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+	// TODO: we may want to track time-to-first-byte to "normalize" response latency wrt response size
+	startedAt := time.Now()
 	resp, err := m.client.Chat(ctx, request)
+
+	// Do we want to track latency in case of errors as well?
+	m.latency.Add(float64(time.Since(startedAt)))
 
 	if err == nil {
 		// successful response
