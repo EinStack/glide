@@ -1,8 +1,9 @@
 package routing
 
 import (
-	"glide/pkg/providers"
 	"sync/atomic"
+
+	"glide/pkg/providers"
 )
 
 const (
