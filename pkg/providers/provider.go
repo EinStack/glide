@@ -3,9 +3,9 @@ package providers
 import (
 	"context"
 	"errors"
-
 	"glide/pkg/providers/clients"
 	"glide/pkg/routers/health"
+	"glide/pkg/routers/latency"
 
 	"glide/pkg/api/schemas"
 )
@@ -16,12 +16,13 @@ type LangModelProvider interface {
 	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
 }
 
-// LangModel
+// LangModel wraps provider client and expend it with health & latency tracking
 type LangModel struct {
 	modelID     string
 	client      LangModelProvider
 	rateLimit   *health.RateLimitTracker
 	errorBudget *health.TokenBucket // TODO: centralize provider API health tracking in the registry
+	latency     *latency.MovingAverage
 }
 
 func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget) *LangModel {
@@ -30,6 +31,7 @@ func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorB
 		client:      client,
 		rateLimit:   health.NewRateLimitTracker(),
 		errorBudget: health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
+		latency:     latency.NewMovingAverage(0.05, 3), // TODO: set from configs
 	}
 }
 
@@ -39,6 +41,10 @@ func (m *LangModel) ID() string {
 
 func (m *LangModel) Provider() string {
 	return m.client.Provider()
+}
+
+func (m *LangModel) Latency() *latency.MovingAverage {
+	return m.latency
 }
 
 func (m *LangModel) Healthy() bool {

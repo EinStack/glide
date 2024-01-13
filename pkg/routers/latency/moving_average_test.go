@@ -1,4 +1,4 @@
-package routing
+package latency
 
 import (
 	"testing"
