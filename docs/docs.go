@@ -125,6 +125,85 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "azureopenai.Config": {
+            "type": "object",
+            "required": [
+                "apiVersion",
+                "baseUrl",
+                "model"
+            ],
+            "properties": {
+                "apiVersion": {
+                    "description": "The API version to use for this operation. This follows the YYYY-MM-DD format (e.g 2023-05-15)",
+                    "type": "string"
+                },
+                "baseUrl": {
+                    "description": "The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)",
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/azureopenai.Params"
+                },
+                "model": {
+                    "description": "The name of your model deployment. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)",
+                    "type": "string"
+                }
+            }
+        },
+        "azureopenai.Params": {
+            "type": "object",
+            "properties": {
+                "frequency_penalty": {
+                    "type": "integer"
+                },
+                "logit_bias": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    }
+                },
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "n": {
+                    "type": "integer"
+                },
+                "presence_penalty": {
+                    "type": "integer"
+                },
+                "response_format": {
+                    "description": "TODO: should this be a part of the chat request API?"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "tool_choice": {},
+                "tools": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "top_p": {
+                    "type": "number"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
         "clients.ClientConfig": {
             "type": "object",
             "properties": {
@@ -239,6 +318,9 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
+                "azureopenai": {
+                    "$ref": "#/definitions/azureopenai.Config"
+                },
                 "client": {
                     "$ref": "#/definitions/clients.ClientConfig"
                 },

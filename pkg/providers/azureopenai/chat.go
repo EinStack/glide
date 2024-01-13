@@ -123,7 +123,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("failed to send azure openai chat request: %w", err)
 	}
 
-	defer resp.Body.Close() 
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)

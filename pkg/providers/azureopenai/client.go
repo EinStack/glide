@@ -9,7 +9,6 @@ import (
 	"glide/pkg/telemetry"
 )
 
-
 const (
 	providerName = "azureopenai"
 )
@@ -30,7 +29,7 @@ type Client struct {
 }
 
 // NewClient creates a new Azure OpenAI client for the OpenAI API.
-func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry)  (*Client, error) {
+func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry) (*Client, error) {
 	chatURL := fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=%s", providerConfig.BaseURL, providerConfig.Model, providerConfig.APIVersion)
 
 	fmt.Println("chatURL", chatURL)
