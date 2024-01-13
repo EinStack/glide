@@ -20,3 +20,25 @@ func NewLeastLatencyRouting(models []*providers.LangModel) *LeastLatencyRouting 
 		models: models,
 	}
 }
+
+//func (r *LeastLatencyRouting) Iterator() LangModelIterator {
+//	return r
+//}
+
+//func (r LeastLatencyRouting) Next() (*providers.LangModel, error) {
+//	models := r.models
+//
+//	for _, model := range models {
+//		if !model.Healthy() {
+//			// cannot do much with unavailable model
+//			continue
+//		}
+//
+//		return model, nil
+//	}
+//
+//	// responseTime := time.Since(startTime)
+//	//	h.avgResponseTime = lb.alpha*float64(responseTime/time.Millisecond) + (1.0-lb.alpha)*h.avgResponseTime
+//
+//	//return nil, ErrNoHealthyModels
+//}
