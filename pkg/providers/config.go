@@ -8,6 +8,7 @@ import (
 
 	"glide/pkg/routers/health"
 
+	"glide/pkg/providers/azureopenai"
 	"glide/pkg/providers/openai"
 	"glide/pkg/telemetry"
 )
@@ -20,6 +21,7 @@ type LangModelConfig struct {
 	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
+	AzureOpenAI *azureopenai.Config   `yaml:"azureopenai" json:"azureopenai"`
 	// Add other providers like
 	// Cohere *cohere.Config
 	// Anthropic *anthropic.Config
@@ -43,6 +45,15 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 		return NewLangModel(c.ID, client, c.ErrorBudget), nil
 	}
 
+	if c.AzureOpenAI != nil {
+		client, err := azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+		if err != nil {
+			return nil, fmt.Errorf("error initing azureopenai client: %v", err)
+		}
+
+		return NewLangModel(c.ID, client, c.ErrorBudget), nil
+	}
+
 	return nil, ErrProviderNotFound
 }
 
@@ -50,6 +61,10 @@ func (c *LangModelConfig) validateOneProvider() error {
 	providersConfigured := 0
 
 	if c.OpenAI != nil {
+		providersConfigured++
+	}
+
+	if c.AzureOpenAI != nil {
 		providersConfigured++
 	}
 

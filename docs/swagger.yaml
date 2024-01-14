@@ -1,5 +1,61 @@
 basePath: /
 definitions:
+  azureopenai.Config:
+    properties:
+      apiVersion:
+        description: The API version to use for this operation. This follows the YYYY-MM-DD
+          format (e.g 2023-05-15)
+        type: string
+      baseUrl:
+        description: The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)
+        type: string
+      chatEndpoint:
+        type: string
+      defaultParams:
+        $ref: '#/definitions/azureopenai.Params'
+      model:
+        description: The name of your model deployment. You're required to first deploy
+          a model before you can make calls (e.g. glide-gpt-35)
+        type: string
+    required:
+    - apiVersion
+    - baseUrl
+    - model
+    type: object
+  azureopenai.Params:
+    properties:
+      frequency_penalty:
+        type: integer
+      logit_bias:
+        additionalProperties:
+          type: number
+        type: object
+      max_tokens:
+        type: integer
+      "n":
+        type: integer
+      presence_penalty:
+        type: integer
+      response_format:
+        description: 'TODO: should this be a part of the chat request API?'
+      seed:
+        type: integer
+      stop:
+        items:
+          type: string
+        type: array
+      temperature:
+        type: number
+      tool_choice: {}
+      tools:
+        items:
+          type: string
+        type: array
+      top_p:
+        type: number
+      user:
+        type: string
+    type: object
   clients.ClientConfig:
     properties:
       timeout:
@@ -73,6 +129,8 @@ definitions:
     type: object
   providers.LangModelConfig:
     properties:
+      azureopenai:
+        $ref: '#/definitions/azureopenai.Config'
       client:
         $ref: '#/definitions/clients.ClientConfig'
       enabled:

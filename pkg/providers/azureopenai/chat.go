@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"glide/pkg/providers/clients"
 
@@ -123,7 +124,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("failed to send azure openai chat request: %w", err)
 	}
 
-	defer resp.Body.Close() // TODO: handle this error
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -131,8 +132,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			c.telemetry.Logger.Error("failed to read azure openai chat response", zap.Error(err))
 		}
 
-		// TODO: Handle failure conditions
-		// TODO: return errors
 		c.telemetry.Logger.Error(
 			"azure openai chat request failed",
 			zap.Int("status_code", resp.StatusCode),
@@ -140,6 +139,20 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Any("headers", resp.Header),
 		)
 
+		if resp.StatusCode == http.StatusTooManyRequests {
+			// Read the value of the "Retry-After" header to get the cooldown delay
+			retryAfter := resp.Header.Get("Retry-After")
+
+			// Parse the value to get the duration
+			cooldownDelay, err := time.ParseDuration(retryAfter)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+			}
+
+			return nil, clients.NewRateLimitError(&cooldownDelay)
+		}
+
+		// Server & client errors result in the same error to keep gateway resilient
 		return nil, clients.ErrProviderUnavailable
 	}
 
