@@ -51,3 +51,23 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.UnifiedChatRequest) (*
 func (c *ProviderMock) Provider() string {
 	return "provider_mock"
 }
+
+type LangModelMock struct {
+	modelID string
+	healthy bool
+}
+
+func NewLangModelMock(ID string, healthy bool) *LangModelMock {
+	return &LangModelMock{
+		modelID: ID,
+		healthy: healthy,
+	}
+}
+
+func (m *LangModelMock) ID() string {
+	return m.modelID
+}
+
+func (m *LangModelMock) Healthy() bool {
+	return m.healthy
+}

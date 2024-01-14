@@ -18,7 +18,7 @@ import (
 
 func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
-	models := []*providers.LangModel{
+	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
@@ -31,12 +31,17 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 		),
 	}
 
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
 	router := LangRouter{
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
 		routing:   routing.NewPriorityRouting(models),
-		models:    models,
+		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
@@ -54,7 +59,7 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 
 func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
-	models := []*providers.LangModel{
+	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}),
@@ -67,6 +72,11 @@ func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 		),
 	}
 
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
 	expectedModels := []string{"second", "first"}
 
 	router := LangRouter{
@@ -74,7 +84,7 @@ func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
 		routing:   routing.NewPriorityRouting(models),
-		models:    models,
+		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
@@ -92,7 +102,7 @@ func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 
 func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
-	models := []*providers.LangModel{
+	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}),
@@ -105,12 +115,17 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 		),
 	}
 
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
 	router := LangRouter{
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
 		routing:   routing.NewPriorityRouting(models),
-		models:    models,
+		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
@@ -123,7 +138,7 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 
 func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.MIN)
-	models := []*providers.LangModel{
+	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &clients.ErrProviderUnavailable}, {Msg: "3"}}),
@@ -136,12 +151,17 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 		),
 	}
 
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
 	router := LangRouter{
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
 		routing:   routing.NewPriorityRouting(models),
-		models:    models,
+		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
@@ -156,7 +176,7 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 
 func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
-	models := []*providers.LangModel{
+	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}),
@@ -169,12 +189,17 @@ func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 		),
 	}
 
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
 	router := LangRouter{
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(1, 2, 1*time.Millisecond, nil),
 		routing:   routing.NewPriorityRouting(models),
-		models:    models,
+		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
