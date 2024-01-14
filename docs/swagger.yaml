@@ -3,7 +3,7 @@ definitions:
   clients.ClientConfig:
     properties:
       timeout:
-        type: integer
+        type: string
     type: object
   http.ErrorSchema:
     properties:
@@ -21,6 +21,19 @@ definitions:
         items:
           $ref: '#/definitions/routers.LangRouterConfig'
         type: array
+    type: object
+  latency.Config:
+    properties:
+      decay:
+        description: Weight of new latency measurements
+        type: number
+      update_interval:
+        description: How often gateway should probe models with not the lowest response
+          latency
+        type: string
+      warmup_samples:
+        description: The number of latency probes required to init moving average
+        type: integer
     type: object
   openai.Config:
     properties:
@@ -83,6 +96,8 @@ definitions:
       id:
         description: Model instance ID (unique in scope of the router)
         type: string
+      latency:
+        $ref: '#/definitions/latency.Config'
       openai:
         $ref: '#/definitions/openai.Config'
     required:
@@ -126,13 +141,13 @@ definitions:
     type: object
   routing.Strategy:
     enum:
-    - least_latency
     - priority
+    - least_latency
     - round-robin
     type: string
     x-enum-varnames:
-    - LeastLatency
     - Priority
+    - LeastLatency
     - RoundRobin
   schemas.ChatMessage:
     properties:

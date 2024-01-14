@@ -3,6 +3,7 @@ package providers
 import (
 	"errors"
 	"fmt"
+	"glide/pkg/routers/latency"
 
 	"glide/pkg/providers/clients"
 
@@ -18,6 +19,7 @@ type LangModelConfig struct {
 	ID          string                `yaml:"id" json:"id" validate:"required"` // Model instance ID (unique in scope of the router)
 	Enabled     bool                  `yaml:"enabled" json:"enabled"`           // Is the model enabled?
 	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
+	Latency     *latency.Config       `yaml:"latency" json:"latency"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
 	// Add other providers like
@@ -30,6 +32,7 @@ func DefaultLangModelConfig() *LangModelConfig {
 		Enabled:     true,
 		Client:      clients.DefaultClientConfig(),
 		ErrorBudget: health.DefaultErrorBudget(),
+		Latency:     latency.DefaultConfig(),
 	}
 }
 
