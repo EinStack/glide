@@ -21,6 +21,10 @@ func TestMovingAverage_WarmUpAndAverage(t *testing.T) {
 
 	require.True(t, movingAverage.WarmedUp())
 	require.InDelta(t, 155.6667, movingAverage.Value(), 0.0001)
+
+	movingAverage.Add(160)
+	require.True(t, movingAverage.WarmedUp())
+	require.InDelta(t, 159.5667, movingAverage.Value(), 0.0001)
 }
 
 func TestMovingAverage_SetValue(t *testing.T) {
