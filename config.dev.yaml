@@ -13,4 +13,5 @@ routers:
       models:
         - id: openai
           openai:
-            api_key: "ssss12"
+            apiKey: ""
+            model: "gpt-3.5-turbo"
