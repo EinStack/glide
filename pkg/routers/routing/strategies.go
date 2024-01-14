@@ -16,5 +16,5 @@ type LangModelRouting interface {
 }
 
 type LangModelIterator interface {
-	Next() (*providers.LangModel, error)
+	Next() (providers.Model, error)
 }

@@ -15,10 +15,10 @@ const (
 //	Priority of models are defined as position of the model on the list
 //	(e.g. the first model definition has the highest priority, then the second model definition and so on)
 type PriorityRouting struct {
-	models []*providers.LangModel
+	models []providers.Model
 }
 
-func NewPriorityRouting(models []*providers.LangModel) *PriorityRouting {
+func NewPriorityRouting(models []providers.Model) *PriorityRouting {
 	return &PriorityRouting{
 		models: models,
 	}
@@ -35,22 +35,20 @@ func (r *PriorityRouting) Iterator() LangModelIterator {
 
 type PriorityIterator struct {
 	idx    *atomic.Uint64
-	models []*providers.LangModel
+	models []providers.Model
 }
 
-func (r PriorityIterator) Next() (*providers.LangModel, error) {
+func (r PriorityIterator) Next() (providers.Model, error) {
 	models := r.models
-	idx := r.idx.Load()
 
-	for int(idx) < len(models) {
-		idx = r.idx.Load()
+	for idx := int(r.idx.Load()); idx < len(models); idx = int(r.idx.Add(1)) {
 		model := models[idx]
 
-		r.idx.Add(1)
-
-		if model.Healthy() {
-			return model, nil
+		if !model.Healthy() {
+			continue
 		}
+
+		return model, nil
 	}
 
 	return nil, ErrNoHealthyModels
