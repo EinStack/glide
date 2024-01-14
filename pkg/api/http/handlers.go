@@ -16,18 +16,18 @@ type Handler = func(ctx context.Context, c *app.RequestContext)
 // - https://github.com/swaggo/swag/tree/master/example/celler
 
 // LangChatHandler
-// @id glide-language-chat
-// @Summary Language Chat
-// @Description Talk to different LLMs Chat API via unified endpoint
-// @tags Language
-// @Param			router	path		string	true	"Router ID"
-// @Param			payload	body		schemas.UnifiedChatRequest	true	"Request Data"
-// @Accept json
-// @Produce json
-// @Success		200	{object}	schemas.UnifiedChatResponse
-// @Failure		400	{object}	http.ErrorSchema
-// @Failure		404	{object}	http.ErrorSchema
-// @Router /v1/language/{router}/chat [POST]
+//	@id				glide-language-chat
+//	@Summary		Language Chat
+//	@Description	Talk to different LLMs Chat API via unified endpoint
+//	@tags			Language
+//	@Param			router	path	string						true	"Router ID"
+//	@Param			payload	body	schemas.UnifiedChatRequest	true	"Request Data"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	schemas.UnifiedChatResponse
+//	@Failure		400	{object}	http.ErrorSchema
+//	@Failure		404	{object}	http.ErrorSchema
+//	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(ctx context.Context, c *app.RequestContext) {
 		var req *schemas.UnifiedChatRequest
@@ -67,14 +67,14 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 }
 
 // LangRoutersHandler
-// @id glide-language-routers
-// @Summary Language Router List
-// @Description Retrieve list of configured language routers and their configurations
-// @tags Language
-// @Accept json
-// @Produce json
-// @Success		200	{object}	http.RouterListSchema
-// @Router /v1/language/ [GET]
+//	@id				glide-language-routers
+//	@Summary		Language Router List
+//	@Description	Retrieve list of configured language routers and their configurations
+//	@tags			Language
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	http.RouterListSchema
+//	@Router			/v1/language/ [GET]
 func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 	return func(ctx context.Context, c *app.RequestContext) {
 		configuredRouters := routerManager.GetLangRouters()
@@ -89,14 +89,14 @@ func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 }
 
 // HealthHandler
-// @id glide-health
-// @Summary Gateway Health
-// @Description
-// @tags Operations
-// @Accept json
-// @Produce json
-// @Success		200	{object}	http.HealthSchema
-// @Router /v1/health/ [get]
+//	@id			glide-health
+//	@Summary	Gateway Health
+//	@Description
+//	@tags		Operations
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	http.HealthSchema
+//	@Router		/v1/health/ [get]
 func HealthHandler(_ context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, HealthSchema{Healthy: true})
 }
