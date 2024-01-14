@@ -33,11 +33,18 @@ func (w *Weighter) Decr(totalWeight int) {
 
 type WRoundRobinRouting struct {
 	mu      sync.Mutex
-	weights []Weighter
+	weights []*Weighter
 }
 
 func NewWeightedRoundRobin(models []providers.Model) *WRoundRobinRouting {
-	weights := make([]Weighter, 0, len(models))
+	weights := make([]*Weighter, 0, len(models))
+
+	for _, model := range models {
+		weights = append(weights, &Weighter{
+			model:         model,
+			currentWeight: 0,
+		})
+	}
 
 	return &WRoundRobinRouting{
 		weights: weights,
@@ -64,12 +71,12 @@ func (r *WRoundRobinRouting) Next() (providers.Model, error) {
 		totalWeight += weighter.Weight()
 
 		if maxWeighter == nil {
-			maxWeighter = &weighter
+			maxWeighter = weighter
 			continue
 		}
 
 		if weighter.Current() > maxWeighter.Current() {
-			maxWeighter = &weighter
+			maxWeighter = weighter
 		}
 	}
 
