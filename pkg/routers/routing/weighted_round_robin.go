@@ -60,6 +60,7 @@ func (r *WRoundRobinRouting) Next() (providers.Model, error) {
 	defer r.mu.Unlock()
 
 	totalWeight := 0
+
 	var maxWeighter *Weighter
 
 	for _, weighter := range r.weights {
