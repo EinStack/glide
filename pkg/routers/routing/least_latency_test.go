@@ -145,11 +145,11 @@ func TestLeastLatencyRouting_NoHealthyModels(t *testing.T) {
 				models = append(models, providers.NewLangModelMock(strconv.Itoa(idx), false, latency))
 			}
 
-			routing := NewPriorityRouting(models)
+			routing := NewLeastLatencyRouting(models)
 			iterator := routing.Iterator()
 
 			_, err := iterator.Next()
-			require.Error(t, err)
+			require.ErrorIs(t, err, ErrNoHealthyModels)
 		})
 	}
 }
