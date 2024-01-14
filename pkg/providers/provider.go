@@ -16,6 +16,16 @@ type LangModelProvider interface {
 	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
 }
 
+type Model interface {
+	ID() string
+	Healthy() bool
+}
+
+type LanguageModel interface {
+	Model
+	LangModelProvider
+}
+
 // LangModel
 type LangModel struct {
 	modelID     string

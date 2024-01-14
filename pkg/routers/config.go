@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"fmt"
+
 	"glide/pkg/providers"
 	"glide/pkg/routers/retry"
 	"glide/pkg/routers/routing"
@@ -53,10 +55,10 @@ type LangRouterConfig struct {
 }
 
 // BuildModels creates LanguageModel slice out of the given config
-func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.LangModel, error) {
+func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.LanguageModel, error) {
 	var errs error
 
-	models := make([]*providers.LangModel, 0, len(c.Models))
+	models := make([]providers.LanguageModel, 0, len(c.Models))
 
 	for _, modelConfig := range c.Models {
 		if !modelConfig.Enabled {
@@ -100,6 +102,22 @@ func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 		retryConfig.MinDelay,
 		retryConfig.MaxDelay,
 	)
+}
+
+func (c *LangRouterConfig) BuildRouting(models []providers.LanguageModel) (routing.LangModelRouting, error) {
+	m := make([]providers.Model, 0, len(models))
+	for _, model := range models {
+		m = append(m, model)
+	}
+
+	switch c.RoutingStrategy {
+	case routing.Priority:
+		return routing.NewPriorityRouting(m), nil
+	case routing.RoundRobin:
+		return routing.NewRoundRobinRouting(m), nil
+	}
+
+	return nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)
 }
 
 func DefaultLangRouterConfig() LangRouterConfig {

@@ -24,7 +24,7 @@ type LangRouter struct {
 	Config    *LangRouterConfig
 	routing   routing.LangModelRouting
 	retry     *retry.ExpRetry
-	models    []*providers.LangModel
+	models    []providers.LanguageModel
 	telemetry *telemetry.Telemetry
 }
 
@@ -34,12 +34,17 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		return nil, err
 	}
 
+	strategy, err := cfg.BuildRouting(models)
+	if err != nil {
+		return nil, err
+	}
+
 	router := &LangRouter{
 		routerID:  cfg.ID,
 		Config:    cfg,
 		models:    models,
 		retry:     cfg.BuildRetry(),
-		routing:   routing.NewPriorityRouting(models),
+		routing:   strategy,
 		telemetry: tel,
 	}
 
@@ -68,13 +73,15 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 				break
 			}
 
-			resp, err := model.Chat(ctx, request)
+			langModel := model.(providers.LanguageModel)
+
+			resp, err := langModel.Chat(ctx, request)
 			if err != nil {
 				r.telemetry.Logger.Warn(
 					"lang model failed processing chat request",
 					zap.String("routerID", r.ID()),
-					zap.String("modelID", model.ID()),
-					zap.String("provider", model.Provider()),
+					zap.String("modelID", langModel.ID()),
+					zap.String("provider", langModel.Provider()),
 					zap.Error(err),
 				)
 

@@ -126,9 +126,11 @@ definitions:
     type: object
   routing.Strategy:
     enum:
+    - round-robin
     - priority
     type: string
     x-enum-varnames:
+    - RoundRobin
     - Priority
   schemas.ChatMessage:
     properties:
