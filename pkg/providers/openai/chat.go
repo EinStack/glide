@@ -144,13 +144,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		if resp.StatusCode == http.StatusTooManyRequests {
 			// Read the value of the "Retry-After" header to get the cooldown delay
 			retryAfter := resp.Header.Get("Retry-After")
-		
+
 			// Parse the value to get the duration
 			cooldownDelay, err := time.ParseDuration(retryAfter)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
 			}
-		
+
 			return nil, clients.NewRateLimitError(&cooldownDelay)
 		}
 
