@@ -107,12 +107,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal openai chat request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal cohere chat request payload: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
+		return nil, fmt.Errorf("unable to create cohere chat request: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
@@ -120,14 +120,14 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"openai chat request",
+		"cohere chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send openai chat request: %w", err)
+		return nil, fmt.Errorf("failed to send cohere chat request: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -135,11 +135,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+			c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		}
 
 		c.telemetry.Logger.Error(
-			"openai chat request failed",
+			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
