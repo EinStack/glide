@@ -130,7 +130,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("failed to send cohere chat request: %w", err)
 	}
 
-	defer resp.Body.Close() // TODO: handle this error
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -138,8 +138,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		}
 
-		// TODO: Handle failure conditions
-		// TODO: return errors
 		c.telemetry.Logger.Error(
 			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
@@ -147,6 +145,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			zap.Any("headers", resp.Header),
 		)
 
+		if resp.StatusCode != http.StatusOK {
+			return c.handleErrorResponse(resp)
+		}
+
+		// Server & client errors result in the same error to keep gateway resilient
 		return nil, clients.ErrProviderUnavailable
 	}
 
@@ -171,7 +174,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &cohereCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -201,4 +204,41 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	return &response, nil
+}
+
+func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.UnifiedChatResponse, error) {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+		return nil, err
+	}
+
+	c.telemetry.Logger.Error(
+		"cohere chat request failed",
+		zap.Int("status_code", resp.StatusCode),
+		zap.String("response", string(bodyBytes)),
+		zap.Any("headers", resp.Header),
+	)
+
+	if resp.StatusCode == http.StatusTooManyRequests {
+		cooldownDelay, err := c.getCooldownDelay(resp)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+		}
+
+		return nil, clients.NewRateLimitError(&cooldownDelay)
+	}
+
+	return nil, clients.ErrProviderUnavailable
+}
+
+func (c *Client) getCooldownDelay(resp *http.Response) (time.Duration, error) {
+	retryAfter := resp.Header.Get("Retry-After")
+
+	cooldownDelay, err := time.ParseDuration(retryAfter)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+	}
+
+	return cooldownDelay, nil
 }

@@ -11,7 +11,8 @@ import (
 	"testing"
 
 	"glide/pkg/api/schemas"
-	//"glide/pkg/config"
+
+	"glide/pkg/providers/clients"
 
 	"glide/pkg/telemetry"
 
@@ -47,10 +48,11 @@ func TestOctoMLClient_ChatRequest(t *testing.T) {
 	defer octoMLServer.Close()
 
 	ctx := context.Background()
-	cfg := DefaultConfig()
-	cfg.BaseURL = octoMLServer.URL
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = octoMLServer.URL
 
-	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
@@ -61,7 +63,7 @@ func TestOctoMLClient_ChatRequest(t *testing.T) {
 	response, err := client.Chat(ctx, &request)
 	require.NoError(t, err)
 
-	require.Equal(t, cfg.Model, response.Model)
+	require.Equal(t, providerCfg.Model, response.Model)
 	require.Equal(t, "cmpl-8ea213aece0747aca6d0608b02b57196", response.ID)
 }
 
@@ -78,11 +80,11 @@ func TestOctoMLClient_Chat_Error(t *testing.T) {
 	defer octoMLServer.Close()
 
 	ctx := context.Background()
-	cfg := DefaultConfig()
-	cfg.BaseURL = octoMLServer.URL
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = octoMLServer.URL
 
-	// Create a new client with the mock API server
-	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	// Create a chat request

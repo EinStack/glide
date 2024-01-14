@@ -15,6 +15,8 @@ import (
 
 	"glide/pkg/telemetry"
 
+	"glide/pkg/providers/clients"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -46,10 +48,11 @@ func TestCohereClient_ChatRequest(t *testing.T) {
 	defer cohereServer.Close()
 
 	ctx := context.Background()
-	cfg := DefaultConfig()
-	cfg.BaseURL = cohereServer.URL
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = cohereServer.URL
 
-	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{

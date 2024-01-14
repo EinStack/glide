@@ -4,14 +4,10 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
-	"time"
 
+	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 )
-
-// TODO: Explore resource pooling
-// TODO: Optimize Type use
-// TODO: Explore Hertz TLS & resource pooling
 
 const (
 	providerName = "cohere"
@@ -33,20 +29,20 @@ type Client struct {
 }
 
 // NewClient creates a new Cohere client for the Cohere API.
-func NewClient(cfg *Config, tel *telemetry.Telemetry) (*Client, error) {
-	chatURL, err := url.JoinPath(cfg.BaseURL, cfg.ChatEndpoint)
+func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry) (*Client, error) {
+	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	c := &Client{
-		baseURL:             cfg.BaseURL,
+		baseURL:             providerConfig.BaseURL,
 		chatURL:             chatURL,
-		config:              cfg,
-		chatRequestTemplate: NewChatRequestFromConfig(cfg),
+		config:              providerConfig,
+		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
 		httpClient: &http.Client{
+			Timeout: *clientConfig.Timeout,
 			// TODO: use values from the config
-			Timeout: time.Second * 30,
 			Transport: &http.Transport{
 				MaxIdleConns:        100,
 				MaxIdleConnsPerHost: 2,
