@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"glide/pkg/providers/clients"
+
 	"glide/pkg/api/schemas"
 
 	"glide/pkg/telemetry"
@@ -46,10 +48,11 @@ func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
 	defer azureOpenAIServer.Close()
 
 	ctx := context.Background()
-	cfg := DefaultConfig()
-	cfg.BaseURL = azureOpenAIServer.URL
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = azureOpenAIServer.URL
 
-	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
@@ -72,15 +75,17 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 	defer azureOpenAIServer.Close()
 
 	ctx := context.Background()
-	cfg := DefaultConfig()
-	cfg.BaseURL = azureOpenAIServer.URL
-	// Verify the default configuration values
-	require.Equal(t, "/chat/completions", cfg.ChatEndpoint)
-	require.Equal(t, "", cfg.Model)
-	require.Equal(t, "2023-05-15", cfg.APIVersion)
-	require.NotNil(t, cfg.DefaultParams)
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = azureOpenAIServer.URL
 
-	client, err := NewClient(cfg, telemetry.NewTelemetryMock())
+	// Verify the default configuration values
+	require.Equal(t, "/chat/completions", providerCfg.ChatEndpoint)
+	require.Equal(t, "", providerCfg.Model)
+	require.Equal(t, "2023-05-15", providerCfg.APIVersion)
+	require.NotNil(t, providerCfg.DefaultParams)
+
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
