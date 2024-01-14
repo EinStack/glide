@@ -69,7 +69,6 @@ func NewLeastLatencyRouting(models []providers.Model) *LeastLatencyRouting {
 	}
 
 	return &LeastLatencyRouting{
-		warmupIdx: atomic.Uint32{},
 		schedules: schedules,
 	}
 }

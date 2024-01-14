@@ -76,23 +76,23 @@ func TestLeastLatencyRouting_Routing(t *testing.T) {
 			[]Model{
 				{"first", true, 100.0, time.Now().Add(30 * time.Second)},
 				{"second", true, 80.0, time.Now().Add(30 * time.Second)},
-				{"third", true, 101.0, time.Now().Add(-time.Duration(30) * time.Second)},
+				{"third", true, 101.0, time.Now().Add(-30 * time.Second)},
 			},
 			[]string{"third", "second", "second"},
 		},
 		"two expired models": {
 			[]Model{
-				{"first", true, 100.0, time.Now().Add(-time.Duration(60) * time.Second)},
+				{"first", true, 100.0, time.Now().Add(-60 * time.Second)},
 				{"second", true, 80.0, time.Now().Add(30 * time.Second)},
-				{"third", true, 101.0, time.Now().Add(-time.Duration(30) * time.Second)},
+				{"third", true, 101.0, time.Now().Add(-30 * time.Second)},
 			},
 			[]string{"first", "third", "second"},
 		},
 		"all expired models": {
 			[]Model{
-				{"first", true, 100.0, time.Now().Add(-time.Duration(30) * time.Second)},
-				{"second", true, 80.0, time.Now().Add(-time.Duration(20) * time.Second)},
-				{"third", true, 101.0, time.Now().Add(-time.Duration(60) * time.Second)},
+				{"first", true, 100.0, time.Now().Add(-30 * time.Second)},
+				{"second", true, 80.0, time.Now().Add(-20 * time.Second)},
+				{"third", true, 101.0, time.Now().Add(-60 * time.Second)},
 			},
 			[]string{"third", "first", "second"},
 		},
@@ -100,13 +100,23 @@ func TestLeastLatencyRouting_Routing(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			models := make([]providers.Model, 0, len(tc.models))
+			schedules := make([]*ModelSchedule, 0, len(tc.models))
 
 			for _, model := range tc.models {
-				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, model.latency))
+				schedules = append(schedules, &ModelSchedule{
+					model: providers.NewLangModelMock(
+						model.modelID,
+						model.healthy,
+						model.latency,
+					),
+					expireAt: model.expireAt,
+				})
 			}
 
-			routing := NewLeastLatencyRouting(models)
+			routing := LeastLatencyRouting{
+				schedules: schedules,
+			}
+
 			iterator := routing.Iterator()
 
 			// loop three times over the whole pool to check if we return back to the begging of the list
