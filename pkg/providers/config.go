@@ -66,26 +66,24 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 		}
 	}
 
-	if client != nil {
-		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency, c.Weight), nil
-	}
-
 	if c.Cohere != nil {
-		client, err := cohere.NewClient(c.Cohere, c.Client, tel)
-		if err != nil {
-			return nil, fmt.Errorf("error initing cohere client: %v", err)
-		}
+		client, err = cohere.NewClient(c.Cohere, c.Client, tel)
 
-		return NewLangModel(c.ID, client, c.ErrorBudget), nil
+		if err != nil {
+			return nil, fmt.Errorf("error initing openai client: %v", err)
+		}
 	}
 
 	if c.OctoML != nil {
-		client, err := octoml.NewClient(c.OctoML, c.Client, tel)
-		if err != nil {
-			return nil, fmt.Errorf("error initing cohere client: %v", err)
-		}
+		client, err = octoml.NewClient(c.OctoML, c.Client, tel)
 
-		return NewLangModel(c.ID, client, c.ErrorBudget), nil
+		if err != nil {
+			return nil, fmt.Errorf("error initing openai client: %v", err)
+		}
+	}
+
+	if client != nil {
+		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency, c.Weight), nil
 	}
 
 	return nil, ErrProviderNotFound

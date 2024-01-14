@@ -314,6 +314,23 @@ const docTemplate = `{
                 }
             }
         },
+        "latency.Config": {
+            "type": "object",
+            "properties": {
+                "decay": {
+                    "description": "Weight of new latency measurements",
+                    "type": "number"
+                },
+                "update_interval": {
+                    "description": "How often gateway should probe models with not the lowest response latency",
+                    "type": "string"
+                },
+                "warmup_samples": {
+                    "description": "The number of latency probes required to init moving average",
+                    "type": "integer"
+                }
+            }
+        },
         "octoml.Config": {
             "type": "object",
             "required": [
@@ -359,20 +376,6 @@ const docTemplate = `{
                 },
                 "top_p": {
                     "type": "number"
-        "latency.Config": {
-            "type": "object",
-            "properties": {
-                "decay": {
-                    "description": "Weight of new latency measurements",
-                    "type": "number"
-                },
-                "update_interval": {
-                    "description": "How often gateway should probe models with not the lowest response latency",
-                    "type": "string"
-                },
-                "warmup_samples": {
-                    "description": "The number of latency probes required to init moving average",
-                    "type": "integer"
                 }
             }
         },
@@ -475,10 +478,11 @@ const docTemplate = `{
                     "description": "Model instance ID (unique in scope of the router)",
                     "type": "string"
                 },
-                "octoml": {
-                    "$ref": "#/definitions/octoml.Config"
                 "latency": {
                     "$ref": "#/definitions/latency.Config"
+                },
+                "octoml": {
+                    "$ref": "#/definitions/octoml.Config"
                 },
                 "openai": {
                     "$ref": "#/definitions/openai.Config"
