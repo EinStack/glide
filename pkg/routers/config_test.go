@@ -17,25 +17,42 @@ import (
 func TestRouterConfig_BuildModels(t *testing.T) {
 	defaultParams := openai.DefaultParams()
 
-	tests := map[string]Config{
-		"all healthy": {
-			LanguageRouters: []LangRouterConfig{
-				{
-					ID:              "first_router",
-					Enabled:         true,
-					RoutingStrategy: routing.Priority,
-					Retry:           retry.DefaultExpRetryConfig(),
-					Models: []providers.LangModelConfig{
-						{
-							ID:          "first_model",
-							Enabled:     true,
-							Client:      clients.DefaultClientConfig(),
-							ErrorBudget: health.DefaultErrorBudget(),
-							Latency:     latency.DefaultConfig(),
-							OpenAI: &openai.Config{
-								APIKey:        "ABC",
-								DefaultParams: &defaultParams,
-							},
+	cfg := Config{
+		LanguageRouters: []LangRouterConfig{
+			{
+				ID:              "first_router",
+				Enabled:         true,
+				RoutingStrategy: routing.Priority,
+				Retry:           retry.DefaultExpRetryConfig(),
+				Models: []providers.LangModelConfig{
+					{
+						ID:          "first_model",
+						Enabled:     true,
+						Client:      clients.DefaultClientConfig(),
+						ErrorBudget: health.DefaultErrorBudget(),
+						Latency:     latency.DefaultConfig(),
+						OpenAI: &openai.Config{
+							APIKey:        "ABC",
+							DefaultParams: &defaultParams,
+						},
+					},
+				},
+			},
+			{
+				ID:              "first_router",
+				Enabled:         true,
+				RoutingStrategy: routing.LeastLatency,
+				Retry:           retry.DefaultExpRetryConfig(),
+				Models: []providers.LangModelConfig{
+					{
+						ID:          "first_model",
+						Enabled:     true,
+						Client:      clients.DefaultClientConfig(),
+						ErrorBudget: health.DefaultErrorBudget(),
+						Latency:     latency.DefaultConfig(),
+						OpenAI: &openai.Config{
+							APIKey:        "ABC",
+							DefaultParams: &defaultParams,
 						},
 					},
 				},
@@ -43,12 +60,12 @@ func TestRouterConfig_BuildModels(t *testing.T) {
 		},
 	}
 
-	for name, cfg := range tests {
-		t.Run(name, func(t *testing.T) {
-			routers, err := cfg.BuildLangRouters(telemetry.NewTelemetryMock())
+	routers, err := cfg.BuildLangRouters(telemetry.NewTelemetryMock())
 
-			require.NoError(t, err)
-			require.Len(t, routers, 1)
-		})
-	}
+	require.NoError(t, err)
+	require.Len(t, routers, 2)
+	require.Len(t, routers[0].models, 1)
+	require.IsType(t, routers[0].routing, &routing.PriorityRouting{})
+	require.Len(t, routers[1].models, 1)
+	require.IsType(t, routers[1].routing, &routing.LeastLatencyRouting{})
 }
