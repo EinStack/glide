@@ -111,7 +111,7 @@ jobs:
           fail_ci_if_error: false
 
   api-docs:
-    name: Tests
+    name: OpenAPI Specs
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
