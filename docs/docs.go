@@ -208,7 +208,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "timeout": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -236,6 +236,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/routers.LangRouterConfig"
                     }
+                }
+            }
+        },
+        "latency.Config": {
+            "type": "object",
+            "properties": {
+                "decay": {
+                    "description": "Weight of new latency measurements",
+                    "type": "number"
+                },
+                "update_interval": {
+                    "description": "How often gateway should probe models with not the lowest response latency",
+                    "type": "string"
+                },
+                "warmup_samples": {
+                    "description": "The number of latency probes required to init moving average",
+                    "type": "integer"
                 }
             }
         },
@@ -335,6 +352,9 @@ const docTemplate = `{
                     "description": "Model instance ID (unique in scope of the router)",
                     "type": "string"
                 },
+                "latency": {
+                    "$ref": "#/definitions/latency.Config"
+                },
                 "openai": {
                     "$ref": "#/definitions/openai.Config"
                 }
@@ -389,24 +409,9 @@ const docTemplate = `{
                 },
                 "strategy": {
                     "description": "strategy on picking the next model to serve the request",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/routing.Strategy"
-                        }
-                    ]
+                    "type": "string"
                 }
             }
-        },
-        "routing.Strategy": {
-            "type": "string",
-            "enum": [
-                "round-robin",
-                "priority"
-            ],
-            "x-enum-varnames": [
-                "RoundRobin",
-                "Priority"
-            ]
         },
         "schemas.ChatMessage": {
             "type": "object",
