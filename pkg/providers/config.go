@@ -64,6 +64,10 @@ func (c *LangModelConfig) validateOneProvider() error {
 		providersConfigured++
 	}
 
+	if c.AzureOpenAI != nil {
+		providersConfigured++
+	}
+
 	// check other providers here
 	if providersConfigured == 0 {
 		return fmt.Errorf("exactly one provider must be cofigured for model \"%v\", none is configured", c.ID)

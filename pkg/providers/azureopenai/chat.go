@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"glide/pkg/providers/clients"
 
@@ -139,7 +140,16 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		)
 
 		if resp.StatusCode == http.StatusTooManyRequests {
-			return nil, clients.NewRateLimitError(nil) // TODO: read real cooldown delay from headers
+			// Read the value of the "Retry-After" header to get the cooldown delay
+			retryAfter := resp.Header.Get("Retry-After")
+		
+			// Parse the value to get the duration
+			cooldownDelay, err := time.ParseDuration(retryAfter)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+			}
+		
+			return nil, clients.NewRateLimitError(&cooldownDelay)
 		}
 
 		// Server & client errors result in the same error to keep gateway resilient
