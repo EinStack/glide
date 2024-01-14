@@ -190,27 +190,12 @@ definitions:
         description: Unique router ID
         type: string
       strategy:
-        allOf:
-        - $ref: '#/definitions/routing.Strategy'
         description: strategy on picking the next model to serve the request
-        enum:
-        - least_latency
-        - round_robin
-        - priority
+        type: string
     required:
     - models
     - routers
     type: object
-  routing.Strategy:
-    enum:
-    - least_latency
-    - priority
-    - round_robin
-    type: string
-    x-enum-varnames:
-    - LeastLatency
-    - Priority
-    - RoundRobin
   schemas.ChatMessage:
     properties:
       content:
