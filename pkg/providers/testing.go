@@ -62,7 +62,10 @@ type LangModelMock struct {
 
 func NewLangModelMock(ID string, healthy bool, avgLatency float64) *LangModelMock {
 	movingAverage := latency.NewMovingAverage(0.06, 3)
-	movingAverage.Set(avgLatency)
+
+	if avgLatency > 0.0 {
+		movingAverage.Set(avgLatency)
+	}
 
 	return &LangModelMock{
 		modelID: ID,

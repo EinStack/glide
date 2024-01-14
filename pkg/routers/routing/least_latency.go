@@ -14,9 +14,19 @@ const (
 
 // ModelSchedule defines latency update schedule for models
 type ModelSchedule struct {
-	mu       *sync.RWMutex
+	mu       sync.RWMutex
 	model    providers.Model
 	expireAt time.Time
+}
+
+func NewSchedule(model providers.Model) *ModelSchedule {
+	schedule := &ModelSchedule{
+		model: model,
+	}
+
+	schedule.Update()
+
+	return schedule
 }
 
 func (s *ModelSchedule) ExpireAt() time.Time {
@@ -55,9 +65,7 @@ func NewLeastLatencyRouting(models []providers.Model) *LeastLatencyRouting {
 	schedules := make([]*ModelSchedule, 0, len(models))
 
 	for _, model := range models {
-		schedules = append(schedules, &ModelSchedule{
-			model: model,
-		})
+		schedules = append(schedules, NewSchedule(model))
 	}
 
 	return &LeastLatencyRouting{
@@ -86,7 +94,7 @@ func (r *LeastLatencyRouting) Next() (providers.Model, error) { //nolint:cyclop
 
 	if len(coldSchedules) > 0 {
 		// warm up models
-		idx := r.warmupIdx.Add(1)
+		idx := r.warmupIdx.Add(1) - 1
 
 		schedule := coldSchedules[idx%uint32(len(coldSchedules))]
 		schedule.Update()
@@ -118,7 +126,7 @@ func (r *LeastLatencyRouting) Next() (providers.Model, error) { //nolint:cyclop
 		}
 
 		if !schedule.Expired() && !nextSchedule.Expired() &&
-			schedule.model.Latency().Value() < nextSchedule.model.Latency().Value() {
+			nextSchedule.model.Latency().Value() > schedule.model.Latency().Value() {
 			nextSchedule = schedule
 		}
 	}
