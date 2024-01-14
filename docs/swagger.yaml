@@ -85,6 +85,8 @@ definitions:
         type: string
       openai:
         $ref: '#/definitions/openai.Config'
+      weight:
+        type: integer
     required:
     - id
     type: object
@@ -126,12 +128,14 @@ definitions:
     type: object
   routing.Strategy:
     enum:
-    - round-robin
     - priority
+    - weighed-round-robin
+    - round-robin
     type: string
     x-enum-varnames:
-    - RoundRobin
     - Priority
+    - WeightedRoundRobin
+    - RoundRobin
   schemas.ChatMessage:
     properties:
       content:

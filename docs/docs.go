@@ -255,6 +255,9 @@ const docTemplate = `{
                 },
                 "openai": {
                     "$ref": "#/definitions/openai.Config"
+                },
+                "weight": {
+                    "type": "integer"
                 }
             }
         },
@@ -318,12 +321,14 @@ const docTemplate = `{
         "routing.Strategy": {
             "type": "string",
             "enum": [
-                "round-robin",
-                "priority"
+                "priority",
+                "weighed-round-robin",
+                "round-robin"
             ],
             "x-enum-varnames": [
-                "RoundRobin",
-                "Priority"
+                "Priority",
+                "WeightedRoundRobin",
+                "RoundRobin"
             ]
         },
         "schemas.ChatMessage": {
