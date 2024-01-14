@@ -270,12 +270,12 @@ definitions:
     type: object
   routing.Strategy:
     enum:
-    - priority
     - round-robin
+    - priority
     type: string
     x-enum-varnames:
-    - Priority
     - RoundRobin
+    - Priority
   schemas.ChatMessage:
     properties:
       content:
