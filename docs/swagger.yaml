@@ -61,6 +61,56 @@ definitions:
       timeout:
         type: integer
     type: object
+  cohere.ChatHistory:
+    properties:
+      message:
+        type: string
+      role:
+        type: string
+      user:
+        type: string
+    type: object
+  cohere.Config:
+    properties:
+      baseUrl:
+        type: string
+      chatEndpoint:
+        type: string
+      defaultParams:
+        $ref: '#/definitions/cohere.Params'
+      model:
+        type: string
+    required:
+    - baseUrl
+    - chatEndpoint
+    - model
+    type: object
+  cohere.Params:
+    properties:
+      chat_history:
+        items:
+          $ref: '#/definitions/cohere.ChatHistory'
+        type: array
+      citiation_quality:
+        type: string
+      connectors:
+        items:
+          type: string
+        type: array
+      conversation_id:
+        type: string
+      preamble_override:
+        type: string
+      prompt_truncation:
+        type: string
+      search_queries_only:
+        type: boolean
+      stream:
+        description: unsupported right now
+        type: boolean
+      temperature:
+        type: number
+    type: object
   http.ErrorSchema:
     properties:
       message:
@@ -77,6 +127,38 @@ definitions:
         items:
           $ref: '#/definitions/routers.LangRouterConfig'
         type: array
+    type: object
+  octoml.Config:
+    properties:
+      baseUrl:
+        type: string
+      chatEndpoint:
+        type: string
+      defaultParams:
+        $ref: '#/definitions/octoml.Params'
+      model:
+        type: string
+    required:
+    - baseUrl
+    - chatEndpoint
+    - model
+    type: object
+  octoml.Params:
+    properties:
+      frequency_penalty:
+        type: integer
+      max_tokens:
+        type: integer
+      presence_penalty:
+        type: integer
+      stop:
+        items:
+          type: string
+        type: array
+      temperature:
+        type: number
+      top_p:
+        type: number
     type: object
   openai.Config:
     properties:
@@ -133,6 +215,8 @@ definitions:
         $ref: '#/definitions/azureopenai.Config'
       client:
         $ref: '#/definitions/clients.ClientConfig'
+      cohere:
+        $ref: '#/definitions/cohere.Config'
       enabled:
         description: Is the model enabled?
         type: boolean
@@ -141,6 +225,8 @@ definitions:
       id:
         description: Model instance ID (unique in scope of the router)
         type: string
+      octoml:
+        $ref: '#/definitions/octoml.Config'
       openai:
         $ref: '#/definitions/openai.Config'
     required:
@@ -184,12 +270,12 @@ definitions:
     type: object
   routing.Strategy:
     enum:
-    - round-robin
     - priority
+    - round-robin
     type: string
     x-enum-varnames:
-    - RoundRobin
     - Priority
+    - RoundRobin
   schemas.ChatMessage:
     properties:
       content:

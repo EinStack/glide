@@ -212,6 +212,81 @@ const docTemplate = `{
                 }
             }
         },
+        "cohere.ChatHistory": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "cohere.Config": {
+            "type": "object",
+            "required": [
+                "baseUrl",
+                "chatEndpoint",
+                "model"
+            ],
+            "properties": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/cohere.Params"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "cohere.Params": {
+            "type": "object",
+            "properties": {
+                "chat_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cohere.ChatHistory"
+                    }
+                },
+                "citiation_quality": {
+                    "type": "string"
+                },
+                "connectors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "conversation_id": {
+                    "type": "string"
+                },
+                "preamble_override": {
+                    "type": "string"
+                },
+                "prompt_truncation": {
+                    "type": "string"
+                },
+                "search_queries_only": {
+                    "type": "boolean"
+                },
+                "stream": {
+                    "description": "unsupported right now",
+                    "type": "boolean"
+                },
+                "temperature": {
+                    "type": "number"
+                }
+            }
+        },
         "http.ErrorSchema": {
             "type": "object",
             "properties": {
@@ -236,6 +311,54 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/routers.LangRouterConfig"
                     }
+                }
+            }
+        },
+        "octoml.Config": {
+            "type": "object",
+            "required": [
+                "baseUrl",
+                "chatEndpoint",
+                "model"
+            ],
+            "properties": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/octoml.Params"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "octoml.Params": {
+            "type": "object",
+            "properties": {
+                "frequency_penalty": {
+                    "type": "integer"
+                },
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "presence_penalty": {
+                    "type": "integer"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "top_p": {
+                    "type": "number"
                 }
             }
         },
@@ -324,6 +447,9 @@ const docTemplate = `{
                 "client": {
                     "$ref": "#/definitions/clients.ClientConfig"
                 },
+                "cohere": {
+                    "$ref": "#/definitions/cohere.Config"
+                },
                 "enabled": {
                     "description": "Is the model enabled?",
                     "type": "boolean"
@@ -334,6 +460,9 @@ const docTemplate = `{
                 "id": {
                     "description": "Model instance ID (unique in scope of the router)",
                     "type": "string"
+                },
+                "octoml": {
+                    "$ref": "#/definitions/octoml.Config"
                 },
                 "openai": {
                     "$ref": "#/definitions/openai.Config"
@@ -400,12 +529,12 @@ const docTemplate = `{
         "routing.Strategy": {
             "type": "string",
             "enum": [
-                "round-robin",
-                "priority"
+                "priority",
+                "round-robin"
             ],
             "x-enum-varnames": [
-                "RoundRobin",
-                "Priority"
+                "Priority",
+                "RoundRobin"
             ]
         },
         "schemas.ChatMessage": {
