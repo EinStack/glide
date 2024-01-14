@@ -40,22 +40,28 @@ func DefaultLangModelConfig() *LangModelConfig {
 }
 
 func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) {
+	var client LangModelProvider
+
+	var err error
+
 	if c.OpenAI != nil {
-		client, err := openai.NewClient(c.OpenAI, c.Client, tel)
+		client, err = openai.NewClient(c.OpenAI, c.Client, tel)
+
 		if err != nil {
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}
-
-		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency), nil
 	}
 
 	if c.AzureOpenAI != nil {
-		client, err := azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+		client, err = azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+
 		if err != nil {
 			return nil, fmt.Errorf("error initing azureopenai client: %v", err)
 		}
+	}
 
-		return NewLangModel(c.ID, client, c.ErrorBudget), nil
+	if client != nil {
+		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency), nil
 	}
 
 	return nil, ErrProviderNotFound
