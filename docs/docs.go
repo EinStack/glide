@@ -318,12 +318,14 @@ const docTemplate = `{
         "routing.Strategy": {
             "type": "string",
             "enum": [
+                "priority",
                 "round-robin",
-                "priority"
+                "least_latency"
             ],
             "x-enum-varnames": [
+                "Priority",
                 "RoundRobin",
-                "Priority"
+                "LeastLatency"
             ]
         },
         "schemas.ChatMessage": {
