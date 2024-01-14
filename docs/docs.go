@@ -125,11 +125,90 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "azureopenai.Config": {
+            "type": "object",
+            "required": [
+                "apiVersion",
+                "baseUrl",
+                "model"
+            ],
+            "properties": {
+                "apiVersion": {
+                    "description": "The API version to use for this operation. This follows the YYYY-MM-DD format (e.g 2023-05-15)",
+                    "type": "string"
+                },
+                "baseUrl": {
+                    "description": "The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)",
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/azureopenai.Params"
+                },
+                "model": {
+                    "description": "The name of your model deployment. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)",
+                    "type": "string"
+                }
+            }
+        },
+        "azureopenai.Params": {
+            "type": "object",
+            "properties": {
+                "frequency_penalty": {
+                    "type": "integer"
+                },
+                "logit_bias": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    }
+                },
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "n": {
+                    "type": "integer"
+                },
+                "presence_penalty": {
+                    "type": "integer"
+                },
+                "response_format": {
+                    "description": "TODO: should this be a part of the chat request API?"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "tool_choice": {},
+                "tools": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "top_p": {
+                    "type": "number"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
         "clients.ClientConfig": {
             "type": "object",
             "properties": {
                 "timeout": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -157,6 +236,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/routers.LangRouterConfig"
                     }
+                }
+            }
+        },
+        "latency.Config": {
+            "type": "object",
+            "properties": {
+                "decay": {
+                    "description": "Weight of new latency measurements",
+                    "type": "number"
+                },
+                "update_interval": {
+                    "description": "How often gateway should probe models with not the lowest response latency",
+                    "type": "string"
+                },
+                "warmup_samples": {
+                    "description": "The number of latency probes required to init moving average",
+                    "type": "integer"
                 }
             }
         },
@@ -239,6 +335,9 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
+                "azureopenai": {
+                    "$ref": "#/definitions/azureopenai.Config"
+                },
                 "client": {
                     "$ref": "#/definitions/clients.ClientConfig"
                 },
@@ -252,6 +351,9 @@ const docTemplate = `{
                 "id": {
                     "description": "Model instance ID (unique in scope of the router)",
                     "type": "string"
+                },
+                "latency": {
+                    "$ref": "#/definitions/latency.Config"
                 },
                 "openai": {
                     "$ref": "#/definitions/openai.Config"
@@ -310,26 +412,9 @@ const docTemplate = `{
                 },
                 "strategy": {
                     "description": "strategy on picking the next model to serve the request",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/routing.Strategy"
-                        }
-                    ]
+                    "type": "string"
                 }
             }
-        },
-        "routing.Strategy": {
-            "type": "string",
-            "enum": [
-                "priority",
-                "weighed-round-robin",
-                "round-robin"
-            ],
-            "x-enum-varnames": [
-                "Priority",
-                "WeightedRoundRobin",
-                "RoundRobin"
-            ]
         },
         "schemas.ChatMessage": {
             "type": "object",

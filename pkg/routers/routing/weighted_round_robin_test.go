@@ -116,7 +116,7 @@ func TestWRoundRobinRouting_RoutingDistribution(t *testing.T) {
 			models := make([]providers.Model, 0, len(tc.models))
 
 			for _, model := range tc.models {
-				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, model.weight))
+				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, 0, model.weight))
 			}
 
 			routing := NewWeightedRoundRobin(models)
@@ -140,9 +140,9 @@ func TestWRoundRobinRouting_RoutingDistribution(t *testing.T) {
 
 func TestWRoundRobinRouting_NoHealthyModels(t *testing.T) {
 	models := []providers.Model{
-		providers.NewLangModelMock("first", false, 1),
-		providers.NewLangModelMock("second", false, 2),
-		providers.NewLangModelMock("third", false, 3),
+		providers.NewLangModelMock("first", false, 0, 1),
+		providers.NewLangModelMock("second", false, 0, 2),
+		providers.NewLangModelMock("third", false, 0, 3),
 	}
 
 	routing := NewWeightedRoundRobin(models)

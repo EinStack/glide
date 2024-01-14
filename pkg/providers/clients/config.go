@@ -3,7 +3,7 @@ package clients
 import "time"
 
 type ClientConfig struct {
-	Timeout *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,integer"`
+	Timeout *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,string"`
 }
 
 func DefaultClientConfig() *ClientConfig {

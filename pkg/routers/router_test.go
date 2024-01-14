@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"glide/pkg/routers/latency"
+
 	"glide/pkg/providers/clients"
 
 	"github.com/stretchr/testify/require"
@@ -18,17 +20,21 @@ import (
 
 func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
+	latConfig := latency.DefaultConfig()
+
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 	}
@@ -61,23 +67,27 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 
 func TestLangRouter_Priority_PickThirdHealthy(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.SEC)
+	latConfig := latency.DefaultConfig()
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "3"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "4"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"third",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 	}
@@ -112,17 +122,20 @@ func TestLangRouter_Priority_PickThirdHealthy(t *testing.T) {
 
 func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.MILLI)
+	latConfig := latency.DefaultConfig()
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "1"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 	}
@@ -150,17 +163,20 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 
 func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.MIN)
+	latConfig := latency.DefaultConfig()
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &clients.ErrProviderUnavailable}, {Msg: "3"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 	}
@@ -190,17 +206,20 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 
 func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.SEC)
+	latConfig := latency.DefaultConfig()
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}),
 			*budget,
+			*latConfig,
 			1,
 		),
 	}

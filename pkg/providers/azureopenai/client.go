@@ -4,14 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
+	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 )
-
-// TODO: Explore resource pooling
-// TODO: Optimize Type use
-// TODO: Explore Hertz TLS & resource pooling
 
 const (
 	providerName = "azureopenai"
@@ -33,19 +29,19 @@ type Client struct {
 }
 
 // NewClient creates a new Azure OpenAI client for the OpenAI API.
-func NewClient(cfg *Config, tel *telemetry.Telemetry) (*Client, error) {
-	chatURL := fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=%s", cfg.BaseURL, cfg.Model, cfg.APIVersion)
+func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry) (*Client, error) {
+	chatURL := fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=%s", providerConfig.BaseURL, providerConfig.Model, providerConfig.APIVersion)
 
 	fmt.Println("chatURL", chatURL)
 
 	c := &Client{
-		baseURL:             cfg.BaseURL,
+		baseURL:             providerConfig.BaseURL,
 		chatURL:             chatURL,
-		config:              cfg,
-		chatRequestTemplate: NewChatRequestFromConfig(cfg),
+		config:              providerConfig,
+		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
 		httpClient: &http.Client{
 			// TODO: use values from the config
-			Timeout: time.Second * 30,
+			Timeout: *clientConfig.Timeout,
 			Transport: &http.Transport{
 				MaxIdleConns:        100,
 				MaxIdleConnsPerHost: 2,

@@ -45,13 +45,14 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 }
 
 // TODO: how to specify other backoff strategies?
+// TODO: Had to keep RoutingStrategy because of https://github.com/swaggo/swag/issues/1738
 // LangRouterConfig
 type LangRouterConfig struct {
-	ID              string                      `yaml:"id" json:"routers" validate:"required"`    // Unique router ID
-	Enabled         bool                        `yaml:"enabled" json:"enabled"`                   // Is router enabled?
-	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"`                       // retry when no healthy model is available to router
-	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy"`                 // strategy on picking the next model to serve the request
-	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"` // the list of models that could handle requests
+	ID              string                      `yaml:"id" json:"routers" validate:"required"`                   // Unique router ID
+	Enabled         bool                        `yaml:"enabled" json:"enabled"`                                  // Is router enabled?
+	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"`                                      // retry when no healthy model is available to router
+	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy" swaggertype:"primitive,string"` // strategy on picking the next model to serve the request
+	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"`                // the list of models that could handle requests
 }
 
 // BuildModels creates LanguageModel slice out of the given config
@@ -117,6 +118,8 @@ func (c *LangRouterConfig) BuildRouting(models []providers.LanguageModel) (routi
 		return routing.NewRoundRobinRouting(m), nil
 	case routing.WeightedRoundRobin:
 		return routing.NewWeightedRoundRobin(m), nil
+	case routing.LeastLatency:
+		return routing.NewLeastLatencyRouting(m), nil
 	}
 
 	return nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)

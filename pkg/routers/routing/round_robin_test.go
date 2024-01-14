@@ -30,7 +30,7 @@ func TestRoundRobinRouting_PickModelsSequentially(t *testing.T) {
 			models := make([]providers.Model, 0, len(tc.models))
 
 			for _, model := range tc.models {
-				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, 1))
+				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, 100, 1))
 			}
 
 			routing := NewRoundRobinRouting(models)
@@ -50,9 +50,9 @@ func TestRoundRobinRouting_PickModelsSequentially(t *testing.T) {
 
 func TestRoundRobinRouting_NoHealthyModels(t *testing.T) {
 	models := []providers.Model{
-		providers.NewLangModelMock("first", false, 1),
-		providers.NewLangModelMock("second", false, 1),
-		providers.NewLangModelMock("third", false, 1),
+		providers.NewLangModelMock("first", false, 0, 1),
+		providers.NewLangModelMock("second", false, 0, 1),
+		providers.NewLangModelMock("third", false, 0, 1),
 	}
 
 	routing := NewRoundRobinRouting(models)
