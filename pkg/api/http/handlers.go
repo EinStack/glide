@@ -16,6 +16,7 @@ type Handler = func(ctx context.Context, c *app.RequestContext)
 // - https://github.com/swaggo/swag/tree/master/example/celler
 
 // LangChatHandler
+//
 //	@id				glide-language-chat
 //	@Summary		Language Chat
 //	@Description	Talk to different LLMs Chat API via unified endpoint
@@ -67,6 +68,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 }
 
 // LangRoutersHandler
+//
 //	@id				glide-language-routers
 //	@Summary		Language Router List
 //	@Description	Retrieve list of configured language routers and their configurations
@@ -89,6 +91,7 @@ func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 }
 
 // HealthHandler
+//
 //	@id			glide-health
 //	@Summary	Gateway Health
 //	@Description

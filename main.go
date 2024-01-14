@@ -16,9 +16,9 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	https://github.com/modelgateway/glide/blob/develop/LICENSE
 
-//	@host		localhost:9099
-//	@BasePath	/
-//	@schemes	http
+// @host		localhost:9099
+// @BasePath	/
+// @schemes	http
 func main() {
 	cli := cmd.NewCLI()
 
