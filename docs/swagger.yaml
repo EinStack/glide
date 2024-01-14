@@ -193,6 +193,10 @@ definitions:
         allOf:
         - $ref: '#/definitions/routing.Strategy'
         description: strategy on picking the next model to serve the request
+        enum:
+        - least_latency
+        - round_robin
+        - priority
     required:
     - models
     - routers
@@ -201,7 +205,7 @@ definitions:
     enum:
     - least_latency
     - priority
-    - round-robin
+    - round_robin
     type: string
     x-enum-varnames:
     - LeastLatency

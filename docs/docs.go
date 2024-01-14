@@ -409,6 +409,11 @@ const docTemplate = `{
                 },
                 "strategy": {
                     "description": "strategy on picking the next model to serve the request",
+                    "enum": [
+                        "least_latency",
+                        "round_robin",
+                        "priority"
+                    ],
                     "allOf": [
                         {
                             "$ref": "#/definitions/routing.Strategy"
@@ -422,7 +427,7 @@ const docTemplate = `{
             "enum": [
                 "least_latency",
                 "priority",
-                "round-robin"
+                "round_robin"
             ],
             "x-enum-varnames": [
                 "LeastLatency",
