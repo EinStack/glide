@@ -3,10 +3,11 @@ package providers
 import (
 	"context"
 	"errors"
+	"time"
+
 	"glide/pkg/providers/clients"
 	"glide/pkg/routers/health"
 	"glide/pkg/routers/latency"
-	"time"
 
 	"glide/pkg/api/schemas"
 )
@@ -20,6 +21,7 @@ type LangModelProvider interface {
 type Model interface {
 	ID() string
 	Healthy() bool
+	Latency() *latency.MovingAverage
 }
 
 type LanguageModel interface {

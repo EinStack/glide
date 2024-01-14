@@ -3,6 +3,8 @@ package providers
 import (
 	"context"
 
+	"glide/pkg/routers/latency"
+
 	"glide/pkg/api/schemas"
 )
 
@@ -55,12 +57,17 @@ func (c *ProviderMock) Provider() string {
 type LangModelMock struct {
 	modelID string
 	healthy bool
+	latency *latency.MovingAverage
 }
 
-func NewLangModelMock(ID string, healthy bool) *LangModelMock {
+func NewLangModelMock(ID string, healthy bool, avgLatency float64) *LangModelMock {
+	movingAverage := latency.NewMovingAverage(0.06, 3)
+	movingAverage.Set(avgLatency)
+
 	return &LangModelMock{
 		modelID: ID,
 		healthy: healthy,
+		latency: movingAverage,
 	}
 }
 
@@ -70,4 +77,8 @@ func (m *LangModelMock) ID() string {
 
 func (m *LangModelMock) Healthy() bool {
 	return m.healthy
+}
+
+func (m *LangModelMock) Latency() *latency.MovingAverage {
+	return m.latency
 }

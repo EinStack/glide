@@ -1,10 +1,11 @@
 package routing
 
 import (
-	"glide/pkg/providers"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"glide/pkg/providers"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 // ModelSchedule defines latency update schedule for models
 type ModelSchedule struct {
 	mu       *sync.RWMutex
-	model    *providers.LangModel
+	model    providers.Model
 	expireAt time.Time
 }
 
@@ -50,7 +51,7 @@ type LeastLatencyRouting struct {
 	schedules []*ModelSchedule
 }
 
-func NewLeastLatencyRouting(models []*providers.LangModel) *LeastLatencyRouting {
+func NewLeastLatencyRouting(models []providers.Model) *LeastLatencyRouting {
 	schedules := make([]*ModelSchedule, 0, len(models))
 
 	for _, model := range models {
@@ -80,7 +81,7 @@ func (r *LeastLatencyRouting) Iterator() LangModelIterator {
 // other model latencies that might have improved over time).
 // For that, we introduced jittered expiration time after which the model receives a request
 // even if it was not the fastest to respond
-func (r *LeastLatencyRouting) Next() (*providers.LangModel, error) {
+func (r *LeastLatencyRouting) Next() (providers.Model, error) { //nolint:cyclop
 	coldSchedules := r.getColdModelSchedules()
 
 	if len(coldSchedules) > 0 {

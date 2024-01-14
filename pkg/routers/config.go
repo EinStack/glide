@@ -115,6 +115,8 @@ func (c *LangRouterConfig) BuildRouting(models []providers.LanguageModel) (routi
 		return routing.NewPriorityRouting(m), nil
 	case routing.RoundRobin:
 		return routing.NewRoundRobinRouting(m), nil
+	case routing.LeastLatency:
+		return routing.NewLeastLatencyRouting(m), nil
 	}
 
 	return nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)
