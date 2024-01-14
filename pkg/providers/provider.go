@@ -22,6 +22,7 @@ type Model interface {
 	ID() string
 	Healthy() bool
 	Latency() *latency.MovingAverage
+	LatencyUpdateInterval() *time.Duration
 }
 
 type LanguageModel interface {
@@ -31,20 +32,22 @@ type LanguageModel interface {
 
 // LangModel wraps provider client and expend it with health & latency tracking
 type LangModel struct {
-	modelID     string
-	client      LangModelProvider
-	rateLimit   *health.RateLimitTracker
-	errorBudget *health.TokenBucket // TODO: centralize provider API health tracking in the registry
-	latency     *latency.MovingAverage
+	modelID               string
+	client                LangModelProvider
+	rateLimit             *health.RateLimitTracker
+	errorBudget           *health.TokenBucket // TODO: centralize provider API health tracking in the registry
+	latency               *latency.MovingAverage
+	latencyUpdateInterval *time.Duration
 }
 
 func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget, latencyConfig latency.Config) *LangModel {
 	return &LangModel{
-		modelID:     modelID,
-		client:      client,
-		rateLimit:   health.NewRateLimitTracker(),
-		errorBudget: health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
-		latency:     latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
+		modelID:               modelID,
+		client:                client,
+		rateLimit:             health.NewRateLimitTracker(),
+		errorBudget:           health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
+		latency:               latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
+		latencyUpdateInterval: latencyConfig.UpdateInterval,
 	}
 }
 
@@ -58,6 +61,10 @@ func (m *LangModel) Provider() string {
 
 func (m *LangModel) Latency() *latency.MovingAverage {
 	return m.latency
+}
+
+func (m *LangModel) LatencyUpdateInterval() *time.Duration {
+	return m.latencyUpdateInterval
 }
 
 func (m *LangModel) Healthy() bool {

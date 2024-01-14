@@ -48,7 +48,7 @@ func (s *ModelSchedule) Update() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.expireAt = time.Now().Add(30 * time.Second) // TODO: set expiration duration via config
+	s.expireAt = time.Now().Add(*s.model.LatencyUpdateInterval())
 }
 
 // LeastLatencyRouting routes requests to the model that responses the fastest
@@ -87,7 +87,7 @@ func (r *LeastLatencyRouting) Iterator() LangModelIterator {
 // Additionally, we should update our stats as response latency is a dynamic distribution,
 // we cannot simply stick to the fastest model discovered on the warmup stage (as we could overlook
 // other model latencies that might have improved over time).
-// For that, we introduced jittered expiration time after which the model receives a request
+// For that, we introduced expiration time after which the model receives a request
 // even if it was not the fastest to respond
 func (r *LeastLatencyRouting) Next() (providers.Model, error) { //nolint:cyclop
 	coldSchedules := r.getColdModelSchedules()

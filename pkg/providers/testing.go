@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"time"
 
 	"glide/pkg/routers/latency"
 
@@ -84,4 +85,10 @@ func (m *LangModelMock) Healthy() bool {
 
 func (m *LangModelMock) Latency() *latency.MovingAverage {
 	return m.latency
+}
+
+func (m *LangModelMock) LatencyUpdateInterval() *time.Duration {
+	updateInterval := 30 * time.Second
+
+	return &updateInterval
 }
