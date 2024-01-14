@@ -2,12 +2,14 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+
+	"glide/pkg/api/schemas"
+	"glide/pkg/routers"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"glide/pkg/api/schemas"
-	"glide/pkg/routers"
 )
 
 type Handler = func(ctx context.Context, c *app.RequestContext)
@@ -33,7 +35,16 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(ctx context.Context, c *app.RequestContext) {
 		var req *schemas.UnifiedChatRequest
 
-		err := c.BindJSON(&req)
+		err := json.Unmarshal(c.Request.Body(), &req)
+		if err != nil {
+			c.JSON(consts.StatusBadRequest, ErrorSchema{
+				Message: err.Error(),
+			})
+
+			return
+		}
+
+		err = c.BindJSON(&req)
 		if err != nil {
 			c.JSON(consts.StatusBadRequest, ErrorSchema{
 				Message: err.Error(),
