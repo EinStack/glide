@@ -59,7 +59,7 @@ definitions:
   clients.ClientConfig:
     properties:
       timeout:
-        type: integer
+        type: string
     type: object
   cohere.ChatHistory:
     properties:
@@ -127,6 +127,19 @@ definitions:
         items:
           $ref: '#/definitions/routers.LangRouterConfig'
         type: array
+    type: object
+  latency.Config:
+    properties:
+      decay:
+        description: Weight of new latency measurements
+        type: number
+      update_interval:
+        description: How often gateway should probe models with not the lowest response
+          latency
+        type: string
+      warmup_samples:
+        description: The number of latency probes required to init moving average
+        type: integer
     type: object
   octoml.Config:
     properties:
@@ -225,10 +238,14 @@ definitions:
       id:
         description: Model instance ID (unique in scope of the router)
         type: string
+      latency:
+        $ref: '#/definitions/latency.Config'
       octoml:
         $ref: '#/definitions/octoml.Config'
       openai:
         $ref: '#/definitions/openai.Config'
+      weight:
+        type: integer
     required:
     - id
     type: object
@@ -261,21 +278,12 @@ definitions:
         description: Unique router ID
         type: string
       strategy:
-        allOf:
-        - $ref: '#/definitions/routing.Strategy'
         description: strategy on picking the next model to serve the request
+        type: string
     required:
     - models
     - routers
     type: object
-  routing.Strategy:
-    enum:
-    - round-robin
-    - priority
-    type: string
-    x-enum-varnames:
-    - RoundRobin
-    - Priority
   schemas.ChatMessage:
     properties:
       content:

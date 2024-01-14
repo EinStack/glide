@@ -27,9 +27,6 @@ lint: install-checkers ## Lint the source code
 	@$(CHECKER_BIN)/gofumpt -l -w .
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
-
-
-static-checks: install-checkers ## Static Analysis
 	@echo "🧹 GoCI Lint.."
 	@golangci-lint run ./...
 

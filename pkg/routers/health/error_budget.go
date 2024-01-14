@@ -31,8 +31,8 @@ func NewErrorBudget(budget int, unit Unit) *ErrorBudget {
 	}
 }
 
-func DefaultErrorBudget() ErrorBudget {
-	return ErrorBudget{
+func DefaultErrorBudget() *ErrorBudget {
+	return &ErrorBudget{
 		budget: 10,
 		unit:   MIN,
 	}

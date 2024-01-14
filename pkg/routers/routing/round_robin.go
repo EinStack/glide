@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	RoundRobin Strategy = "round-robin"
+	RoundRobin Strategy = "round_robin"
 )
 
 // RoundRobinRouting routes request to the next model in the list in cycle
