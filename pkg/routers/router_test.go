@@ -28,12 +28,14 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 	}
 
@@ -46,7 +48,7 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
-		routing:   routing.NewPriorityRouting(models),
+		routing:   routing.NewPriority(models),
 		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
@@ -72,18 +74,21 @@ func TestLangRouter_Priority_PickThirdHealthy(t *testing.T) {
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "3"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "4"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 		providers.NewLangModel(
 			"third",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 	}
 
@@ -98,7 +103,7 @@ func TestLangRouter_Priority_PickThirdHealthy(t *testing.T) {
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
-		routing:   routing.NewPriorityRouting(models),
+		routing:   routing.NewPriority(models),
 		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
@@ -124,12 +129,14 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "1"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 	}
 
@@ -142,7 +149,7 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
-		routing:   routing.NewPriorityRouting(models),
+		routing:   routing.NewPriority(models),
 		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
@@ -163,12 +170,14 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &clients.ErrProviderUnavailable}, {Msg: "3"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 	}
 
@@ -181,7 +190,7 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
-		routing:   routing.NewPriorityRouting(models),
+		routing:   routing.NewPriority(models),
 		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}
@@ -204,12 +213,14 @@ func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 		providers.NewLangModel(
 			"second",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}),
 			*budget,
 			*latConfig,
+			1,
 		),
 	}
 
@@ -222,7 +233,7 @@ func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 		routerID:  "test_router",
 		Config:    &LangRouterConfig{},
 		retry:     retry.NewExpRetry(1, 2, 1*time.Millisecond, nil),
-		routing:   routing.NewPriorityRouting(models),
+		routing:   routing.NewPriority(models),
 		models:    langModels,
 		telemetry: telemetry.NewTelemetryMock(),
 	}

@@ -59,9 +59,10 @@ type LangModelMock struct {
 	modelID string
 	healthy bool
 	latency *latency.MovingAverage
+	weight  int
 }
 
-func NewLangModelMock(ID string, healthy bool, avgLatency float64) *LangModelMock {
+func NewLangModelMock(ID string, healthy bool, avgLatency float64, weight int) *LangModelMock {
 	movingAverage := latency.NewMovingAverage(0.06, 3)
 
 	if avgLatency > 0.0 {
@@ -72,6 +73,7 @@ func NewLangModelMock(ID string, healthy bool, avgLatency float64) *LangModelMoc
 		modelID: ID,
 		healthy: healthy,
 		latency: movingAverage,
+		weight:  weight,
 	}
 }
 
@@ -91,4 +93,8 @@ func (m *LangModelMock) LatencyUpdateInterval() *time.Duration {
 	updateInterval := 30 * time.Second
 
 	return &updateInterval
+}
+
+func (m *LangModelMock) Weight() int {
+	return m.weight
 }

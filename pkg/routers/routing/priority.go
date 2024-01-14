@@ -18,7 +18,7 @@ type PriorityRouting struct {
 	models []providers.Model
 }
 
-func NewPriorityRouting(models []providers.Model) *PriorityRouting {
+func NewPriority(models []providers.Model) *PriorityRouting {
 	return &PriorityRouting{
 		models: models,
 	}

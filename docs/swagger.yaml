@@ -158,6 +158,8 @@ definitions:
         $ref: '#/definitions/latency.Config'
       openai:
         $ref: '#/definitions/openai.Config'
+      weight:
+        type: integer
     required:
     - id
     type: object

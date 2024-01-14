@@ -23,6 +23,7 @@ type Model interface {
 	Healthy() bool
 	Latency() *latency.MovingAverage
 	LatencyUpdateInterval() *time.Duration
+	Weight() int
 }
 
 type LanguageModel interface {
@@ -33,6 +34,7 @@ type LanguageModel interface {
 // LangModel wraps provider client and expend it with health & latency tracking
 type LangModel struct {
 	modelID               string
+	weight                int
 	client                LangModelProvider
 	rateLimit             *health.RateLimitTracker
 	errorBudget           *health.TokenBucket // TODO: centralize provider API health tracking in the registry
@@ -40,7 +42,7 @@ type LangModel struct {
 	latencyUpdateInterval *time.Duration
 }
 
-func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget, latencyConfig latency.Config) *LangModel {
+func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget, latencyConfig latency.Config, weight int) *LangModel {
 	return &LangModel{
 		modelID:               modelID,
 		client:                client,
@@ -48,6 +50,7 @@ func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorB
 		errorBudget:           health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
 		latency:               latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
 		latencyUpdateInterval: latencyConfig.UpdateInterval,
+		weight:                weight,
 	}
 }
 
@@ -69,6 +72,10 @@ func (m *LangModel) LatencyUpdateInterval() *time.Duration {
 
 func (m *LangModel) Healthy() bool {
 	return !m.rateLimit.Limited() && m.errorBudget.HasTokens()
+}
+
+func (m *LangModel) Weight() int {
+	return m.weight
 }
 
 func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {

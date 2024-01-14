@@ -22,6 +22,7 @@ type LangModelConfig struct {
 	Enabled     bool                  `yaml:"enabled" json:"enabled"`           // Is the model enabled?
 	ErrorBudget *health.ErrorBudget   `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
 	Latency     *latency.Config       `yaml:"latency" json:"latency"`
+	Weight      int                   `yaml:"weight" json:"weight"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
 	AzureOpenAI *azureopenai.Config   `yaml:"azureopenai" json:"azureopenai"`
@@ -36,6 +37,7 @@ func DefaultLangModelConfig() *LangModelConfig {
 		Client:      clients.DefaultClientConfig(),
 		ErrorBudget: health.DefaultErrorBudget(),
 		Latency:     latency.DefaultConfig(),
+		Weight:      1,
 	}
 }
 
@@ -61,7 +63,7 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 	}
 
 	if client != nil {
-		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency), nil
+		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency, c.Weight), nil
 	}
 
 	return nil, ErrProviderNotFound

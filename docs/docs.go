@@ -357,6 +357,9 @@ const docTemplate = `{
                 },
                 "openai": {
                     "$ref": "#/definitions/openai.Config"
+                },
+                "weight": {
+                    "type": "integer"
                 }
             }
         },

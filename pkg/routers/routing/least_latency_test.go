@@ -33,7 +33,7 @@ func TestLeastLatencyRouting_Warmup(t *testing.T) {
 			models := make([]providers.Model, 0, len(tc.models))
 
 			for _, model := range tc.models {
-				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, model.latency))
+				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, model.latency, 1))
 			}
 
 			routing := NewLeastLatencyRouting(models)
@@ -108,6 +108,7 @@ func TestLeastLatencyRouting_Routing(t *testing.T) {
 						model.modelID,
 						model.healthy,
 						model.latency,
+						1,
 					),
 					expireAt: model.expireAt,
 				})
@@ -142,7 +143,7 @@ func TestLeastLatencyRouting_NoHealthyModels(t *testing.T) {
 			models := make([]providers.Model, 0, len(latencies))
 
 			for idx, latency := range latencies {
-				models = append(models, providers.NewLangModelMock(strconv.Itoa(idx), false, latency))
+				models = append(models, providers.NewLangModelMock(strconv.Itoa(idx), false, latency, 1))
 			}
 
 			routing := NewLeastLatencyRouting(models)
