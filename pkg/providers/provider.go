@@ -38,13 +38,13 @@ type LangModel struct {
 	latency     *latency.MovingAverage
 }
 
-func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget) *LangModel {
+func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget, latencyConfig latency.Config) *LangModel {
 	return &LangModel{
 		modelID:     modelID,
 		client:      client,
 		rateLimit:   health.NewRateLimitTracker(),
 		errorBudget: health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
-		latency:     latency.NewMovingAverage(0.05, 3), // TODO: set from configs
+		latency:     latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
 	}
 }
 

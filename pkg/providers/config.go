@@ -3,6 +3,7 @@ package providers
 import (
 	"errors"
 	"fmt"
+
 	"glide/pkg/routers/latency"
 
 	"glide/pkg/providers/clients"
@@ -18,7 +19,7 @@ var ErrProviderNotFound = errors.New("provider not found")
 type LangModelConfig struct {
 	ID          string                `yaml:"id" json:"id" validate:"required"` // Model instance ID (unique in scope of the router)
 	Enabled     bool                  `yaml:"enabled" json:"enabled"`           // Is the model enabled?
-	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
+	ErrorBudget *health.ErrorBudget   `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
 	Latency     *latency.Config       `yaml:"latency" json:"latency"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
@@ -43,7 +44,7 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}
 
-		return NewLangModel(c.ID, client, c.ErrorBudget), nil
+		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency), nil
 	}
 
 	return nil, ErrProviderNotFound

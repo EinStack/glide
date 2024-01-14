@@ -141,13 +141,13 @@ definitions:
     type: object
   routing.Strategy:
     enum:
-    - priority
     - least_latency
+    - priority
     - round-robin
     type: string
     x-enum-varnames:
-    - Priority
     - LeastLatency
+    - Priority
     - RoundRobin
   schemas.ChatMessage:
     properties:
