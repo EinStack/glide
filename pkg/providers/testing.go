@@ -55,12 +55,14 @@ func (c *ProviderMock) Provider() string {
 type LangModelMock struct {
 	modelID string
 	healthy bool
+	weight  int
 }
 
-func NewLangModelMock(ID string, healthy bool) *LangModelMock {
+func NewLangModelMock(ID string, healthy bool, weight int) *LangModelMock {
 	return &LangModelMock{
 		modelID: ID,
 		healthy: healthy,
+		weight:  weight,
 	}
 }
 
@@ -70,4 +72,8 @@ func (m *LangModelMock) ID() string {
 
 func (m *LangModelMock) Healthy() bool {
 	return m.healthy
+}
+
+func (m *LangModelMock) Weight() int {
+	return m.weight
 }

@@ -18,6 +18,7 @@ type LangModelConfig struct {
 	ID          string                `yaml:"id" json:"id" validate:"required"` // Model instance ID (unique in scope of the router)
 	Enabled     bool                  `yaml:"enabled" json:"enabled"`           // Is the model enabled?
 	ErrorBudget health.ErrorBudget    `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
+	Weight      int                   `yaml:"weight" json:"weight"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
 	// Add other providers like
@@ -30,6 +31,7 @@ func DefaultLangModelConfig() *LangModelConfig {
 		Enabled:     true,
 		Client:      clients.DefaultClientConfig(),
 		ErrorBudget: health.DefaultErrorBudget(),
+		Weight:      1,
 	}
 }
 
@@ -40,7 +42,7 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 			return nil, fmt.Errorf("error initing openai client: %v", err)
 		}
 
-		return NewLangModel(c.ID, client, c.ErrorBudget), nil
+		return NewLangModel(c.ID, client, c.ErrorBudget, c.Weight), nil
 	}
 
 	return nil, ErrProviderNotFound

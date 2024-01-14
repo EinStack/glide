@@ -19,6 +19,7 @@ type LangModelProvider interface {
 type Model interface {
 	ID() string
 	Healthy() bool
+	Weight() int
 }
 
 type LanguageModel interface {
@@ -29,14 +30,16 @@ type LanguageModel interface {
 // LangModel
 type LangModel struct {
 	modelID     string
+	weight      int
 	client      LangModelProvider
 	rateLimit   *health.RateLimitTracker
 	errorBudget *health.TokenBucket // TODO: centralize provider API health tracking in the registry
 }
 
-func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget) *LangModel {
+func NewLangModel(modelID string, client LangModelProvider, budget health.ErrorBudget, weight int) *LangModel {
 	return &LangModel{
 		modelID:     modelID,
+		weight:      weight,
 		client:      client,
 		rateLimit:   health.NewRateLimitTracker(),
 		errorBudget: health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
@@ -53,6 +56,10 @@ func (m *LangModel) Provider() string {
 
 func (m *LangModel) Healthy() bool {
 	return !m.rateLimit.Limited() && m.errorBudget.HasTokens()
+}
+
+func (m *LangModel) Weight() int {
+	return m.weight
 }
 
 func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {

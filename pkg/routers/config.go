@@ -112,9 +112,11 @@ func (c *LangRouterConfig) BuildRouting(models []providers.LanguageModel) (routi
 
 	switch c.RoutingStrategy {
 	case routing.Priority:
-		return routing.NewPriorityRouting(m), nil
+		return routing.NewPriority(m), nil
 	case routing.RoundRobin:
 		return routing.NewRoundRobinRouting(m), nil
+	case routing.WeightedRoundRobin:
+		return routing.NewWeightedRoundRobin(m), nil
 	}
 
 	return nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)
