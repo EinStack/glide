@@ -1,12 +1,12 @@
-# Glide: Cloud-Native LLM Gateway for Seamless LLMLOps
+# Glide: Cloud-Native LLM Gateway for Seamless LLMOps
 <div align="center">
     <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
 </div>
 
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
-[![codecov](https://codecov.io/github/modelgateway/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/modelgateway/glide)
+[![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
 
-Glide is your go-to cloud-native model gateway, delivering high-performance LLMLOps in a lightweight, all-in-one package.
+Glide is your go-to cloud-native model gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
 
 We take all problems of managing and communicating with external providers out of your applications,
 so you can dive into tackling your core challenges.
@@ -17,6 +17,19 @@ model failover, caching, key management, etc.
 > [!Warning]
 > Glide is under active development right now. Give us a star to support the project ✨
 
+## Supported Providers
+
+### Large Language Models
+
+|                                                     | Provider      | Support Status  |
+|-----------------------------------------------------|---------------|-----------------|
+| <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
+| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 🏗️ Coming Soon  |
+| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 🏗️ Coming Soon  |
+| <img src="docs/images/octo.png" width="18" />     | OctoML        | 🏗️ Coming Soon  |
+| <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
+| <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
+
 ## Features
 
 - **Unified REST API** across providers. Avoid vendor lock-in and changes in your applications when you swap model providers.
@@ -26,19 +39,17 @@ model failover, caching, key management, etc.
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
 - Straightforward and simple maintenance and configuration, centrilized API key control & management & rotation, etc.
 
-## Supported Providers
+## Feature Details
 
-### Large Language Models
+### Routers
 
-|                                                     | Provider      | Support Status  |
-|-----------------------------------------------------|---------------|-----------------|
-| <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
-| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
-| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported  |
-| <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
-| <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
-| <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
+Routers are a core functionality of Glide. Think of routers as a way to handle applicaiton strategy. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
 
+#### Resilience Router Details
+
+Unlike other LLM routers, the resilience router employs a token bucket based failover strategy to reduce the latency on primary model failure. When a failure occurs, the router directs the API call to the secondary model instead of retrying the primary. **The entire service instance keeps track of the number of failures for a specific model.** Once that number surpasses a certain threshold, the model is "disqualified" from serving requests for a temporary period. This proactive approach involves removing the problematic model from the pool as soon as it experiences issues, ensuring that subsequent requests are handled by healthy models only, significantly improving latency during failover compared to alternative methods.
+
+The router comes with a handy and flexible abstraction called error budget. Error budget is a number of errors you allow to tolerate before calling the model unhealthy and is defined in errors/second. As a final measure the router employs retries with backoff. This is done explicitly only when we have no other choice - such as all configured models are down. 
 
 ## Get Started
 
@@ -48,33 +59,12 @@ TBU
 
 Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
 
-## Roadmap
+## Community
 
-### MVP (Coming soon)
-
-- Unified LLM Chat REST API
-- Support for most popular LLM providers
-- Seamless model fallbacking
-- Routing Strategies: Priority, Round Robin, Weighted Round Robin, Least Latency
-
-### Future
-
-- Exact & Semantic Caching
-- Cost Management & Budgeting
-- Language Model Streaming
-- Speech-to-text & Text-to-speech models
-- Embeddings
-- Safety & Control Over Inputs & Outputs
-- Smart Routing
-- Python SDK
-- and many more!
+- Join [Discord](https://discord.gg/z4DmAbJP) for real-time discussion
 
 Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
 if there is a feature or an enhancement you'd like to see in Glide.
-
-## Community
-
-- Join Discord for real-time discussions
 
 ## Contribute
 
