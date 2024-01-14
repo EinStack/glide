@@ -57,17 +57,22 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 	}
 }
 
-func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
-	budget := health.NewErrorBudget(3, health.SEC)
+func TestLangRouter_Priority_PickThirdHealthy(t *testing.T) {
+	budget := health.NewErrorBudget(1, health.SEC)
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}),
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "3"}}),
 			*budget,
 		),
 		providers.NewLangModel(
 			"second",
-			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}}),
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "4"}}),
+			*budget,
+		),
+		providers.NewLangModel(
+			"third",
+			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}),
 			*budget,
 		),
 	}
@@ -77,7 +82,7 @@ func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 		models = append(models, model)
 	}
 
-	expectedModels := []string{"second", "first"}
+	expectedModels := []string{"third", "third"}
 
 	router := LangRouter{
 		routerID:  "test_router",
@@ -101,7 +106,7 @@ func TestLangRouter_Priority_PickSecondHealthy(t *testing.T) {
 }
 
 func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
-	budget := health.NewErrorBudget(3, health.SEC)
+	budget := health.NewErrorBudget(1, health.MILLI)
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
@@ -175,7 +180,7 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 }
 
 func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
-	budget := health.NewErrorBudget(3, health.SEC)
+	budget := health.NewErrorBudget(1, health.SEC)
 	langModels := []providers.LanguageModel{
 		providers.NewLangModel(
 			"first",

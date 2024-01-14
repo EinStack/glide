@@ -40,17 +40,15 @@ type PriorityIterator struct {
 
 func (r PriorityIterator) Next() (providers.Model, error) {
 	models := r.models
-	idx := r.idx.Load()
 
-	for int(idx) < len(models) {
-		idx = r.idx.Load()
+	for idx := int(r.idx.Load()); idx < len(models); idx = int(r.idx.Add(1)) {
 		model := models[idx]
 
-		r.idx.Add(1)
-
-		if model.Healthy() {
-			return model, nil
+		if !model.Healthy() {
+			continue
 		}
+
+		return model, nil
 	}
 
 	return nil, ErrNoHealthyModels

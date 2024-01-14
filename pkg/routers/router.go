@@ -34,7 +34,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		return nil, err
 	}
 
-	routing, err := cfg.BuildRouting(models)
+	strategy, err := cfg.BuildRouting(models)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		Config:    cfg,
 		models:    models,
 		retry:     cfg.BuildRetry(),
-		routing:   routing,
+		routing:   strategy,
 		telemetry: tel,
 	}
 
