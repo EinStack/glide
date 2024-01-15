@@ -77,7 +77,7 @@ routers:
       models:
         - id: openai
           openai:
-            apiKey: ""
+            api_key: ""
 ```
 
 #### Sample API Request to `/chat` endpoint
