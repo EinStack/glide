@@ -55,9 +55,11 @@ The router comes with a handy and flexible abstraction called error budget. Erro
 
 #### Install
 
-TBU
+Coming Soon
 
 #### Set Config YAML
+
+Coming Soon
 
 ```yaml
 telemetry:
@@ -79,6 +81,8 @@ routers:
 ```
 
 #### Sample API Request to `/chat` endpoint
+
+Coming Soon
 
 ```json
 {
