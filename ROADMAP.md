@@ -12,15 +12,16 @@ This document describes the current status and the upcoming milestones of the Gl
 | :---: | :--- | :---: |
 | 🍏 | **Unified Chat Endpoint Support** | 4 / 4 |
 | 🍏 | **Fallback Routing Strategy** | 1 / 1 |
-| 🍎 | **Priority, Round Robin, Weighted Round Robin, Least Latency** | 2 / 4 |
-| 🍎 | **Private Preview** | 3 / 4 |
+| 🍏 | **Priority, Round Robin, Weighted Round Robin, Least Latency** | 2 / 4 |
+| 🍎 | **Documentation** | 1 / 1 |
+| 🍎 | **Private Preview** | 4 / 5 |
 | 🍎 | **Streaming Support** | 0 / 4 |
 | 🍎 | **Embedding Support** | 0 / 4 |
-| 🍎 | **Intelligent Routing** | 0 / 1 |
+| 🍎 | **Caching** | 0 / 1 |
 | 🍎 | **Public Preview** | 0 / 3 |
 | 🍎 | **Python SDK** | 0 / 1 |
 | 🍎 | **STT & TTS Model Support** | 0 / 2 |
-| 🍎 | **Caching** | 0 / 1 |
+| 🍎 | **Intelligent Routing** | 0 / 1 |
 | 🍎 | **General Availability Routing** | 0 / 1 |
 
 ### Private Preview
