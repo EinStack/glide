@@ -24,9 +24,9 @@ model failover, caching, key management, etc.
 |                                                     | Provider      | Support Status  |
 |-----------------------------------------------------|---------------|-----------------|
 | <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
-| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 🏗️ Coming Soon  |
-| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 🏗️ Coming Soon  |
-| <img src="docs/images/octo.png" width="18" />     | OctoML        | 🏗️ Coming Soon  |
+| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
+| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
+| <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
 | <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 
@@ -53,7 +53,47 @@ The router comes with a handy and flexible abstraction called error budget. Erro
 
 ## Get Started
 
+#### Install
+
 TBU
+
+#### Set Config YAML
+
+```yaml
+telemetry:
+  logging:
+    level: debug  # debug, info, warn, error, fatal
+    encoding: console
+
+#api:
+#  http:
+#    ...
+
+routers:
+  language:
+    - id: myrouter
+      models:
+        - id: openai
+          openai:
+            apiKey: ""
+```
+
+#### Sample API Request to /chat endpoint
+
+```json
+{
+ "message":
+      {
+        "role": "user",
+        "content": "Where was it played?"
+      },
+    "messageHistory": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "Who won the world series in 2020?"},
+      {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."}
+    ]
+}
+```
 
 ### API Docs
 
