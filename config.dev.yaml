@@ -11,10 +11,9 @@ routers:
   language:
     - id: myrouter
       models:
-        - id: cohere
-          cohere:
-            apiKey: "LXeDdTbRN17H4tDFTyP6b2E7LeXMM9oCkm1Fd1ig"
         - id: openai
           openai:
-            apiKey: "sk-wz5HbDjqtl9AE1lX"
-        
+            apiKey: ""
+        - id: cohere
+          cohere:
+            apiKey: ""
