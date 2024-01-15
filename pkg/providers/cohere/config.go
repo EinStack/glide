@@ -44,7 +44,7 @@ type Config struct {
 	BaseURL       string        `yaml:"base_url" json:"baseUrl" validate:"required"`
 	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chatEndpoint" validate:"required"`
 	Model         string        `yaml:"model" json:"model" validate:"required"`
-	APIKey        fields.Secret `yaml:"apiKey" json:"-" validate:"required"`
+	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	DefaultParams *Params       `yaml:"default_params,omitempty" json:"defaultParams"`
 }
 

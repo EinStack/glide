@@ -13,7 +13,9 @@ routers:
       models:
         - id: openai
           openai:
-            apiKey: ""
-        - id: cohere
-          cohere:
-            apiKey: ""
+            api_key: ""
+        - id: azureopenai
+          azureopenai:
+            api_key: ""
+            model: ""
+            base_url: ""
