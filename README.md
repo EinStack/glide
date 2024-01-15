@@ -78,7 +78,7 @@ routers:
             apiKey: ""
 ```
 
-#### Sample API Request to /chat endpoint
+#### Sample API Request to `/chat` endpoint
 
 ```json
 {
