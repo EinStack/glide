@@ -6,7 +6,7 @@
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
 [![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
 
-Glide is your go-to cloud-native model gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
+Glide is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
 
 We take all problems of managing and communicating with external providers out of your applications,
 so you can dive into tackling your core challenges.
