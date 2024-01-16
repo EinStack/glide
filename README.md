@@ -14,6 +14,8 @@ so you can dive into tackling your core challenges.
 Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
 model failover, caching, key management, etc. 
 
+Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
+
 > [!Warning]
 > Glide is under active development right now. Give us a star to support the project ✨
 
