@@ -145,7 +145,7 @@
                     "$ref": "#/definitions/azureopenai.Params"
                 },
                 "model": {
-                    "description": "The name of your model deployment. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)",
+                    "description": "This is your deployment name. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)",
                     "type": "string"
                 }
             }

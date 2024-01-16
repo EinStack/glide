@@ -45,7 +45,7 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type Config struct {
 	BaseURL       string        `yaml:"base_url" json:"baseUrl" validate:"required"` // The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)
 	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chatEndpoint"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`            // The name of your model deployment. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)
+	Model         string        `yaml:"model" json:"model" validate:"required"`            // This is your deployment name. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)
 	APIVersion    string        `yaml:"api_version" json:"apiVersion" validate:"required"` // The API version to use for this operation. This follows the YYYY-MM-DD format (e.g 2023-05-15)
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	DefaultParams *Params       `yaml:"default_params,omitempty" json:"defaultParams"`
