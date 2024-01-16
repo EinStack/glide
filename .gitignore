@@ -7,3 +7,4 @@ glide
 tmp
 coverage.txt
 precommit.txt
+.vscode/settings.json
