@@ -31,13 +31,29 @@ routers:
             default_params: # set the default request params
               temperature: 0.1
 
-    - id: openai-fail
-      strategy: priority
+    - id: latency-critical-pool
+      strategy: least_latency
+      models:
+        - id: primary
+          timeout_ms: 200
+          openai:
+            model: gpt-3.5-turbo
+            api_key: ${env:OPENAI_API_KEY}
+        
+        - id: secondary
+          timeout_ms: 200
+          cohere:
+            api_key: ${env:COHERE_API_KEY}
+
+    - id: cohere-openai-ab-test
+      strategy: weighted_round_robin
       models:
         - id: openai
+          weight: 30
           openai:
             api_key: ${env:OPENAI_API_KEY}
         - id: cohere
+          weight: 70
           cohere:
             api_key: ${env:COHERE_API_KEY}
 

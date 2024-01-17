@@ -9,19 +9,13 @@ telemetry:
 
 routers:
   language:
-    - id: openai-pool
-      strategy: priority # round-robin, weighted-round-robin, priority, least-latency, priority, etc.
+    - id: myrouter
       models:
-        - id: primary
-          openai: # cohere, azureopenai, gemini, other providers we support
-            model: gpt-3.5-turbo
-            api_key: ${env:OPENAI_API_KEY}
-            default_params:
-              temperature: 0.1
-
-        - id: secondary
-          cohere:
-            model: command-light
-            apiKey: ${env:COHERE_API_KEY}
-            default_params: # set the default request params
-              temperature: 0.1
+        - id: openai
+          openai:
+            api_key: ""
+        - id: azureopenai
+          azureopenai:
+            api_key: ""
+            model: ""
+            base_url: ""
