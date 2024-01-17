@@ -46,7 +46,7 @@ routers:
             api_key: ${env:COHERE_API_KEY}
 
     - id: cohere-openai-ab-test
-      strategy: weighed_round_robin
+      strategy: weighted_round_robin
       models:
         - id: openai
           openai:
