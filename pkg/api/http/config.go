@@ -13,7 +13,7 @@ type ServerConfig struct {
 
 func DefaultServerConfig() *ServerConfig {
 	return &ServerConfig{
-		HostPort: "127.0.0.1:9099",
+		HostPort: "0.0.0.0:7685", // TODO: Should this be read from config?
 	}
 }
 
