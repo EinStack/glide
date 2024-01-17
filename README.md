@@ -1,7 +1,4 @@
 # Glide: Cloud-Native LLM Gateway for Seamless LLMOps
-<div align="center">
-    <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
-</div>
 
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
 [![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
