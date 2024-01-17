@@ -58,98 +58,82 @@ checksum:
   name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
 
 release:
-    # Repo in which the release will be created.
-    # Default is extracted from the origin remote URL or empty if its private hosted.
-    github:
-      owner: EinStack
-      name: glide
+  # Repo in which the release will be created.
+  # Default is extracted from the origin remote URL or empty if its private hosted.
+  github:
+    owner: EinStack
+    name: glide
 
-    # If set to true, will not auto-publish the release.
-    # Available only for GitHub and Gitea.
-    draft: true
+  # If set to true, will not auto-publish the release.
+  # Available only for GitHub and Gitea.
+  draft: true
 
-    # Whether to remove existing draft releases with the same name before creating
-    # a new one.
-    # Only effective if `draft` is set to true.
-    # Available only for GitHub.
-    #
-    # Since: v1.11
-    replace_existing_draft: true
+  # Whether to remove existing draft releases with the same name before creating
+  # a new one.
+  # Only effective if `draft` is set to true.
+  # Available only for GitHub.
+  #
+  # Since: v1.11
+  replace_existing_draft: true
 
-    # Useful if you want to delay the creation of the tag in the remote.
-    # You can create the tag locally, but not push it, and run GoReleaser.
-    # It'll then set the `target_commitish` portion of the GitHub release to the
-    # value of this field.
-    # Only works on GitHub.
-    #
-    # Default: ''
-    # Since: v1.11
-    # Templates: allowed
-    target_commitish: "{{ .Commit }}"
+  # Useful if you want to delay the creation of the tag in the remote.
+  # You can create the tag locally, but not push it, and run GoReleaser.
+  # It'll then set the `target_commitish` portion of the GitHub release to the
+  # value of this field.
+  # Only works on GitHub.
+  #
+  # Default: ''
+  # Since: v1.11
+  # Templates: allowed
+  target_commitish: "{{ .Commit }}"
 
-    # If set, will create a release discussion in the category specified.
-    #
-    # Warning: do not use categories in the 'Announcement' format.
-    #  Check https://github.com/goreleaser/goreleaser/issues/2304 for more info.
-    #
-    # Default is empty.
-    discussion_category_name: General
+  # If set, will create a release discussion in the category specified.
+  #
+  # Warning: do not use categories in the 'Announcement' format.
+  #  Check https://github.com/goreleaser/goreleaser/issues/2304 for more info.
+  #
+  # Default is empty.
+  discussion_category_name: General
 
-    # If set to auto, will mark the release as not ready for production
-    # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
-    # If set to true, will mark the release as not ready for production.
-    # Default is false.
-    prerelease: auto
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
 
-    # If set to false, will NOT mark the release as "latest".
-    # This prevents it from being shown at the top of the release list,
-    # and from being returned when calling https://api.github.com/repos/OWNER/REPO/releases/latest.
-    #
-    # Available only for GitHub.
-    #
-    # Default is true.
-    # Since: v1.20
-    make_latest: true
+  # If set to false, will NOT mark the release as "latest".
+  # This prevents it from being shown at the top of the release list,
+  # and from being returned when calling https://api.github.com/repos/OWNER/REPO/releases/latest.
+  #
+  # Available only for GitHub.
+  #
+  # Default is true.
+  # Since: v1.20
+  make_latest: true
 
-    # What to do with the release notes in case there the release already exists.
-    #
-    # Valid options are:
-    # - `keep-existing`: keep the existing notes
-    # - `append`: append the current release notes to the existing notes
-    # - `prepend`: prepend the current release notes to the existing notes
-    # - `replace`: replace existing notes
-    #
-    # Default is `keep-existing`.
-    mode: append
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
 
-    # Header for the release body.
-    #
-    # Templates: allowed
-#    header: |
-#      ## Some title ({{ .Date }})
-#
-#      Welcome to this new release!
+  # You can change the name of the release.
+  #
+  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
+  # Templates: allowed
+  name_template: "v{{.Version}}"
 
-    # Footer for the release body.
-    #
-    # Templates: allowed
-#    footer: |
-#      ## Thanks
-#
-#      Those were the changes on {{ .Tag }}!
-
-    # You can change the name of the release.
-    #
-    # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
-    # Templates: allowed
-    name_template: "v{{.Version}}"
-
-    # You can disable this pipe in order to not create the release on any SCM.
-    # Keep in mind that this might also break things that depend on the release
-    # URL, for instance, homebrew taps.
-    #
-    # Templates: allowed (since v1.15)
-    disable: true
+  # You can disable this pipe in order to not create the release on any SCM.
+  # Keep in mind that this might also break things that depend on the release
+  # URL, for instance, homebrew taps.
+  #
+  # Templates: allowed (since v1.15)
+  disable: true
 
 announce:
   discord:
