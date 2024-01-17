@@ -19,6 +19,15 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 > [!Warning]
 > Glide is under active development right now. Give us a star to support the project ✨
 
+## Features
+
+- **Unified REST API** across providers. Avoid vendor lock-in and changes in your applications when you swap model providers.
+- **High availability** and **resiliency** when working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
+- Support **popular LLM providers**.
+- **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
+- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
+- Straightforward and simple maintenance and configuration, centrilized API key control & management & rotation, etc.
+
 ## Supported Providers
 
 ### Large Language Models
@@ -32,46 +41,40 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 | <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 
-## Features
-
-- **Unified REST API** across providers. Avoid vendor lock-in and changes in your applications when you swap model providers.
-- **High availability** and **resiliency** when working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
-- Support **popular LLM providers**.
-- **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
-- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
-- Straightforward and simple maintenance and configuration, centrilized API key control & management & rotation, etc.
-
-## Feature Details
 
 ### Routers
 
-Routers are a core functionality of Glide. Think of routers as a way to handle applicaiton strategy. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
+Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
 
-#### Resilience Router Details
+Detailed info on routers can be found [here](https://backlandlabs.mintlify.app/essentials/routers).
 
-Unlike other LLM routers, the resilience router employs a token bucket based failover strategy to reduce the latency on primary model failure. When a failure occurs, the router directs the API call to the secondary model instead of retrying the primary. **The entire service instance keeps track of the number of failures for a specific model.** Once that number surpasses a certain threshold, the model is "disqualified" from serving requests for a temporary period. This proactive approach involves removing the problematic model from the pool as soon as it experiences issues, ensuring that subsequent requests are handled by healthy models only, significantly improving latency during failover compared to alternative methods.
+#### Available Routers
 
-The router comes with a handy and flexible abstraction called error budget. Error budget is a number of errors you allow to tolerate before calling the model unhealthy and is defined in errors/second. As a final measure the router employs retries with backoff. This is done explicitly only when we have no other choice - such as all configured models are down. 
+| Router      | Description  |
+|---------------|-----------------|
+| Priority        | When the target model fails the request is sent to the secondary model. The entire service instance keeps track of the number of failures for a specific model reducing latency upon model failure  |
+| Least Latency        | This router selects the model with the lowest average latency over time. If the least latency model becomes unhealthy, it will pick the second the best, etc.  |
+| Round Robin        | Split traffic equally among specified models. Great for A/B testing.  |
+| Weighted Round Robin | Split traffic based on weights. For example, 70% of traffic to Model A and 30% of traffic to Model B.  |
+
 
 ## Get Started
 
 #### Install
 
-Coming Soon
+The easiest way to deploy Glide is to build from source.
 
-#### Set Config YAML
+Steps to build a container with Docker can be found [here](https://backlandlabs.mintlify.app/introduction#install-and-deploy).
 
-Coming Soon
+#### Set Configuration File
+
+Find detailed information on configuration [here](https://backlandlabs.mintlify.app/essentials/configuration).
 
 ```yaml
 telemetry:
   logging:
     level: debug  # debug, info, warn, error, fatal
     encoding: console
-
-#api:
-#  http:
-#    ...
 
 routers:
   language:
@@ -84,7 +87,7 @@ routers:
 
 #### Sample API Request to `/chat` endpoint
 
-Coming Soon
+See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction) for more details.
 
 ```json
 {
