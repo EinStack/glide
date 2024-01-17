@@ -106,7 +106,7 @@ See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction
 
 ### API Docs
 
-Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Once deployed, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
 
 ## Community
 
