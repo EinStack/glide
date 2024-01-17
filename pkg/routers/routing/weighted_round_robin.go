@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	WeightedRoundRobin Strategy = "weighed-round-robin"
+	WeightedRoundRobin Strategy = "weighed_round_robin"
 )
 
 type Weighter struct {
