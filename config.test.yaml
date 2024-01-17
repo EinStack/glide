@@ -27,7 +27,7 @@ routers:
         - id: secondary
           cohere:
             model: command-light
-            apiKey: ${env:COHERE_API_KEY}
+            api_key: ${env:COHERE_API_KEY}
             default_params: # set the default request params
               temperature: 0.1
 
@@ -46,14 +46,12 @@ routers:
             api_key: ${env:COHERE_API_KEY}
 
     - id: cohere-openai-ab-test
-      strategy: weighted_round_robin
+      strategy: round_robin
       models:
         - id: openai
-          weight: 30
           openai:
             api_key: ${env:OPENAI_API_KEY}
         - id: cohere
-          weight: 70
           cohere:
             api_key: ${env:COHERE_API_KEY}
 
