@@ -42,6 +42,8 @@ builds:
         goarch: arm
       - goos: linux
         goarch: arm
+      - goos: linux
+        goarch: '386'
 
 changelog:
   skip: true
