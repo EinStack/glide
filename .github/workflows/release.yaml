@@ -1,26 +1,24 @@
 name: release
 
 on:
-  workflow_run:
-    workflows:
-      - lint
-      - vuln
+  push:
+    tags:
+      - "*"
 # TODO: uncomment the lines below after tests
 #    branches:
 #      - main
-    types:
-      - completed
 
 permissions:
   contents: write
   packages: write
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yaml
+  vuln:
+    uses: ./.github/workflows/vuln.yaml
   release:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      startsWith(github.event.workflow_run.head_branch, 'refs/tags/')
+    needs: [lint, vuln]
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go

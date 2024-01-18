@@ -1,6 +1,8 @@
 name: vuln
 
 on:
+  workflow_call:
+
   push:
     branches:  ["main", "develop"]
     tags:
