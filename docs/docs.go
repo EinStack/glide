@@ -125,6 +125,57 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "anthropic.Config": {
+            "type": "object",
+            "required": [
+                "baseUrl",
+                "chatEndpoint",
+                "model"
+            ],
+            "properties": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/anthropic.Params"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "anthropic.Params": {
+            "type": "object",
+            "properties": {
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "system": {
+                    "type": "string"
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "top_k": {
+                    "type": "integer"
+                },
+                "top_p": {
+                    "type": "number"
+                }
+            }
+        },
         "azureopenai.Config": {
             "type": "object",
             "required": [
@@ -458,6 +509,9 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
+                "anthropic": {
+                    "$ref": "#/definitions/anthropic.Config"
+                },
                 "azureopenai": {
                     "$ref": "#/definitions/azureopenai.Config"
                 },

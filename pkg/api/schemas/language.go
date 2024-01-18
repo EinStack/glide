@@ -31,7 +31,7 @@ type UnifiedChatResponse struct {
 // ProviderResponse is the unified response from the provider.
 
 type ProviderResponse struct {
-	SystemID map[string]string `json:"responseId,omitempty"`
+	SystemID   map[string]string `json:"responseId,omitempty"`
 	Message    ChatMessage       `json:"message"`
 	TokenCount TokenCount        `json:"tokenCount"`
 }
@@ -146,16 +146,16 @@ type ConnectorsResponse struct {
 
 // Anthropic Chat Response
 type AnthropicChatCompletion struct {
-    ID           string     `json:"id"`
-    Type         string     `json:"type"`
-    Model        string     `json:"model"`
-    Role         string     `json:"role"`
-    Content      []Content  `json:"content"`
-    StopReason   string     `json:"stop_reason"`
-    StopSequence string       `json:"stop_sequence"`
+	ID           string    `json:"id"`
+	Type         string    `json:"type"`
+	Model        string    `json:"model"`
+	Role         string    `json:"role"`
+	Content      []Content `json:"content"`
+	StopReason   string    `json:"stop_reason"`
+	StopSequence string    `json:"stop_sequence"`
 }
 
 type Content struct {
-    Type string `json:"type"`
-    Text string `json:"text"`
+	Type string `json:"type"`
+	Text string `json:"text"`
 }

@@ -1,5 +1,39 @@
 basePath: /
 definitions:
+  anthropic.Config:
+    properties:
+      baseUrl:
+        type: string
+      chatEndpoint:
+        type: string
+      defaultParams:
+        $ref: '#/definitions/anthropic.Params'
+      model:
+        type: string
+    required:
+    - baseUrl
+    - chatEndpoint
+    - model
+    type: object
+  anthropic.Params:
+    properties:
+      max_tokens:
+        type: integer
+      metadata:
+        type: string
+      stop:
+        items:
+          type: string
+        type: array
+      system:
+        type: string
+      temperature:
+        type: number
+      top_k:
+        type: integer
+      top_p:
+        type: number
+    type: object
   azureopenai.Config:
     properties:
       apiVersion:
@@ -224,6 +258,8 @@ definitions:
     type: object
   providers.LangModelConfig:
     properties:
+      anthropic:
+        $ref: '#/definitions/anthropic.Config'
       azureopenai:
         $ref: '#/definitions/azureopenai.Config'
       client:

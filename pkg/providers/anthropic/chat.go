@@ -37,15 +37,15 @@ type ChatRequest struct {
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:       cfg.Model,
-		System:      cfg.DefaultParams.System,
-		Temperature: cfg.DefaultParams.Temperature,
-		TopP:        cfg.DefaultParams.TopP,
-		TopK:        cfg.DefaultParams.TopK,
-		MaxTokens:   cfg.DefaultParams.MaxTokens,
-		Metadata:    cfg.DefaultParams.Metadata,
+		Model:         cfg.Model,
+		System:        cfg.DefaultParams.System,
+		Temperature:   cfg.DefaultParams.Temperature,
+		TopP:          cfg.DefaultParams.TopP,
+		TopK:          cfg.DefaultParams.TopK,
+		MaxTokens:     cfg.DefaultParams.MaxTokens,
+		Metadata:      cfg.DefaultParams.Metadata,
 		StopSequences: cfg.DefaultParams.StopSequences,
-		Stream:      false, // unsupported right now
+		Stream:        false, // unsupported right now
 	}
 }
 
