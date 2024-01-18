@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestOpenAIClient_ChatRequest(t *testing.T) {
+func TestAnthropicClient_ChatRequest(t *testing.T) {
 	// Anthropic Messages API: https://docs.anthropic.com/claude/reference/messages_post
 	AnthropicMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawPayload, _ := io.ReadAll(r.Body)
@@ -65,4 +65,40 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "msg_013Zva2CMHLNnXjNJJKqJ2EF", response.ID)
+}
+
+func TestAnthropicClient_BadChatRequest(t *testing.T) {
+	// Anthropic Messages API: https://docs.anthropic.com/claude/reference/messages_post
+	AnthropicMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Return a non-OK status code
+		w.WriteHeader(http.StatusBadRequest)
+	})
+
+	AnthropicServer := httptest.NewServer(AnthropicMock)
+	defer AnthropicServer.Close()
+
+	ctx := context.Background()
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+
+	providerCfg.BaseURL = AnthropicServer.URL
+
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
+
+	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
+		Role:    "human",
+		Content: "What's the biggest animal?",
+	}}
+
+	response, err := client.Chat(ctx, &request)
+
+	// Assert that an error is returned
+	require.Error(t, err)
+
+	// Assert that the error message contains the expected substring
+	require.Contains(t, err.Error(), "provider is not available")
+
+	// Assert that the response is nil
+	require.Nil(t, response)
 }
