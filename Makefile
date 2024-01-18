@@ -39,7 +39,7 @@ vuln: install-checkers ## Check for vulnerabilities
 run: ## Run Glide
 	@go run -ldflags $(LDFLAGS_COMMON) main.go -c ./config.dev.yaml
 
-build: ## Build Glide
+build-bin: ## Build Glide
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide
 
 test: ## Run tests
