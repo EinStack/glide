@@ -50,12 +50,6 @@ checksum:
   name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
 
 release:
-  # Repo in which the release will be created.
-  # Default is extracted from the origin remote URL or empty if its private hosted.
-  github:
-    owner: EinStack
-    name: glide
-
   # If set to true, will not auto-publish the release.
   # Available only for GitHub and Gitea.
   draft: true
@@ -119,13 +113,6 @@ release:
   # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
   # Templates: allowed
   name_template: "v{{.Version}}"
-
-  # You can disable this pipe in order to not create the release on any SCM.
-  # Keep in mind that this might also break things that depend on the release
-  # URL, for instance, homebrew taps.
-  #
-  # Templates: allowed (since v1.15)
-  disable: true
 
 # TODO: uncomment the lines below after tests
 #announce:
