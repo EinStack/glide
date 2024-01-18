@@ -13,7 +13,6 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
       - freebsd
     goarch:
       - amd64
@@ -30,10 +29,6 @@ builds:
       - goos: freebsd
         goarch: arm
       - goos: freebsd
-        goarch: arm64
-      - goos: windows
-        goarch: arm
-      - goos: windows
         goarch: arm64
       - goos: linux
         goarch: arm
