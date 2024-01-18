@@ -18,15 +18,12 @@ builds:
       - openbsd
     goarch:
       - amd64
-      - '386'
       - arm
       - arm64
     goarm:
       - '7'
       - '6'
     ignore:
-      - goos: darwin
-        goarch: '386'
       - goos: openbsd
         goarch: arm
       - goos: openbsd
@@ -39,8 +36,6 @@ builds:
         goarch: arm
       - goos: linux
         goarch: arm
-      - goos: linux
-        goarch: '386'
 
 changelog:
   skip: true
