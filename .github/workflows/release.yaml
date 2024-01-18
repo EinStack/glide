@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows:
       - lint
-      - security
+      - vuln
 # TODO: uncomment the lines below after tests
 #    branches:
 #      - main
