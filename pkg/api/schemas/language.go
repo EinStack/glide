@@ -31,7 +31,7 @@ type UnifiedChatResponse struct {
 // ProviderResponse is the unified response from the provider.
 
 type ProviderResponse struct {
-	ResponseID map[string]string `json:"responseId,omitempty"`
+	SystemID map[string]string `json:"responseId,omitempty"`
 	Message    ChatMessage       `json:"message"`
 	TokenCount TokenCount        `json:"tokenCount"`
 }
@@ -53,7 +53,7 @@ type ChatMessage struct {
 	Name string `json:"name,omitempty"`
 }
 
-// OpenAI Chat Response
+// OpenAI Chat Response (also used by Azure OpenAI and OctoML)
 // TODO: Should this live here?
 type OpenAIChatCompletion struct {
 	ID                string   `json:"id"`
@@ -142,4 +142,20 @@ type ConnectorsResponse struct {
 	UserAccessToken string            `json:"user_access_token"`
 	ContOnFail      string            `json:"continue_on_failure"`
 	Options         map[string]string `json:"options"`
+}
+
+// Anthropic Chat Response
+type AnthropicChatCompletion struct {
+    ID           string     `json:"id"`
+    Type         string     `json:"type"`
+    Model        string     `json:"model"`
+    Role         string     `json:"role"`
+    Content      []Content  `json:"content"`
+    StopReason   string     `json:"stop_reason"`
+    StopSequence string       `json:"stop_sequence"`
+}
+
+type Content struct {
+    Type string `json:"type"`
+    Text string `json:"text"`
 }
