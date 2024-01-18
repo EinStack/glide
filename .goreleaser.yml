@@ -21,7 +21,6 @@ builds:
       - '386'
       - arm
       - arm64
-      - ppc64le
       - riscv64
     goarm:
       - '7'
