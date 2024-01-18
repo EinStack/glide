@@ -135,22 +135,23 @@ release:
   # Templates: allowed (since v1.15)
   disable: true
 
-announce:
-  discord:
-    # Whether its enabled or not.
-    enabled: true
-
-    # Message template to use while publishing.
-    #
-    # Templates: allowed
-    message_template: '📦 Glide {{.Tag}} is out! Check it out at {{ .ReleaseURL }}'
-
-    # Set author of the embed.
-    author: 'EinStack'
-
-    # Color code of the embed. You have to use decimal numeral system, not hexadecimal.
-    # Default: '3888754' (the grey-ish from GoReleaser)
-    color: ''
-
-    # URL to an image to use as the icon for the embed.
-    icon_url: ''
+# TODO: uncomment the lines below after tests
+#announce:
+#  discord:
+#    # Whether its enabled or not.
+#    enabled: true
+#
+#    # Message template to use while publishing.
+#    #
+#    # Templates: allowed
+#    message_template: '📦 Glide {{.Tag}} is out! Check it out at {{ .ReleaseURL }}'
+#
+#    # Set author of the embed.
+#    author: 'EinStack'
+#
+#    # Color code of the embed. You have to use decimal numeral system, not hexadecimal.
+#    # Default: '3888754' (the grey-ish from GoReleaser)
+#    color: ''
+#
+#    # URL to an image to use as the icon for the embed.
+#    icon_url: ''
