@@ -38,9 +38,13 @@ type ChatRequest struct {
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
 		Model:       cfg.Model,
+		System:      cfg.DefaultParams.System,
 		Temperature: cfg.DefaultParams.Temperature,
 		TopP:        cfg.DefaultParams.TopP,
+		TopK:        cfg.DefaultParams.TopK,
 		MaxTokens:   cfg.DefaultParams.MaxTokens,
+		Metadata:    cfg.DefaultParams.Metadata,
+		StopSequences: cfg.DefaultParams.StopSequences,
 		Stream:      false, // unsupported right now
 	}
 }

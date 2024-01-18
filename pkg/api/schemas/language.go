@@ -113,7 +113,7 @@ type Citation struct {
 	Start      int      `json:"start"`
 	End        int      `json:"end"`
 	Text       string   `json:"text"`
-	DocumentID []string `json:"documentId"`
+	DocumentID []string `json:"document_id"`
 }
 
 type Documents struct {
@@ -123,11 +123,11 @@ type Documents struct {
 
 type SearchQuery struct {
 	Text         string `json:"text"`
-	GenerationID string `json:"generationId"`
+	GenerationID string `json:"generation_id"`
 }
 
 type SearchResults struct {
-	SearchQuery []SearchQueryObject  `json:"searchQuery"`
+	SearchQuery []SearchQueryObject  `json:"search_query"`
 	Connectors  []ConnectorsResponse `json:"connectors"`
 	DocumentID  []string             `json:"documentId"`
 }
