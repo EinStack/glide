@@ -1,0 +1,12 @@
+{
+  "model": "claude-instant-1.2",
+  "messages": [
+    {
+      "role": "human",
+      "content": "What's the biggest animal?"
+    }
+  ],
+  "temperature": 1,
+  "top_p": 0,
+  "max_tokens": 100
+}

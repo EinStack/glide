@@ -18,7 +18,7 @@ func (m *ResponseMock) Resp() *schemas.UnifiedChatResponse {
 	return &schemas.UnifiedChatResponse{
 		ID: "rsp0001",
 		ModelResponse: schemas.ProviderResponse{
-			ResponseID: map[string]string{
+			SystemID: map[string]string{
 				"ID": "0001",
 			},
 			Message: schemas.ChatMessage{

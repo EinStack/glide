@@ -1,4 +1,4 @@
-package octoml
+package anthropic
 
 import (
 	"bytes"
@@ -20,30 +20,32 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
-// ChatRequest is an octoml-specific request schema
+// ChatRequest is an Anthropic-specific request schema
 type ChatRequest struct {
-	Model            string        `json:"model"`
-	Messages         []ChatMessage `json:"messages"`
-	Temperature      float64       `json:"temperature,omitempty"`
-	TopP             float64       `json:"top_p,omitempty"`
-	MaxTokens        int           `json:"max_tokens,omitempty"`
-	StopWords        []string      `json:"stop,omitempty"`
-	Stream           bool          `json:"stream,omitempty"`
-	FrequencyPenalty int           `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int           `json:"presence_penalty,omitempty"`
+	Model         string        `json:"model"`
+	Messages      []ChatMessage `json:"messages"`
+	System        string        `json:"system,omitempty"`
+	Temperature   float64       `json:"temperature,omitempty"`
+	TopP          float64       `json:"top_p,omitempty"`
+	TopK          int           `json:"top_k,omitempty"`
+	MaxTokens     int           `json:"max_tokens,omitempty"`
+	Stream        bool          `json:"stream,omitempty"`
+	Metadata      *string       `json:"metadata,omitempty"`
+	StopSequences []string      `json:"stop_sequences,omitempty"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
-		Temperature:      cfg.DefaultParams.Temperature,
-		TopP:             cfg.DefaultParams.TopP,
-		MaxTokens:        cfg.DefaultParams.MaxTokens,
-		StopWords:        cfg.DefaultParams.StopWords,
-		Stream:           false, // unsupported right now
-		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
-		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
+		Model:         cfg.Model,
+		System:        cfg.DefaultParams.System,
+		Temperature:   cfg.DefaultParams.Temperature,
+		TopP:          cfg.DefaultParams.TopP,
+		TopK:          cfg.DefaultParams.TopK,
+		MaxTokens:     cfg.DefaultParams.MaxTokens,
+		Metadata:      cfg.DefaultParams.Metadata,
+		StopSequences: cfg.DefaultParams.StopSequences,
+		Stream:        false, // unsupported right now
 	}
 }
 
@@ -60,7 +62,7 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []Ch
 	return messages
 }
 
-// Chat sends a chat request to the specified octoml model.
+// Chat sends a chat request to the specified anthropic model.
 func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
@@ -89,12 +91,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal octoml chat request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal anthropic chat request payload: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		return nil, fmt.Errorf("unable to create octoml chat request: %w", err)
+		return nil, fmt.Errorf("unable to create anthropic chat request: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
@@ -102,14 +104,14 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"octoml chat request",
+		"anthropic chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send octoml chat request: %w", err)
+		return nil, fmt.Errorf("failed to send anthropic chat request: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -117,11 +119,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read octoml chat response", zap.Error(err))
+			c.telemetry.Logger.Error("failed to read anthropic chat response", zap.Error(err))
 		}
 
 		c.telemetry.Logger.Error(
-			"octoml chat request failed",
+			"anthropic chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
@@ -147,39 +149,39 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read octoml chat response", zap.Error(err))
+		c.telemetry.Logger.Error("failed to read anthropic chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Parse the response JSON
-	var openAICompletion schemas.OpenAIChatCompletion // Octo uses the same response schema as OpenAI
+	var anthropicCompletion schemas.AnthropicChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(bodyBytes, &anthropicCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("failed to parse anthropic chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
+		ID:       anthropicCompletion.ID,
+		Created:  int(time.Now().UTC().Unix()), // not provided by anthropic
 		Provider: providerName,
-		Model:    openAICompletion.Model,
+		Model:    anthropicCompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
+				"system_fingerprint": anthropicCompletion.ID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
+				Role:    anthropicCompletion.Content[0].Type,
+				Content: anthropicCompletion.Content[0].Text,
 				Name:    "",
 			},
 			TokenCount: schemas.TokenCount{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   0, // Anthropic doesn't send prompt tokens
+				ResponseTokens: 0,
+				TotalTokens:    0,
 			},
 		},
 	}

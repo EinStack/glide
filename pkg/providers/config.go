@@ -10,6 +10,7 @@ import (
 
 	"glide/pkg/routers/health"
 
+	"glide/pkg/providers/anthropic"
 	"glide/pkg/providers/azureopenai"
 	"glide/pkg/providers/cohere"
 	"glide/pkg/providers/octoml"
@@ -30,6 +31,7 @@ type LangModelConfig struct {
 	AzureOpenAI *azureopenai.Config   `yaml:"azureopenai" json:"azureopenai"`
 	Cohere      *cohere.Config        `yaml:"cohere" json:"cohere"`
 	OctoML      *octoml.Config        `yaml:"octoml" json:"octoml"`
+	Anthropic   *anthropic.Config     `yaml:"anthropic" json:"anthropic"`
 	// Add other providers like
 	// Cohere *cohere.Config
 	// Anthropic *anthropic.Config
@@ -46,47 +48,31 @@ func DefaultLangModelConfig() *LangModelConfig {
 }
 
 func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) {
-	var client LangModelProvider
-
-	var err error
-
-	if c.OpenAI != nil {
-		client, err = openai.NewClient(c.OpenAI, c.Client, tel)
-
-		if err != nil {
-			return nil, fmt.Errorf("error initing openai client: %v", err)
-		}
+	client, err := c.initClient(tel)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing client: %v", err)
 	}
 
-	if c.AzureOpenAI != nil {
-		client, err = azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+	return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency, c.Weight), nil
+}
 
-		if err != nil {
-			return nil, fmt.Errorf("error initing azureopenai client: %v", err)
-		}
+// initClient initializes the language model client based on the provided configuration.
+// It takes a telemetry object as input and returns a LangModelProvider and an error.
+func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvider, error) {
+	switch {
+	case c.OpenAI != nil:
+		return openai.NewClient(c.OpenAI, c.Client, tel)
+	case c.AzureOpenAI != nil:
+		return azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+	case c.Cohere != nil:
+		return cohere.NewClient(c.Cohere, c.Client, tel)
+	case c.OctoML != nil:
+		return octoml.NewClient(c.OctoML, c.Client, tel)
+	case c.Anthropic != nil:
+		return anthropic.NewClient(c.Anthropic, c.Client, tel)
+	default:
+		return nil, ErrProviderNotFound
 	}
-
-	if c.Cohere != nil {
-		client, err = cohere.NewClient(c.Cohere, c.Client, tel)
-
-		if err != nil {
-			return nil, fmt.Errorf("error initing openai client: %v", err)
-		}
-	}
-
-	if c.OctoML != nil {
-		client, err = octoml.NewClient(c.OctoML, c.Client, tel)
-
-		if err != nil {
-			return nil, fmt.Errorf("error initing openai client: %v", err)
-		}
-	}
-
-	if client != nil {
-		return NewLangModel(c.ID, client, *c.ErrorBudget, *c.Latency, c.Weight), nil
-	}
-
-	return nil, ErrProviderNotFound
 }
 
 func (c *LangModelConfig) validateOneProvider() error {
@@ -105,6 +91,10 @@ func (c *LangModelConfig) validateOneProvider() error {
 	}
 
 	if c.OctoML != nil {
+		providersConfigured++
+	}
+
+	if c.Anthropic != nil {
 		providersConfigured++
 	}
 

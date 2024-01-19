@@ -182,7 +182,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Model:    openAICompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
-			ResponseID: map[string]string{
+			SystemID: map[string]string{
 				"system_fingerprint": openAICompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
