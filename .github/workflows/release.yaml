@@ -4,9 +4,9 @@ on:
   push:
     tags:
       - "*"
-# TODO: uncomment the lines below after tests
-#    branches:
-#      - main
+
+    branches:
+      - main
 
 permissions:
   contents: write
