@@ -13,13 +13,6 @@ permissions:
   packages: write
 
 jobs:
-  build_time:
-    outputs:
-      BUILD_TIME: ${{ steps.build_time.outputs.BUILD_TIME }}
-    runs-on: ubuntu-latest
-    steps:
-      - id: build_time
-        run: echo "BUILD_TIME=$(date --rfc-3339=seconds)" >> $GITHUB_OUTPUT
 # TODO: uncomment after tests
 #  lint:
 #    uses: ./.github/workflows/lint.yaml
@@ -66,15 +59,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-# TODO: uncomment after tests
-#      - name: login into Github Container Registry
-#        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: login into Github Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: build ${{ matrix.image }} image
         working-directory: ./images
         env:
           BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
-        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$BUILD_TIME" make ${{ matrix.image }}
+        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
         working-directory: ./images
