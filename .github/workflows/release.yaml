@@ -62,11 +62,10 @@ jobs:
 #      - name: login into Github Container Registry
 #        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
-      - name: go to images
-        run: cd images
-
       - name: build ${{ matrix.image }} image
+        working-directory: ./images
         run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$(date --rfc-3339=date)" make ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
+        working-directory: ./images
         run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
