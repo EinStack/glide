@@ -19,14 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: build_time
-        run: echo 'BUILD_TIME=date -u +"%Y-%m-%dT%H:%M:%SZ"' >> "$GITHUB_OUTPUT"
+        run: echo 'BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")' >> "$GITHUB_OUTPUT"
 # TODO: uncomment after tests
 #  lint:
 #    uses: ./.github/workflows/lint.yaml
 #  vuln:
 #    uses: ./.github/workflows/vuln.yaml
   release:
-#    needs:
+    needs:
+      - build_time
 #      - lint
 #      - vuln
     runs-on: ubuntu-latest
