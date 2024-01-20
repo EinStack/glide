@@ -18,7 +18,9 @@ jobs:
   vuln:
     uses: ./.github/workflows/vuln.yaml
   release:
-    needs: [lint, vuln]
+    needs:
+      - lint
+      - vuln
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
@@ -39,3 +41,28 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  images:
+    strategy:
+      matrix:
+        image:
+          - alpine
+          - ubuntu
+          - distroless
+          - redhat
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: login into Github Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: build ${{ matrix.image }} image
+        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$(date --rfc-3339=date)" make ${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to Github Container Registry
+        run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
