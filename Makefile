@@ -1,7 +1,7 @@
 CHECKER_BIN=$(PWD)/tmp/bin
 VERSION_PACKAGE := glide/pkg
 COMMIT ?= $(shell git describe --dirty --long --always --abbrev=15)
-BUILD_DATE ?= $(shell date +"%Y-%m-%d %H:%M:%S")
+BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 VERSION ?= "latest"
 
 LDFLAGS_COMMON := "-s -w -X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).version=$(VERSION) -X $(VERSION_PACKAGE).buildDate=$(BUILD_DATE)"
@@ -39,7 +39,7 @@ vuln: install-checkers ## Check for vulnerabilities
 run: ## Run Glide
 	@go run -ldflags $(LDFLAGS_COMMON) main.go -c ./config.dev.yaml
 
-build-bin: ## Build Glide
+build: ## Build Glide
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide
 
 test: ## Run tests
