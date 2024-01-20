@@ -1,11 +1,12 @@
-VENDOR ?= "EinStack"
-PROJECT ?= "Glide"
-SOURCE ?= "https://github.com/EinStack/glide"
-LICENSE ?= "Apache-2.0"
+VENDOR ?= einstack
+PROJECT ?= Glide
+SOURCE ?= https://github.com/EinStack/glide
+LICENSE ?= Apache-2.0
 DESCRIPTION ?= "A lightweight, cloud-native LLM gateway"
-REPOSITORY ?= "einstack/glide"
+REPOSITORY ?= einstack/glide
 
-VERSION ?= "dev"
+VERSION ?= dev
+RC_PART ?= rc
 COMMIT ?= $(shell git describe --dirty --always --abbrev=15)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
@@ -14,7 +15,7 @@ BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 # Test images via: docker run --rm --platform linux/amd64 -i einstack/glide:dev-alpine --config config.dev.yaml
 
 alpine: ## Make an alpine-based image
-	@echo "🛠️ Build alpine image.."
+	@echo "🛠️ Build alpine image ($(VERSION)).."
 	@docker build .. -t $(REPOSITORY):$(VERSION)-alpine -f alpine.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -29,7 +30,7 @@ alpine: ## Make an alpine-based image
 	--label=org.opencontainers.image.description=$(DESCRIPTION)
 
 ubuntu: ## Make an ubuntu-based image
-	@echo "🛠️ Build ubuntu image.."
+	@echo "🛠️ Build ubuntu image ($(VERSION)).."
 	@docker build .. -t $(REPOSITORY):$(VERSION)-ubuntu -f ubuntu.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -44,7 +45,7 @@ ubuntu: ## Make an ubuntu-based image
 	--label=org.opencontainers.image.description=$(DESCRIPTION)
 
 distroless: ## Make an distroless-based image
-	@echo "🛠️ Build distroless image.."
+	@echo "🛠️ Build distroless image ($(VERSION)).."
 	@docker build .. -t $(REPOSITORY):$(VERSION)-distroless -f distroless.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -59,7 +60,7 @@ distroless: ## Make an distroless-based image
 	--label=org.opencontainers.image.description=$(DESCRIPTION)
 
 redhat: ## Make an Red Hat-based image
-	@echo "🛠️ Build Red Hat image.."
+	@echo "🛠️ Build Red Hat image ($(VERSION)).."
 	@docker build .. -t $(REPOSITORY):$(VERSION)-redhat -f redhat.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -78,11 +79,15 @@ all: alpine ubuntu distroless redhat
 publish-ghcr-%: ## Push images to Github Registry
 	@echo "🚚Pushing the $* image to Github Registry.."
 	@docker tag $(REPOSITORY):$(VERSION)-$* ghcr.io/$(REPOSITORY):$(VERSION)-$*
-	@docker tag $(REPOSITORY):$(VERSION)-$* ghcr.io/$(REPOSITORY):latest-$*
+	@echo "- pushing ghcr.io/$(REPOSITORY):$(VERSION)-$*"
 	@docker push ghcr.io/$(REPOSITORY):$(VERSION)-$*
-	@docker push ghcr.io/$(REPOSITORY):latest-$*
-	@ifeq ($*, "alpine") \
-		docker tag $(REPOSITORY):$(VERSION)-$* ghcr.io/$(REPOSITORY):latest \
-		docker push ghcr.io/$(REPOSITORY):latest \
-    endif
-
+	@echo $(VERSION) | grep -q $(RC_PART) || { \
+		docker tag $(REPOSITORY):$(VERSION)-$* ghcr.io/$(REPOSITORY):latest-$*; \
+		echo "- pushing ghcr.io/$(REPOSITORY):latest-$*"; \
+		docker push ghcr.io/$(REPOSITORY):latest-$*; \
+		if [ "$*" = "alpine" ]; then \
+			docker tag $(REPOSITORY):$(VERSION)-$* ghcr.io/$(REPOSITORY):latest; \
+			echo "- pushing ghcr.io/$(REPOSITORY):latest"; \
+			docker push ghcr.io/$(REPOSITORY):latest; \
+		fi; \
+	}
