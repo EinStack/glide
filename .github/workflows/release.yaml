@@ -19,8 +19,7 @@ jobs:
 #  vuln:
 #    uses: ./.github/workflows/vuln.yaml
   release:
-    needs:
-      - build_time
+#    needs:
 #      - lint
 #      - vuln
     runs-on: ubuntu-latest
