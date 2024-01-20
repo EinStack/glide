@@ -13,15 +13,14 @@ permissions:
   packages: write
 
 jobs:
-# TODO: uncomment after tests
-#  lint:
-#    uses: ./.github/workflows/lint.yaml
-#  vuln:
-#    uses: ./.github/workflows/vuln.yaml
+  lint:
+    uses: ./.github/workflows/lint.yaml
+  vuln:
+    uses: ./.github/workflows/vuln.yaml
   release:
-#    needs:
-#      - lint
-#      - vuln
+    needs:
+      - lint
+      - vuln
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
@@ -34,14 +33,14 @@ jobs:
         with:
           fetch-depth: 0
 
-#      - name: Run GoReleaser
-#        uses: goreleaser/goreleaser-action@v5
-#        with:
-#          distribution: goreleaser
-#          version: latest
-#          args: release --clean
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   images:
     strategy:
       matrix:
