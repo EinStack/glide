@@ -16,6 +16,8 @@ BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 alpine: ## Make an alpine-based image
 	@echo "🛠️ Build alpine image ($(VERSION)).."
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
 	@docker build .. -t $(REPOSITORY):$(VERSION)-alpine -f alpine.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -31,6 +33,8 @@ alpine: ## Make an alpine-based image
 
 ubuntu: ## Make an ubuntu-based image
 	@echo "🛠️ Build ubuntu image ($(VERSION)).."
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
 	@docker build .. -t $(REPOSITORY):$(VERSION)-ubuntu -f ubuntu.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -46,6 +50,8 @@ ubuntu: ## Make an ubuntu-based image
 
 distroless: ## Make an distroless-based image
 	@echo "🛠️ Build distroless image ($(VERSION)).."
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
 	@docker build .. -t $(REPOSITORY):$(VERSION)-distroless -f distroless.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \
@@ -61,6 +67,8 @@ distroless: ## Make an distroless-based image
 
 redhat: ## Make an Red Hat-based image
 	@echo "🛠️ Build Red Hat image ($(VERSION)).."
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
 	@docker build .. -t $(REPOSITORY):$(VERSION)-redhat -f redhat.Dockerfile \
 	--build-arg VERSION="$(VERSION)" \
 	--build-arg COMMIT="$(COMMIT)" \

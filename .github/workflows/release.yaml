@@ -34,14 +34,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Run GoReleaser
+#        uses: goreleaser/goreleaser-action@v5
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: release --clean
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   images:
     strategy:
       matrix:
@@ -61,6 +61,9 @@ jobs:
 # TODO: uncomment after tests
 #      - name: login into Github Container Registry
 #        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: go to images
+        run: cd images
 
       - name: build ${{ matrix.image }} image
         run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$(date --rfc-3339=date)" make ${{ matrix.image }}
