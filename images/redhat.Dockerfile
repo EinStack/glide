@@ -5,6 +5,8 @@ ARG VERSION
 ARG COMMIT
 ARG BUILD_DATE
 
+ENV GOOS=linux
+
 WORKDIR /build
 
 COPY . /build/
@@ -14,6 +16,6 @@ RUN go build -ldflags "-s -w -X glide/pkg.version=$VERSION -X glide/pkg.commitSh
 FROM redhat/ubi8-micro:8.9 as release
 
 WORKDIR /bin
-COPY --from=build /build/glide /bin/
+COPY --from=build /build/dist/glide /bin/
 
 ENTRYPOINT ["/bin/glide"]

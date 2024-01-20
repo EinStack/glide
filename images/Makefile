@@ -11,6 +11,7 @@ BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 
 # OCI Labels: https://specs.opencontainers.org/image-spec/annotations
+# Test images via: docker run --rm --platform linux/amd64 -i einstack/glide:dev-alpine --config config.dev.yaml
 
 alpine: ## Make an alpine-based image
 	@echo "🛠️ Build alpine image.."
@@ -71,6 +72,8 @@ redhat: ## Make an Red Hat-based image
 	--label=org.opencontainers.image.source=$(SOURCE) \
 	--label=org.opencontainers.image.licenses=$(LICENSE) \
 	--label=org.opencontainers.image.description=$(DESCRIPTION)
+
+all: alpine ubuntu distroless redhat
 
 publish-ghcr-%: ## Push images to Github Registry
 	@echo "🚚Pushing the $* image to Github Registry.."
