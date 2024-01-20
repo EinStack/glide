@@ -13,6 +13,13 @@ permissions:
   packages: write
 
 jobs:
+  build_time:
+    outputs:
+      BUILD_TIME: ${{ steps.build_time.outputs.BUILD_TIME }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: build_time
+        run: echo 'BUILD_TIME=date -u +"%Y-%m-%dT%H:%M:%SZ"' >> "$GITHUB_OUTPUT"
 # TODO: uncomment after tests
 #  lint:
 #    uses: ./.github/workflows/lint.yaml
@@ -64,7 +71,9 @@ jobs:
 
       - name: build ${{ matrix.image }} image
         working-directory: ./images
-        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$(date --rfc-3339=date)" make ${{ matrix.image }}
+        env:
+          BUILD_TIME: ${{needs.build_time.outputs.build_time}}
+        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$BUILD_TIME" make ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
         working-directory: ./images
