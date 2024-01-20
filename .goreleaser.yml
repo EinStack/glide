@@ -177,7 +177,7 @@ brews:
     folder: Formula
 
     # Caveats for the user of your binary.
-    caveats: "How to use this binary"
+    caveats: ""
 
     # Your app's homepage.
     homepage: "https://github.com/EinStack/glide"
@@ -226,11 +226,6 @@ brews:
       # Templates: allowed
       branch: main
 
-      # Optionally a token can be provided, if it differs from the token
-      # provided to GoReleaser
-      # Templates: allowed
-      token: "{{ .Env.BREW_TAP_TOKEN }}"
-
       # Clone, create the file, commit and push, to a regular Git repository.
       #
       # Notice that this will only have any effect if the given URL is not
@@ -242,6 +237,8 @@ brews:
         #
         # Templates: allowed
         url: 'git@github.com:EinStack/homebrew-tap.git'
+
+        private_key: '{{ .Env.BREW_TAP_PRIVATE_KEY }}'
 
 announce:
   discord:
