@@ -73,7 +73,7 @@ jobs:
       - name: build ${{ matrix.image }} image
         working-directory: ./images
         env:
-          BUILD_TIME: ${{needs.build_time.outputs.build_time}}
+          BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
         run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$BUILD_TIME" make ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
