@@ -114,6 +114,135 @@ release:
   # Templates: allowed
   name_template: "v{{.Version}}"
 
+brews:
+  -
+    # Name of the recipe
+    #
+    # Default: ProjectName
+    # Templates: allowed
+    name: glide
+
+    # Alternative names for the current recipe.
+    #
+    # Useful if you want to publish a versioned formula as well, so users can
+    # more easily downgrade.
+    #
+    # Since: v1.20 (pro)
+    # Templates: allowed
+    alternative_names:
+      - myproject@{{ .Version }}
+      - myproject@{{ .Major }}
+      - myproject@{{ .Major }}{{ .Minor }}
+
+    # GOARM to specify which 32-bit arm version to use if there are multiple
+    # versions from the build section. Brew formulas support only one 32-bit
+    # version.
+    #
+    # Default: 6
+    goarm: 6
+
+    # GOAMD64 to specify which amd64 version to use if there are multiple
+    # versions from the build section.
+    #
+    # Default: v1
+    goamd64: v1
+
+    # NOTE: make sure the url_template, the token and given repo (github or
+    # gitlab) owner and name are from the same kind.
+    # We will probably unify this in the next major version like it is
+    # done with scoop.
+
+    # URL which is determined by the given Token (github, gitlab or gitea).
+    #
+    # Default depends on the client.
+    # Templates: allowed
+    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Allows you to set a custom download strategy. Note that you'll need
+    # to implement the strategy and add it to your tap repository.
+    # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
+    download_strategy: CurlDownloadStrategy
+
+    # Git author used to commit to the repository.
+    commit_author:
+      name: Release Bot
+      email: roman.glushko.m@gmail.com
+
+    # The project name and current git tag are used in the format string.
+    #
+    # Templates: allowed
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+
+    # Folder inside the repository to put the formula.
+    folder: Formula
+
+    # Caveats for the user of your binary.
+    caveats: "How to use this binary"
+
+    # Your app's homepage.
+    homepage: "https://github.com/EinStack/glide"
+
+    # Your app's description.
+    #
+    # Templates: allowed
+    description: "A Lightweight, Cloud-Native LLM Gateway"
+
+    # SPDX identifier of your app's license.
+    license: "Apache-2.0"
+
+    # Setting this will prevent goreleaser to actually try to commit the updated
+    # formula - instead, the formula file will be stored on the dist folder only,
+    # leaving the responsibility of publishing it to the user.
+    # If set to auto, the release will not be uploaded to the homebrew tap
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #
+    # Templates: allowed
+    skip_upload: auto
+
+    # Custom block for brew.
+    # Can be used to specify alternate downloads for devel or head releases.
+    custom_block: |
+      head "https://github.com/some/package.git"
+      ...
+
+    # Packages your package depends on.
+    dependencies: []
+
+    # Repository to push the generated files to.
+    repository:
+      # Repository owner.
+      #
+      # Templates: allowed
+      owner: EinStack
+
+      # Repository name.
+      #
+      # Templates: allowed
+      name: homebrew-tap
+
+      # Optionally a branch can be provided.
+      #
+      # Default: default repository branch
+      # Templates: allowed
+      branch: main
+
+      # Optionally a token can be provided, if it differs from the token
+      # provided to GoReleaser
+      # Templates: allowed
+      token: "{{ .Env.BREW_TAP_TOKEN }}"
+
+      # Clone, create the file, commit and push, to a regular Git repository.
+      #
+      # Notice that this will only have any effect if the given URL is not
+      # empty.
+      #
+      # Since: v1.18
+      git:
+        # The Git URL to push.
+        #
+        # Templates: allowed
+        url: 'git@github.com:EinStack/homebrew-tap.git'
+
 announce:
   discord:
     # Whether its enabled or not.
