@@ -58,8 +58,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: login into Github Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+#      - name: login into Github Container Registry
+#        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: build ${{ matrix.image }} image
         run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") BUILD_DATE="$(date --rfc-3339=date)" make ${{ matrix.image }}
