@@ -127,7 +127,12 @@ func getPayload(request []schemas.UnifiedChatRequest, model string) *schemas.Uni
 
 	for _, req := range request {
 		if req.Model == model {
-			payload = &req
+			newPayload := schemas.UnifiedChatRequest{
+				Model:          req.Model,
+				Message:        req.Message,
+				MessageHistory: req.MessageHistory,
+			}
+			payload = &newPayload
 			modelExists = true
 
 			break
@@ -135,7 +140,12 @@ func getPayload(request []schemas.UnifiedChatRequest, model string) *schemas.Uni
 	}
 
 	if !modelExists {
-		payload = &(request)[0]
+		newPayload := schemas.UnifiedChatRequest{
+			Model:          request[0].Model,
+			Message:        request[0].Message,
+			MessageHistory: request[0].MessageHistory,
+		}
+		payload = &newPayload
 	}
 
 	return payload

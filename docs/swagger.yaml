@@ -363,6 +363,8 @@ definitions:
         items:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
+      model:
+        type: string
     type: object
   schemas.UnifiedChatResponse:
     properties:

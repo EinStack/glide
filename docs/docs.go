@@ -658,6 +658,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
+                },
+                "model": {
+                    "type": "string"
                 }
             }
         },
