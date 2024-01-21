@@ -503,6 +503,7 @@
         "providers.LangModelConfig": {
             "type": "object",
             "required": [
+                "enabled",
                 "id"
             ],
             "properties": {
@@ -536,7 +537,12 @@
                     "$ref": "#/definitions/octoml.Config"
                 },
                 "openai": {
-                    "$ref": "#/definitions/openai.Config"
+                    "description": "Add other providers like",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/openai.Config"
+                        }
+                    ]
                 },
                 "weight": {
                     "type": "integer"
@@ -563,8 +569,11 @@
         "routers.LangRouterConfig": {
             "type": "object",
             "required": [
+                "enabled",
                 "models",
-                "routers"
+                "retry",
+                "routers",
+                "strategy"
             ],
             "properties": {
                 "enabled": {

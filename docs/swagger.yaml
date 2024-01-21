@@ -279,10 +279,13 @@ definitions:
       octoml:
         $ref: '#/definitions/octoml.Config'
       openai:
-        $ref: '#/definitions/openai.Config'
+        allOf:
+        - $ref: '#/definitions/openai.Config'
+        description: Add other providers like
       weight:
         type: integer
     required:
+    - enabled
     - id
     type: object
   retry.ExpRetryConfig:
@@ -317,8 +320,11 @@ definitions:
         description: strategy on picking the next model to serve the request
         type: string
     required:
+    - enabled
     - models
+    - retry
     - routers
+    - strategy
     type: object
   schemas.ChatMessage:
     properties:
