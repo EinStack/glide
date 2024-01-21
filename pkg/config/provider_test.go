@@ -43,6 +43,7 @@ func TestConfigProvider_InvalidConfigLoaded(t *testing.T) {
 	}{
 		{"empty telemetry", "./testdata/provider.telnil.yaml"},
 		{"empty logging", "./testdata/provider.loggingnil.yaml"},
+		{"no lang routers", "./testdata/provider.nolangrouters.yaml"},
 	}
 
 	for _, tt := range tests {
@@ -51,7 +52,7 @@ func TestConfigProvider_InvalidConfigLoaded(t *testing.T) {
 			_, err := configProvider.Load(tt.configFile)
 
 			require.Error(t, err)
-			require.ErrorContains(t, err, "failed to validate config file")
+			require.ErrorContains(t, err, "invalid config file")
 		})
 	}
 }
