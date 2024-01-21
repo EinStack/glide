@@ -21,20 +21,18 @@ import (
 var ErrProviderNotFound = errors.New("provider not found")
 
 type LangModelConfig struct {
-	ID          string                `yaml:"id" json:"id" validate:"required"` // Model instance ID (unique in scope of the router)
-	Enabled     bool                  `yaml:"enabled" json:"enabled"`           // Is the model enabled?
+	ID          string                `yaml:"id" json:"id" validate:"required"`           // Model instance ID (unique in scope of the router)
+	Enabled     bool                  `yaml:"enabled" json:"enabled" validate:"required"` // Is the model enabled?
 	ErrorBudget *health.ErrorBudget   `yaml:"error_budget" json:"error_budget" swaggertype:"primitive,string"`
 	Latency     *latency.Config       `yaml:"latency" json:"latency"`
 	Weight      int                   `yaml:"weight" json:"weight"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
-	OpenAI      *openai.Config        `yaml:"openai" json:"openai"`
-	AzureOpenAI *azureopenai.Config   `yaml:"azureopenai" json:"azureopenai"`
-	Cohere      *cohere.Config        `yaml:"cohere" json:"cohere"`
-	OctoML      *octoml.Config        `yaml:"octoml" json:"octoml"`
-	Anthropic   *anthropic.Config     `yaml:"anthropic" json:"anthropic"`
 	// Add other providers like
-	// Cohere *cohere.Config
-	// Anthropic *anthropic.Config
+	OpenAI      *openai.Config      `yaml:"openai" json:"openai"`
+	AzureOpenAI *azureopenai.Config `yaml:"azureopenai" json:"azureopenai"`
+	Cohere      *cohere.Config      `yaml:"cohere" json:"cohere"`
+	OctoML      *octoml.Config      `yaml:"octoml" json:"octoml"`
+	Anthropic   *anthropic.Config   `yaml:"anthropic" json:"anthropic"`
 }
 
 func DefaultLangModelConfig() *LangModelConfig {

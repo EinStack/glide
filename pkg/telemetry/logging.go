@@ -9,10 +9,10 @@ import (
 
 type LogConfig struct {
 	// Level is the minimum enabled logging level.
-	Level zapcore.Level `yaml:"level"`
+	Level zapcore.Level `yaml:"level" validate:"required"`
 
 	// Encoding sets the logger's encoding. Valid values are "json", "console"
-	Encoding string `yaml:"encoding"`
+	Encoding string `yaml:"encoding" validate:"required"`
 
 	// DisableCaller stops annotating logs with the calling function's file name and line number.
 	// By default, all logs are annotated.
