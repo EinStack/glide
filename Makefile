@@ -1,9 +1,10 @@
 CHECKER_BIN=$(PWD)/tmp/bin
 VERSION_PACKAGE := glide/pkg
 COMMIT ?= $(shell git describe --dirty --long --always --abbrev=15)
-VERSION ?= "latest" # TODO: pull/pass a real version
+BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+VERSION ?= "latest"
 
-LDFLAGS_COMMON := "-s -w -X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).version=$(VERSION)"
+LDFLAGS_COMMON := "-s -w -X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).version=$(VERSION) -X $(VERSION_PACKAGE).buildDate=$(BUILD_DATE)"
 
 .PHONY: help
 

@@ -20,11 +20,11 @@ const (
 // ErrorBudget parses human-friendly error budget representation and return it as errors & update rate pair
 // Error budgets could be set as a string in the following format: "10/s", "5/ms", "100/m" "1500/h"
 type ErrorBudget struct {
-	budget int
+	budget uint
 	unit   Unit
 }
 
-func NewErrorBudget(budget int, unit Unit) *ErrorBudget {
+func NewErrorBudget(budget uint, unit Unit) *ErrorBudget {
 	return &ErrorBudget{
 		budget: budget,
 		unit:   unit,
@@ -39,13 +39,13 @@ func DefaultErrorBudget() *ErrorBudget {
 }
 
 // Budget defines max allows number of errors per given time period
-func (b *ErrorBudget) Budget() uint64 {
-	return uint64(b.budget)
+func (b *ErrorBudget) Budget() uint {
+	return b.budget
 }
 
 // TimePerTokenMicro defines how much time do we need to wait to get one error token recovered (in microseconds)
-func (b *ErrorBudget) TimePerTokenMicro() uint64 {
-	return uint64(b.unitToMicro(b.unit) / b.budget)
+func (b *ErrorBudget) TimePerTokenMicro() uint {
+	return b.unitToMicro(b.unit) / b.budget
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -76,13 +76,13 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 		return fmt.Errorf("invalid unit (supported: ms, s, m, h)")
 	}
 
-	b.budget = budget
+	b.budget = uint(budget)
 	b.unit = unit
 
 	return nil
 }
 
-func (b *ErrorBudget) unitToMicro(unit Unit) int {
+func (b *ErrorBudget) unitToMicro(unit Unit) uint {
 	switch unit {
 	case MILLI:
 		return 1_000 // 1 ms = 1000 microseconds
@@ -99,5 +99,5 @@ func (b *ErrorBudget) unitToMicro(unit Unit) int {
 
 // String returns the ID string representation as "type[/name]" format.
 func (b *ErrorBudget) String() string {
-	return strconv.Itoa(b.budget) + budgetSeparator + string(b.unit)
+	return strconv.Itoa(int(b.budget)) + budgetSeparator + string(b.unit)
 }

@@ -1,11 +1,17 @@
-name: security
+name: vuln
 
 on:
+  workflow_call:
+
   push:
-    branches: [main, develop]
+    branches:
+      - "main"
+      - "develop"
 
   pull_request:
-    branches: [main, develop]
+    branches:
+      - "main"
+      - "develop"
 
   schedule:
     - cron: '0 10 * * 1' # run "At 10:00 on Monday"

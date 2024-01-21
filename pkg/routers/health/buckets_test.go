@@ -10,7 +10,7 @@ import (
 
 func TestTokenBucket_Take(t *testing.T) {
 	bucketSize := 10
-	bucket := NewTokenBucket(1000, uint64(bucketSize))
+	bucket := NewTokenBucket(1000, uint(bucketSize))
 
 	for i := 0; i < bucketSize-1; i++ {
 		require.NoError(t, bucket.Take(1))
