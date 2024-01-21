@@ -122,18 +122,6 @@ brews:
     # Templates: allowed
     name: glide
 
-    # Alternative names for the current recipe.
-    #
-    # Useful if you want to publish a versioned formula as well, so users can
-    # more easily downgrade.
-    #
-    # Since: v1.20 (pro)
-    # Templates: allowed
-    alternative_names:
-      - myproject@{{ .Version }}
-      - myproject@{{ .Major }}
-      - myproject@{{ .Major }}{{ .Minor }}
-
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Brew formulas support only one 32-bit
     # version.
