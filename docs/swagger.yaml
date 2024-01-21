@@ -308,6 +308,7 @@ definitions:
         description: the list of models that could handle requests
         items:
           $ref: '#/definitions/providers.LangModelConfig'
+        minItems: 1
         type: array
       retry:
         allOf:

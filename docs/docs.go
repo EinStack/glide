@@ -586,6 +586,7 @@ const docTemplate = `{
                 "models": {
                     "description": "the list of models that could handle requests",
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/providers.LangModelConfig"
                     }
