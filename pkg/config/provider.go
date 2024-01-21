@@ -71,7 +71,7 @@ func (p *Provider) Load(configPath string) (*Provider, error) {
 		for _, err := range err.(validator.ValidationErrors) {
 			namespace := strings.TrimLeft(err.Namespace(), "Config.")
 
-			errors = append(errors, fmt.Sprintf("- ❌ %v field is %v, %v provided", namespace, err.Tag(), err.Value()))
+			errors = append(errors, fmt.Sprintf("- ❌ %v field is %v, \"%v\" provided", namespace, err.Tag(), err.Value()))
 		}
 
 		// from here you can create your own error messages in whatever language you wish
