@@ -91,7 +91,7 @@ See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction
 
 ```json
 {
- "model": "gpt-3.5-turbo", # this is not required but cna be used to specify different prompts to different models
+ "model": "gpt-3.5-turbo", # this is not required but can be used to specify different prompts to different models
  "message":
       {
         "role": "user",

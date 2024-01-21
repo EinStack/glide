@@ -75,18 +75,7 @@ func (r *LangRouter) Chat(ctx context.Context, request []schemas.UnifiedChatRequ
 
 			langModel := model.(providers.LanguageModel)
 
-			var payload *schemas.UnifiedChatRequest
-
-			if len(request) == 1 {
-				payload = &(request)[0]
-			} else {
-				for _, req := range request {
-					if req.Model == langModel.ID() {
-						payload = &req
-						break
-					}
-				}
-			}
+			payload := getPayload(request, langModel.ID())
 
 			resp, err := langModel.Chat(ctx, payload)
 			if err != nil {
@@ -121,4 +110,33 @@ func (r *LangRouter) Chat(ctx context.Context, request []schemas.UnifiedChatRequ
 	r.telemetry.Logger.Error("no model was available to handle request", zap.String("routerID", r.ID()))
 
 	return nil, ErrNoModelAvailable
+}
+
+// getPayload returns the payload based on the mathcing model from the given chat requests.
+//
+// It takes a slice of UnifiedChatRequest and a model string as parameters.
+// Returns a pointer to UnifiedChatRequest.
+func getPayload(request []schemas.UnifiedChatRequest, model string) *schemas.UnifiedChatRequest {
+	if len(request) == 1 {
+		return &(request)[0]
+	}
+
+	modelExists := false
+
+	var payload *schemas.UnifiedChatRequest
+
+	for _, req := range request {
+		if req.Model == model {
+			payload = &req
+			modelExists = true
+
+			break
+		}
+	}
+
+	if !modelExists {
+		payload = &(request)[0]
+	}
+
+	return payload
 }
