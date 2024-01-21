@@ -91,6 +91,10 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 		return nil, errs
 	}
 
+	if len(models) == 0 {
+		return nil, fmt.Errorf("router \"%v\" must have at least one active model, zero defined", c.ID)
+	}
+
 	if len(models) == 1 {
 		tel.Logger.Warn(
 			"router has only one active model defined. "+
