@@ -62,32 +62,35 @@ Detailed info on routers can be found [here](https://backlandlabs.mintlify.app/e
 
 ## Get Started
 
-#### Install
+### Installation
 
-The easiest way to deploy Glide is to build from source.
+The easiest way to deploy Glide is to our [demo repository](https://github.com/EinStack/glide-demo.git) and [docker-compose](https://docs.docker.com/compose/).
 
-Steps to build a container with Docker can be found [here](https://backlandlabs.mintlify.app/introduction#install-and-deploy).
+### 1. Clone the demo repository
 
-#### Set Configuration File
-
-Find detailed information on configuration [here](https://backlandlabs.mintlify.app/essentials/configuration).
-
-```yaml
-telemetry:
-  logging:
-    level: debug  # debug, info, warn, error, fatal
-    encoding: console
-
-routers:
-  language:
-    - id: myrouter
-      models:
-        - id: openai
-          openai:
-            api_key: ""
+```bash
+git clone https://github.com/EinStack/glide-demo.git
 ```
 
-#### Sample API Request to `/chat` endpoint
+### 2. Init Configs
+
+The demo repository comes with a basic config. Additionally, you need to init your secrets by running:
+
+```bash
+make init # from the demo root
+```
+
+This will create the `secrets` directory with one `.OPENAI_API_KEY` file that you need to put your key to.
+
+### 3. Start Glide
+
+After that, just use docker compose via this command to start your demo environment:
+
+```bash
+make up
+```
+
+### 4. Sample API Request to `/chat` endpoint
 
 See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction) for more details.
 
@@ -108,7 +111,11 @@ See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction
 
 ### API Docs
 
-Once deployed, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+
+That's it 🙌
+
+Use [our documentation](https://backlandlabs.mintlify.app/introduction) to further learn about Glide capabilities and configs.
 
 ---
 
