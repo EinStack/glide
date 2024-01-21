@@ -1,0 +1,17 @@
+telemetry:
+  logging:
+    level: INFO  # DEBUG, INFO, WARNING, ERROR, FATAL
+    encoding: json # console, json
+
+routers:
+  language:
+    - id: simplerouter
+      strategy: priority
+      models:
+        - id: openai-boring
+          openai:
+            model: gpt-3.5-turbo
+            api_key: "ABSC@124"
+            default_params:
+              temperature: 0
+

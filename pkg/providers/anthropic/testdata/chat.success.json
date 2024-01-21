@@ -1,0 +1,14 @@
+{
+  "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
+  "type": "message",
+  "model": "claude-2.1",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "Blue is often seen as a calming and soothing color."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null
+}

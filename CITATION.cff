@@ -1,0 +1,28 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Glide
+message: 'A lightweight, cloud-Native model gateway'
+type: software
+authors:
+  - given-names: Roman
+    family-names: Hlushko
+    email: roman.glushko.m@gmail.com
+  - given-names: Max
+    family-names: Krueger
+repository-code: 'https://github.com/EinStack/glide'
+repository-artifact: 'https://github.com/EinStack/glide/packages'
+abstract: >-
+  Glide is your go-to cloud-native model gateway, delivering
+  high-performance production-ready LLMLOps in a
+  lightweight, all-in-one service.
+keywords:
+  - generative-ai
+  - llmops
+  - mlops
+  - gateway
+  - infrastructure
+  - distributed-system
+  - llms
+license: Apache-2.0

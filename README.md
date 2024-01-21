@@ -1,4 +1,7 @@
 # Glide: Cloud-Native LLM Gateway for Seamless LLMOps
+<div align="center">
+    <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
+</div>
 
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
 [![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
@@ -37,7 +40,7 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 | <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
 | <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
 | <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
-| <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 🏗️ Coming Soon |
+| <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 👍  Supported  |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 
 

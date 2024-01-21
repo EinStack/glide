@@ -1,0 +1,12 @@
+{
+  "model": "mistral-7b-instruct-fp16",
+  "messages": [
+    {
+      "role": "human",
+      "content": "What's the biggest animal?"
+    }
+  ],
+  "temperature": 0.8,
+  "top_p": 1,
+  "max_tokens": 100
+}

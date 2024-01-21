@@ -1,0 +1,21 @@
+telemetry:
+  logging:
+    level: debug  # debug, info, warn, error, fatal
+    encoding: console
+
+#api:
+#  http:
+#    ...
+
+routers:
+  language:
+    - id: myrouter
+      models:
+        - id: openai
+          openai:
+            api_key: ""
+        - id: azureopenai
+          azureopenai:
+            api_key: ""
+            model: ""
+            base_url: ""

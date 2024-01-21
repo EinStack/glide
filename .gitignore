@@ -1,0 +1,10 @@
+.idea
+dist
+.env
+config.yaml
+bin
+glide
+tmp
+coverage.txt
+precommit.txt
+.vscode/settings.json

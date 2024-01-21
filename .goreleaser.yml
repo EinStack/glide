@@ -1,0 +1,261 @@
+project_name: glide
+
+before:
+  hooks:
+    - go generate
+
+builds:
+  - binary: glide
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X glide/pkg.version={{.Tag}} -X glide/pkg.commitSha={{.ShortCommit}} -X glide/pkg.buildDate={{.Date}}
+    goos:
+      - linux
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - '7'
+      - '6'
+    ignore:
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
+      - goos: freebsd
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+      - goos: linux
+        goarch: arm
+
+changelog:
+  skip: true
+
+archives:
+  - id: glide
+    name_template: '{{ .ProjectName }}_v{{ .Tag }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+
+checksum:
+  name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
+
+release:
+  # If set to true, will not auto-publish the release.
+  # Available only for GitHub and Gitea.
+  draft: true
+
+  # Whether to remove existing draft releases with the same name before creating
+  # a new one.
+  # Only effective if `draft` is set to true.
+  # Available only for GitHub.
+  #
+  # Since: v1.11
+  replace_existing_draft: true
+
+  # Useful if you want to delay the creation of the tag in the remote.
+  # You can create the tag locally, but not push it, and run GoReleaser.
+  # It'll then set the `target_commitish` portion of the GitHub release to the
+  # value of this field.
+  # Only works on GitHub.
+  #
+  # Default: ''
+  # Since: v1.11
+  # Templates: allowed
+  target_commitish: "{{ .Commit }}"
+
+  # If set, will create a release discussion in the category specified.
+  #
+  # Warning: do not use categories in the 'Announcement' format.
+  #  Check https://github.com/goreleaser/goreleaser/issues/2304 for more info.
+  #
+  # Default is empty.
+  discussion_category_name: Releases
+
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
+
+  # If set to false, will NOT mark the release as "latest".
+  # This prevents it from being shown at the top of the release list,
+  # and from being returned when calling https://api.github.com/repos/OWNER/REPO/releases/latest.
+  #
+  # Available only for GitHub.
+  #
+  # Default is true.
+  # Since: v1.20
+  make_latest: true
+
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
+  # You can change the name of the release.
+  #
+  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
+  # Templates: allowed
+  name_template: "v{{.Version}}"
+
+brews:
+  -
+    # Name of the recipe
+    #
+    # Default: ProjectName
+    # Templates: allowed
+    name: glide
+
+    # Alternative names for the current recipe.
+    #
+    # Useful if you want to publish a versioned formula as well, so users can
+    # more easily downgrade.
+    #
+    # Since: v1.20 (pro)
+    # Templates: allowed
+    alternative_names:
+      - myproject@{{ .Version }}
+      - myproject@{{ .Major }}
+      - myproject@{{ .Major }}{{ .Minor }}
+
+    # GOARM to specify which 32-bit arm version to use if there are multiple
+    # versions from the build section. Brew formulas support only one 32-bit
+    # version.
+    #
+    # Default: 6
+    goarm: 6
+
+    # GOAMD64 to specify which amd64 version to use if there are multiple
+    # versions from the build section.
+    #
+    # Default: v1
+    goamd64: v1
+
+    # NOTE: make sure the url_template, the token and given repo (github or
+    # gitlab) owner and name are from the same kind.
+    # We will probably unify this in the next major version like it is
+    # done with scoop.
+
+    # URL which is determined by the given Token (github, gitlab or gitea).
+    #
+    # Default depends on the client.
+    # Templates: allowed
+    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Allows you to set a custom download strategy. Note that you'll need
+    # to implement the strategy and add it to your tap repository.
+    # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
+    download_strategy: CurlDownloadStrategy
+
+    # Git author used to commit to the repository.
+    commit_author:
+      name: Release Bot
+      email: roman.glushko.m@gmail.com
+
+    # The project name and current git tag are used in the format string.
+    #
+    # Templates: allowed
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+
+    # Folder inside the repository to put the formula.
+    folder: Formula
+
+    # Caveats for the user of your binary.
+    caveats: ""
+
+    # Your app's homepage.
+    homepage: "https://github.com/EinStack/glide"
+
+    # Your app's description.
+    #
+    # Templates: allowed
+    description: "A Lightweight, Cloud-Native LLM Gateway"
+
+    # SPDX identifier of your app's license.
+    license: "Apache-2.0"
+
+    # Setting this will prevent goreleaser to actually try to commit the updated
+    # formula - instead, the formula file will be stored on the dist folder only,
+    # leaving the responsibility of publishing it to the user.
+    # If set to auto, the release will not be uploaded to the homebrew tap
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #
+    # Templates: allowed
+    skip_upload: auto
+
+    # Custom block for brew.
+    # Can be used to specify alternate downloads for devel or head releases.
+    custom_block: |
+      head "https://github.com/some/package.git"
+      ...
+
+    # Packages your package depends on.
+    dependencies: []
+
+    # Repository to push the generated files to.
+    repository:
+      # Repository owner.
+      #
+      # Templates: allowed
+      owner: EinStack
+
+      # Repository name.
+      #
+      # Templates: allowed
+      name: homebrew-tap
+
+      # Optionally a branch can be provided.
+      #
+      # Default: default repository branch
+      # Templates: allowed
+      branch: main
+
+      # Clone, create the file, commit and push, to a regular Git repository.
+      #
+      # Notice that this will only have any effect if the given URL is not
+      # empty.
+      #
+      # Since: v1.18
+      git:
+        # The Git URL to push.
+        #
+        # Templates: allowed
+        url: 'git@github.com:EinStack/homebrew-tap.git'
+
+        private_key: '{{ .Env.BREW_TAP_PRIVATE_KEY }}'
+
+announce:
+  discord:
+    # Whether its enabled or not.
+    enabled: true
+
+    # Message template to use while publishing.
+    #
+    # Templates: allowed
+    message_template: '📦 Glide {{.Tag}} is out! Check it out at {{ .ReleaseURL }}'
+
+    # Set author of the embed.
+    author: 'EinStack'
+
+    # Color code of the embed. You have to use decimal numeral system, not hexadecimal.
+    # Default: '3888754' (the grey-ish from GoReleaser)
+    color: ''
+
+    # URL to an image to use as the icon for the embed.
+    icon_url: ''
