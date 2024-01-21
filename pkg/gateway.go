@@ -41,6 +41,9 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 		return nil, err
 	}
 
+	tel.Logger.Info("🐦Glide is starting up", zap.String("version", FullVersion))
+	tel.Logger.Debug("config loaded successfully:\n" + configProvider.GetStr())
+
 	routerManager, err := routers.NewManager(&cfg.Routers, tel)
 	if err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ import (
 )
 
 type Config struct {
-	LanguageRouters []LangRouterConfig `yaml:"language" validate:"required"` // the list of language routers
+	LanguageRouters []LangRouterConfig `yaml:"language" validate:"required,min=1"` // the list of language routers
 }
 
 func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, error) {
@@ -52,7 +52,7 @@ type LangRouterConfig struct {
 	Enabled         bool                        `yaml:"enabled" json:"enabled" validate:"required"`                                  // Is router enabled?
 	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry" validate:"required"`                                      // retry when no healthy model is available to router
 	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy" swaggertype:"primitive,string" validate:"required"` // strategy on picking the next model to serve the request
-	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"`                                    // the list of models that could handle requests
+	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required,min=1"`                              // the list of models that could handle requests
 }
 
 // BuildModels creates LanguageModel slice out of the given config
@@ -89,6 +89,15 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 
 	if errs != nil {
 		return nil, errs
+	}
+
+	if len(models) == 1 {
+		tel.Logger.Warn(
+			"router has only one active model defined. "+
+				"This is not recommended for production setups. "+
+				"Define at least a few models to leverage resiliency logic Glide provides",
+			zap.String("router", c.ID),
+		)
 	}
 
 	return models, nil
