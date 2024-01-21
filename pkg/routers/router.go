@@ -55,7 +55,7 @@ func (r *LangRouter) ID() string {
 	return r.routerID
 }
 
-func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (r *LangRouter) Chat(ctx context.Context, request []schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	if len(r.models) == 0 {
 		return nil, ErrNoModels
 	}
@@ -75,7 +75,20 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 
 			langModel := model.(providers.LanguageModel)
 
-			resp, err := langModel.Chat(ctx, request)
+			var payload *schemas.UnifiedChatRequest
+
+			if len(request) == 1 {
+				payload = &(request)[0]
+			} else {
+				for _, req := range request {
+					if req.Model == langModel.ID() {
+						payload = &req
+						break
+					}
+				}
+			}
+
+			resp, err := langModel.Chat(ctx, payload)
 			if err != nil {
 				r.telemetry.Logger.Warn(
 					"lang model failed processing chat request",
