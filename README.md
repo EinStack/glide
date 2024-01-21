@@ -110,6 +110,46 @@ See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction
 
 Once deployed, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
 
+---
+
+Other ways to install Glide are available:
+
+### Homebrew (MacOS)
+
+Coming Soon
+
+### Snapcraft (Linux)
+
+Coming Soon
+
+### Docker Images
+
+Glide provides official images in our [GHCR](https://github.com/EinStack/glide/pkgs/container/glide):
+
+- Alpine 3.19:
+```bash
+docker pull ghcr.io/einstack/glide:latest-alpine 
+```
+
+- Ubuntu 22.04 LTS:
+```bash
+docker pull ghcr.io/einstack/glide:latest-ubuntu
+```
+
+- Google Distroless (non-root)
+```bash
+docker pull ghcr.io/einstack/glide:latest-distroless
+```
+
+- RedHat UBI 8.9 Micro
+```bash
+docker pull ghcr.io/einstack/glide:latest-redhat
+```
+
+### Helm Chart
+
+Coming Soon
+
 ## Community
 
 - Join [Discord](https://discord.gg/z4DmAbJP) for real-time discussion
