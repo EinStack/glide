@@ -16,11 +16,18 @@ type Config struct {
 }
 
 func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, error) {
+	seenIDs := make(map[string]bool, len(c.LanguageRouters))
 	routers := make([]*LangRouter, 0, len(c.LanguageRouters))
 
 	var errs error
 
 	for idx, routerConfig := range c.LanguageRouters {
+		if _, ok := seenIDs[routerConfig.ID]; ok {
+			return nil, fmt.Errorf("ID \"%v\" is specified for more than one router while each ID should be unique", routerConfig.ID)
+		}
+
+		seenIDs[routerConfig.ID] = true
+
 		if !routerConfig.Enabled {
 			tel.Logger.Info("router is disabled, skipping", zap.String("routerID", routerConfig.ID))
 			continue
@@ -59,9 +66,20 @@ type LangRouterConfig struct {
 func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.LanguageModel, error) {
 	var errs error
 
+	seenIDs := make(map[string]bool, len(c.Models))
 	models := make([]providers.LanguageModel, 0, len(c.Models))
 
 	for _, modelConfig := range c.Models {
+		if _, ok := seenIDs[modelConfig.ID]; ok {
+			return nil, fmt.Errorf(
+				"ID \"%v\" is specified for more than one model in router \"%v\", while it should be unique in scope of that pool",
+				modelConfig.ID,
+				c.ID,
+			)
+		}
+
+		seenIDs[modelConfig.ID] = true
+
 		if !modelConfig.Enabled {
 			tel.Logger.Info(
 				"model is disabled, skipping",

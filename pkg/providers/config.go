@@ -28,11 +28,11 @@ type LangModelConfig struct {
 	Weight      int                   `yaml:"weight" json:"weight"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
 	// Add other providers like
-	OpenAI      *openai.Config      `yaml:"openai" json:"openai"`
-	AzureOpenAI *azureopenai.Config `yaml:"azureopenai" json:"azureopenai"`
-	Cohere      *cohere.Config      `yaml:"cohere" json:"cohere"`
-	OctoML      *octoml.Config      `yaml:"octoml" json:"octoml"`
-	Anthropic   *anthropic.Config   `yaml:"anthropic" json:"anthropic"`
+	OpenAI      *openai.Config      `yaml:"openai,omitempty" json:"openai,omitempty"`
+	AzureOpenAI *azureopenai.Config `yaml:"azureopenai,omitempty" json:"azureopenai,omitempty"`
+	Cohere      *cohere.Config      `yaml:"cohere,omitempty" json:"cohere,omitempty"`
+	OctoML      *octoml.Config      `yaml:"octoml,omitempty" json:"octoml,omitempty"`
+	Anthropic   *anthropic.Config   `yaml:"anthropic,omitempty" json:"anthropic,omitempty"`
 }
 
 func DefaultLangModelConfig() *LangModelConfig {
