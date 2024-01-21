@@ -37,7 +37,7 @@ func TestConfigProvider_ValidConfigLoaded(t *testing.T) {
 }
 
 func TestConfigProvider_InvalidConfigLoaded(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		name       string
 		configFile string
 	}{
@@ -48,7 +48,7 @@ func TestConfigProvider_InvalidConfigLoaded(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			configProvider := NewProvider()
-			configProvider, err := configProvider.Load(tt.configFile)
+			_, err := configProvider.Load(tt.configFile)
 
 			require.Error(t, err)
 			require.ErrorContains(t, err, "failed to validate config file")
