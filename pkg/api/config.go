@@ -4,7 +4,7 @@ import "glide/pkg/api/http"
 
 // Config defines configuration for all API types we support (e.g. HTTP, gRPC)
 type Config struct {
-	HTTP *http.ServerConfig `yaml:"http"`
+	HTTP *http.ServerConfig `yaml:"http" validate:"required"`
 }
 
 func DefaultConfig() *Config {

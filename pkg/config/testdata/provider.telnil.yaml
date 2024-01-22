@@ -1,7 +1,4 @@
 telemetry:
-  logging:
-    level: info  # debug, info, warning, error, fatal
-    encoding: json # console, json
 
 routers:
   language:

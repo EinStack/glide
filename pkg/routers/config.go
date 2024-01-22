@@ -12,15 +12,22 @@ import (
 )
 
 type Config struct {
-	LanguageRouters []LangRouterConfig `yaml:"language"` // the list of language routers
+	LanguageRouters []LangRouterConfig `yaml:"language" validate:"required,min=1"` // the list of language routers
 }
 
 func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, error) {
+	seenIDs := make(map[string]bool, len(c.LanguageRouters))
 	routers := make([]*LangRouter, 0, len(c.LanguageRouters))
 
 	var errs error
 
 	for idx, routerConfig := range c.LanguageRouters {
+		if _, ok := seenIDs[routerConfig.ID]; ok {
+			return nil, fmt.Errorf("ID \"%v\" is specified for more than one router while each ID should be unique", routerConfig.ID)
+		}
+
+		seenIDs[routerConfig.ID] = true
+
 		if !routerConfig.Enabled {
 			tel.Logger.Info("router is disabled, skipping", zap.String("routerID", routerConfig.ID))
 			continue
@@ -48,20 +55,31 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 // TODO: Had to keep RoutingStrategy because of https://github.com/swaggo/swag/issues/1738
 // LangRouterConfig
 type LangRouterConfig struct {
-	ID              string                      `yaml:"id" json:"routers" validate:"required"`                   // Unique router ID
-	Enabled         bool                        `yaml:"enabled" json:"enabled"`                                  // Is router enabled?
-	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry"`                                      // retry when no healthy model is available to router
-	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy" swaggertype:"primitive,string"` // strategy on picking the next model to serve the request
-	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required"`                // the list of models that could handle requests
+	ID              string                      `yaml:"id" json:"routers" validate:"required"`                                       // Unique router ID
+	Enabled         bool                        `yaml:"enabled" json:"enabled" validate:"required"`                                  // Is router enabled?
+	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry" validate:"required"`                                      // retry when no healthy model is available to router
+	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy" swaggertype:"primitive,string" validate:"required"` // strategy on picking the next model to serve the request
+	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required,min=1"`                              // the list of models that could handle requests
 }
 
 // BuildModels creates LanguageModel slice out of the given config
 func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.LanguageModel, error) {
 	var errs error
 
+	seenIDs := make(map[string]bool, len(c.Models))
 	models := make([]providers.LanguageModel, 0, len(c.Models))
 
 	for _, modelConfig := range c.Models {
+		if _, ok := seenIDs[modelConfig.ID]; ok {
+			return nil, fmt.Errorf(
+				"ID \"%v\" is specified for more than one model in router \"%v\", while it should be unique in scope of that pool",
+				modelConfig.ID,
+				c.ID,
+			)
+		}
+
+		seenIDs[modelConfig.ID] = true
+
 		if !modelConfig.Enabled {
 			tel.Logger.Info(
 				"model is disabled, skipping",
@@ -89,6 +107,19 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 
 	if errs != nil {
 		return nil, errs
+	}
+
+	if len(models) == 0 {
+		return nil, fmt.Errorf("router \"%v\" must have at least one active model, zero defined", c.ID)
+	}
+
+	if len(models) == 1 {
+		tel.Logger.Warn(
+			"router has only one active model defined. "+
+				"This is not recommended for production setups. "+
+				"Define at least a few models to leverage resiliency logic Glide provides",
+			zap.String("router", c.ID),
+		)
 	}
 
 	return models, nil

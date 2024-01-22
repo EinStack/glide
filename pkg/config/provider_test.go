@@ -36,6 +36,27 @@ func TestConfigProvider_ValidConfigLoaded(t *testing.T) {
 	require.Len(t, models, 1)
 }
 
+func TestConfigProvider_InvalidConfigLoaded(t *testing.T) {
+	tests := []struct {
+		name       string
+		configFile string
+	}{
+		{"empty telemetry", "./testdata/provider.telnil.yaml"},
+		{"empty logging", "./testdata/provider.loggingnil.yaml"},
+		{"no lang routers", "./testdata/provider.nolangrouters.yaml"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			configProvider := NewProvider()
+			_, err := configProvider.Load(tt.configFile)
+
+			require.Error(t, err)
+			require.ErrorContains(t, err, "invalid config file")
+		})
+	}
+}
+
 func TestConfigProvider_NoProvider(t *testing.T) {
 	configProvider := NewProvider()
 	_, err := configProvider.Load("./testdata/provider.nomodelprovider.yaml")

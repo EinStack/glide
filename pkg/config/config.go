@@ -8,8 +8,8 @@ import (
 
 // Config is a general top-level Glide configuration
 type Config struct {
-	Telemetry *telemetry.Config `yaml:"telemetry"`
-	API       *api.Config       `yaml:"api"`
+	Telemetry *telemetry.Config `yaml:"telemetry" validate:"required"`
+	API       *api.Config       `yaml:"api" validate:"required"`
 	Routers   routers.Config    `yaml:"routers" validate:"required"`
 }
 
