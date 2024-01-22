@@ -123,7 +123,10 @@ Other ways to install Glide are available:
 
 ### Homebrew (MacOS)
 
-Coming Soon
+```bash
+brew tap einstack/tap
+brew install einstack/tap/glide
+```
 
 ### Snapcraft (Linux)
 
