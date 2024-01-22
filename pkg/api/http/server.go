@@ -42,7 +42,7 @@ func (srv *Server) Run() error {
 
 	defaultGroup.GET("/health/", HealthHandler)
 
-	schemaDocURL := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.HostPort))
+	schemaDocURL := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.Address()))
 	defaultGroup.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, schemaDocURL))
 
 	return srv.server.Run()
