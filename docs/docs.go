@@ -506,6 +506,7 @@ const docTemplate = `{
         "providers.LangModelConfig": {
             "type": "object",
             "required": [
+                "enabled",
                 "id"
             ],
             "properties": {
@@ -539,7 +540,12 @@ const docTemplate = `{
                     "$ref": "#/definitions/octoml.Config"
                 },
                 "openai": {
-                    "$ref": "#/definitions/openai.Config"
+                    "description": "Add other providers like",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/openai.Config"
+                        }
+                    ]
                 },
                 "weight": {
                     "type": "integer"
@@ -566,8 +572,11 @@ const docTemplate = `{
         "routers.LangRouterConfig": {
             "type": "object",
             "required": [
+                "enabled",
                 "models",
-                "routers"
+                "retry",
+                "routers",
+                "strategy"
             ],
             "properties": {
                 "enabled": {
@@ -577,6 +586,7 @@ const docTemplate = `{
                 "models": {
                     "description": "the list of models that could handle requests",
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/providers.LangModelConfig"
                     }

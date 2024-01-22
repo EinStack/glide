@@ -3,10 +3,6 @@ telemetry:
     level: debug  # debug, info, warn, error, fatal
     encoding: console
 
-#api:
-#  http:
-#    ...
-
 routers:
   language:
     - id: myrouter

@@ -112,7 +112,7 @@ Once deployed, Glide comes with OpenAPI documentation that is accessible via htt
 
 ## Community
 
-- Join [Discord](https://discord.gg/z4DmAbJP) for real-time discussion
+- Join [Discord](https://discord.gg/pt53Ej7rrc) for real-time discussion
 
 Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
 if there is a feature or an enhancement you'd like to see in Glide.

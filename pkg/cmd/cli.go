@@ -30,7 +30,8 @@ func NewCLI() *cobra.Command {
 
 			return gateway.Run(cmd.Context())
 		},
-		// SilenceUsage: true,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	cli.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
