@@ -55,7 +55,7 @@ func (r *LangRouter) ID() string {
 	return r.routerID
 }
 
-func (r *LangRouter) Chat(ctx context.Context, request []schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
 	if len(r.models) == 0 {
 		return nil, ErrNoModels
 	}
@@ -75,9 +75,15 @@ func (r *LangRouter) Chat(ctx context.Context, request []schemas.UnifiedChatRequ
 
 			langModel := model.(providers.LanguageModel)
 
-			payload := getPayload(request, langModel.ID())
+			// Check if there is an override in the request
+			if request.Override != (schemas.OverrideChatRequest{}) {
+				// Override the message if the language model ID matches the override model ID
+				if langModel.ID() == request.Override.Model {
+					request.Message = request.Override.Message
+				}
+			}
 
-			resp, err := langModel.Chat(ctx, payload)
+			resp, err := langModel.Chat(ctx, request)
 			if err != nil {
 				r.telemetry.Logger.Warn(
 					"lang model failed processing chat request",
@@ -110,43 +116,4 @@ func (r *LangRouter) Chat(ctx context.Context, request []schemas.UnifiedChatRequ
 	r.telemetry.Logger.Error("no model was available to handle request", zap.String("routerID", r.ID()))
 
 	return nil, ErrNoModelAvailable
-}
-
-// getPayload returns the payload based on the mathcing model from the given chat requests.
-//
-// It takes a slice of UnifiedChatRequest and a model string as parameters.
-// Returns a pointer to UnifiedChatRequest.
-func getPayload(request []schemas.UnifiedChatRequest, model string) *schemas.UnifiedChatRequest {
-	if len(request) == 1 {
-		return &(request)[0]
-	}
-
-	modelExists := false
-
-	var payload *schemas.UnifiedChatRequest
-
-	for _, req := range request {
-		if req.Model == model {
-			newPayload := schemas.UnifiedChatRequest{
-				Model:          req.Model,
-				Message:        req.Message,
-				MessageHistory: req.MessageHistory,
-			}
-			payload = &newPayload
-			modelExists = true
-
-			break
-		}
-	}
-
-	if !modelExists {
-		newPayload := schemas.UnifiedChatRequest{
-			Model:          request[0].Model,
-			Message:        request[0].Message,
-			MessageHistory: request[0].MessageHistory,
-		}
-		payload = &newPayload
-	}
-
-	return payload
 }

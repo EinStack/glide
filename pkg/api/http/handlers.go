@@ -34,7 +34,7 @@ type Handler = func(ctx context.Context, c *app.RequestContext)
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(ctx context.Context, c *app.RequestContext) {
 		// Unmarshal request body
-		var req []schemas.UnifiedChatRequest
+		var req *schemas.UnifiedChatRequest
 
 		err := json.Unmarshal(c.Request.Body(), &req)
 		if err != nil {

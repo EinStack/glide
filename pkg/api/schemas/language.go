@@ -2,9 +2,14 @@ package schemas
 
 // UnifiedChatRequest defines Glide's Chat Request Schema unified across all language models
 type UnifiedChatRequest struct {
-	Model          string        `json:"model"`
-	Message        ChatMessage   `json:"message"`
-	MessageHistory []ChatMessage `json:"messageHistory"`
+	Message        ChatMessage         `json:"message"`
+	MessageHistory []ChatMessage       `json:"messageHistory"`
+	Override       OverrideChatRequest `json:"override,omitempty"`
+}
+
+type OverrideChatRequest struct {
+	Model   string      `json:"model_id"`
+	Message ChatMessage `json:"message"`
 }
 
 func NewChatFromStr(message string) *UnifiedChatRequest {

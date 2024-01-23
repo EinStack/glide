@@ -55,11 +55,9 @@ func TestLangRouter_Priority_PickFistHealthy(t *testing.T) {
 
 	ctx := context.Background()
 	req := schemas.NewChatFromStr("tell me a dad joke")
-	reqs := make([]schemas.UnifiedChatRequest, 0)
-	reqs = append(reqs, *req)
 
 	for i := 0; i < 2; i++ {
-		resp, err := router.Chat(ctx, reqs)
+		resp, err := router.Chat(ctx, req)
 
 		require.Equal(t, "first", resp.ModelID)
 		require.Equal(t, "test_router", resp.RouterID)
@@ -113,11 +111,8 @@ func TestLangRouter_Priority_PickThirdHealthy(t *testing.T) {
 	ctx := context.Background()
 	req := schemas.NewChatFromStr("tell me a dad joke")
 
-	reqs := make([]schemas.UnifiedChatRequest, 0)
-	reqs = append(reqs, *req)
-
 	for _, modelID := range expectedModels {
-		resp, err := router.Chat(ctx, reqs)
+		resp, err := router.Chat(ctx, req)
 
 		require.NoError(t, err)
 		require.Equal(t, modelID, resp.ModelID)
@@ -159,12 +154,7 @@ func TestLangRouter_Priority_SuccessOnRetry(t *testing.T) {
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
-	req := schemas.NewChatFromStr("tell me a dad joke")
-
-	reqs := make([]schemas.UnifiedChatRequest, 0)
-	reqs = append(reqs, *req)
-
-	resp, err := router.Chat(context.Background(), reqs)
+	resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
 
 	require.NoError(t, err)
 	require.Equal(t, "first", resp.ModelID)
@@ -205,13 +195,8 @@ func TestLangRouter_Priority_UnhealthyModelInThePool(t *testing.T) {
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
-	req := schemas.NewChatFromStr("tell me a dad joke")
-
-	reqs := make([]schemas.UnifiedChatRequest, 0)
-	reqs = append(reqs, *req)
-
 	for i := 0; i < 2; i++ {
-		resp, err := router.Chat(context.Background(), reqs)
+		resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
 
 		require.NoError(t, err)
 		require.Equal(t, "second", resp.ModelID)
@@ -253,12 +238,7 @@ func TestLangRouter_Priority_AllModelsUnavailable(t *testing.T) {
 		telemetry: telemetry.NewTelemetryMock(),
 	}
 
-	req := schemas.NewChatFromStr("tell me a dad joke")
-
-	reqs := make([]schemas.UnifiedChatRequest, 0)
-	reqs = append(reqs, *req)
-
-	_, err := router.Chat(context.Background(), reqs)
+	_, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
 
 	require.Error(t, err)
 }
