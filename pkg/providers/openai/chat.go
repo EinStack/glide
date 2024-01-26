@@ -92,6 +92,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	return chatResponse, nil
 }
 
+
 func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (<-chan *schemas.UnifiedChatResponse, error) {
     // Create a new chat request
     chatRequest := c.createChatRequestSchema(request)
@@ -112,8 +113,9 @@ func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatReq
         return responseChannel, nil
     }
 
-    return nil, errors.New("Non-streaming requests are not supported")
+    return nil, nil
 }
+
 
 
 func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
@@ -375,4 +377,3 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 	}
 	// ... (remaining code)
 }
-
