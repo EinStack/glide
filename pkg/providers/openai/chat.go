@@ -80,6 +80,31 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
+	if chatRequest.Stream {
+		// Create channels for receiving responses and errors
+	   responseChannel := make(chan *schemas.UnifiedChatResponse, 5)
+	   errChannel := make(chan error, 5)
+
+	   fmt.Println("Starting streaming chat request")
+
+	   c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
+
+	   // Handle streaming responses and errors
+	   for {
+		   select {
+		   case chatResponse := <-responseChannel:
+			   // Process the streaming response
+			   fmt.Println("Received response:", chatResponse)
+			   return chatResponse, nil
+		   case err := <-errChannel:
+			   // Handle the error
+			   fmt.Println("Received error:", err)
+			default:
+				fmt.Println("DEFAULT")
+		   }
+	   }
+   }
+
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
 		return nil, err
@@ -91,32 +116,6 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 
 	return chatResponse, nil
 }
-
-
-func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (<-chan *schemas.UnifiedChatResponse, error) {
-    // Create a new chat request
-    chatRequest := c.createChatRequestSchema(request)
-
-    if chatRequest.Stream {
-        // Create channels for receiving responses and errors
-        responseChannel := make(chan *schemas.UnifiedChatResponse, 5)
-        errChannel := make(chan error, 5)
-
-        fmt.Println("Starting streaming chat request")
-
-        go func() {
-            defer close(responseChannel)
-            defer close(errChannel)
-            c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
-        }()
-
-        return responseChannel, nil
-    }
-
-    return nil, nil
-}
-
-
 
 func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
@@ -377,3 +376,4 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 	}
 	// ... (remaining code)
 }
+
