@@ -87,6 +87,9 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 
 	   fmt.Println("Starting streaming chat request")
 
+	   defer close(responseChannel)
+       defer close(errChannel)
+
 	   c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
 
 	   // Handle streaming responses and errors
@@ -95,7 +98,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 		   case chatResponse := <-responseChannel:
 			   // Process the streaming response
 			   fmt.Println("Received response:", chatResponse)
-			   return chatResponse, nil
+			   //return chatResponse, nil
 		   case err := <-errChannel:
 			   // Handle the error
 			   fmt.Println("Received error:", err)

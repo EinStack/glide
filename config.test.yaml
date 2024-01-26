@@ -20,7 +20,7 @@ routers:
         - id: primary
           openai: # cohere, azureopenai, gemini, other providers we support
             model: gpt-3.5-turbo
-            api_key: "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"
+            api_key: "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"
             default_params:
               temperature: 0.1
 

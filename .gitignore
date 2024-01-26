@@ -8,3 +8,4 @@ tmp
 coverage.txt
 precommit.txt
 .vscode/settings.json
+config.test.yaml
