@@ -45,9 +45,9 @@ type TokenCount struct {
 // ChatMessage is a message in a chat request.
 type ChatMessage struct {
 	// The role of the author of this message. One of system, user, or assistant.
-	Role string `json:"role"`
+	Role string `json:"role,omitempty"`
 	// The content of the message.
-	Content string `json:"content"`
+	Content string `json:"content,omitempty"`
 	// The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,
 	// with a maximum length of 64 characters.
 	Name string `json:"name,omitempty"`
@@ -65,6 +65,16 @@ type OpenAIChatCompletion struct {
 	Usage             Usage    `json:"usage"`
 }
 
+type OpenAIChatStreamCompletion struct {
+	ID                string       `json:"id"`
+	Object            string       `json:"object"`
+	Created           int          `json:"created"`
+	Model             string       `json:"model"`
+	SystemFingerprint string       `json:"system_fingerprint"`
+	StreamChoice      []ChatCompletionStreamChoice `json:"choices"`
+	Usage             Usage        `json:"usage"`
+}
+
 type Choice struct {
 	Index        int         `json:"index"`
 	Message      ChatMessage `json:"message"`
@@ -72,10 +82,21 @@ type Choice struct {
 	FinishReason string      `json:"finish_reason"`
 }
 
+type ChatCompletionStreamChoice struct {
+	Index                int                             `json:"index"`
+	Delta                ChatCompletionStreamChoiceDelta `json:"delta"`
+	FinishReason         string                    `json:"finish_reason"`
+}
+
 type Usage struct {
 	PromptTokens     float64 `json:"prompt_tokens"`
 	CompletionTokens float64 `json:"completion_tokens"`
 	TotalTokens      float64 `json:"total_tokens"`
+}
+
+type ChatCompletionStreamChoiceDelta struct {
+	Content      string        `json:"content,omitempty"`
+	Role         string        `json:"role,omitempty"`
 }
 
 // Cohere Chat Response

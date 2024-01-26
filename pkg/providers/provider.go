@@ -16,6 +16,7 @@ import (
 type LangModelProvider interface {
 	Provider() string
 	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
+	StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (<-chan *schemas.UnifiedChatResponse, error)
 }
 
 type Model interface {
