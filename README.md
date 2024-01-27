@@ -1,6 +1,6 @@
 # Glide: Cloud-Native LLM Gateway for Seamless LLMOps
 <div align="center">
-    <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
+    <img src="docs/logo/glide_no_bgd.png" width="300px" alt="Glide GH Header" />
 </div>
 
 [![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
@@ -13,6 +13,8 @@ so you can dive into tackling your core challenges.
 
 Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
 model failover, caching, key management, etc. 
+
+<img src="docs/images/marketecture.svg" />
 
 Take a look at the develop branch.
 
