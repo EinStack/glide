@@ -20,7 +20,7 @@ type Params struct {
 	Tools            []string         `yaml:"tools,omitempty" json:"tools"`
 	ToolChoice       interface{}      `yaml:"tool_choice,omitempty" json:"tool_choice"`
 	ResponseFormat   interface{}      `yaml:"response_format,omitempty" json:"response_format"` // TODO: should this be a part of the chat request API?
-	// Stream           bool             `json:"stream,omitempty"` // TODO: we are not supporting this at the moment
+	Stream           bool             `json:"stream,omitempty"`                                 // TODO: we are not supporting this at the moment
 }
 
 func DefaultParams() Params {

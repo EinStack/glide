@@ -27,7 +27,7 @@ type LangModelConfig struct {
 	Latency     *latency.Config       `yaml:"latency" json:"latency"`
 	Weight      int                   `yaml:"weight" json:"weight"`
 	Client      *clients.ClientConfig `yaml:"client" json:"client"`
-	// Add other providers like
+	// Add other providers like:
 	OpenAI      *openai.Config      `yaml:"openai,omitempty" json:"openai,omitempty"`
 	AzureOpenAI *azureopenai.Config `yaml:"azureopenai,omitempty" json:"azureopenai,omitempty"`
 	Cohere      *cohere.Config      `yaml:"cohere,omitempty" json:"cohere,omitempty"`
@@ -60,14 +60,14 @@ func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvide
 	switch {
 	case c.OpenAI != nil:
 		return openai.NewClient(c.OpenAI, c.Client, tel)
-	case c.AzureOpenAI != nil:
-		return azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
-	case c.Cohere != nil:
-		return cohere.NewClient(c.Cohere, c.Client, tel)
-	case c.OctoML != nil:
-		return octoml.NewClient(c.OctoML, c.Client, tel)
-	case c.Anthropic != nil:
-		return anthropic.NewClient(c.Anthropic, c.Client, tel)
+	//case c.AzureOpenAI != nil:
+		//return azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+	//case c.Cohere != nil:
+		//return cohere.NewClient(c.Cohere, c.Client, tel)
+	//case c.OctoML != nil:
+	//	return octoml.NewClient(c.OctoML, c.Client, tel)
+	//case c.Anthropic != nil:
+	//	return anthropic.NewClient(c.Anthropic, c.Client, tel)
 	default:
 		return nil, ErrProviderNotFound
 	}

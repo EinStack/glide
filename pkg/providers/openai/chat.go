@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -49,7 +50,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
 		N:                cfg.DefaultParams.N,
 		StopWords:        cfg.DefaultParams.StopWords,
-		Stream:           false, // unsupported right now
+		Stream:           cfg.DefaultParams.Stream,
 		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
 		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
 		LogitBias:        cfg.DefaultParams.LogitBias,
@@ -89,6 +90,46 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	}
 
 	return chatResponse, nil
+}
+
+func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (chan *schemas.UnifiedChatResponse, chan error) {
+	// Create a new chat request
+	chatRequest := c.createChatRequestSchema(request)
+
+	if chatRequest.Stream {
+		// Create channels for receiving responses and errors
+		responseChannel := make(chan *schemas.UnifiedChatResponse, 3)
+		errChannel := make(chan error, 3)
+
+		fmt.Println("Starting streaming chat request")
+
+		// defer close(responseChannel)
+		// defer close(errChannel)
+
+		c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
+
+		// Handle streaming responses and errors
+		for {
+			select {
+			case chatResponse := <-responseChannel:
+				// Process the streaming response
+				fmt.Println("Received response:", chatResponse)
+				if chatResponse.ModelResponse.Message.Content == "[DONE]" {
+					fmt.Print("Done")
+					close(responseChannel)
+					// return chatResponse, nil
+				}
+				return responseChannel, nil
+			case err := <-errChannel:
+				// Handle the error
+				fmt.Println("Received error:", err)
+				return nil, errChannel
+			default:
+				fmt.Println("DEFAULT")
+			}
+		}
+	}
+	return nil, nil
 }
 
 func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
@@ -199,4 +240,151 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	return &response, nil
+}
+
+func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatRequest, responseChannel chan *schemas.UnifiedChatResponse, errChannel chan error) {
+	defer close(responseChannel)
+	defer close(errChannel)
+
+	// build request payload
+	rawPayload, err := json.Marshal(payload)
+	if err != nil {
+		errChannel <- fmt.Errorf("unable to marshal openai chat request payload: %w", err)
+		return
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
+	if err != nil {
+		errChannel <- fmt.Errorf("unable to create openai chat request: %w", err)
+		return
+	}
+
+	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "text/event-stream")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Connection", "keep-alive")
+
+	c.telemetry.Logger.Debug(
+		"openai chat request",
+		zap.String("chat_url", c.chatURL),
+		zap.Any("payload", payload),
+	)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		errChannel <- fmt.Errorf("failed to send openai chat request: %w", err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			errChannel <- fmt.Errorf("failed to read openai chat response: %w", err)
+			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+		}
+
+		c.telemetry.Logger.Error(
+			"openai chat request failed",
+			zap.Int("status_code", resp.StatusCode),
+			zap.String("response", string(bodyBytes)),
+			zap.Any("headers", resp.Header),
+		)
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			retryAfter := resp.Header.Get("Retry-After")
+			cooldownDelay, err := time.ParseDuration(retryAfter)
+			if err != nil {
+				errChannel <- fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+				return
+			}
+
+			errChannel <- clients.NewRateLimitError(&cooldownDelay)
+			return
+		}
+
+		// Server & client errors result in the same error to keep gateway resilient
+		errChannel <- clients.ErrProviderUnavailable
+		return
+	}
+
+	var (
+		headerData     = []byte("data: ")
+		errorPrefix    = []byte(`data: {"error":`)
+		hasErrorPrefix bool
+	)
+
+	// Read the response body into a byte slice
+	// bodyBytes, _ := io.ReadAll(resp.Body)
+
+	// fmt.Println(string(bodyBytes))
+
+	// Create a scanner to read from the response body
+	// TODO: NEed to figure out why it only returns the first line
+	reader := bufio.NewReader(resp.Body)
+
+	for {
+		r, err := reader.ReadBytes('\n')
+		if err != nil {
+			if err == io.EOF {
+				// Handle EOF error
+				errChannel <- fmt.Errorf("EOF: %w", err)
+			}
+			errChannel <- fmt.Errorf("failed to read openai chat response: %w", err)
+			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+			continue
+		}
+
+		// Apply the processing steps to each chunk
+		noSpaceLine := bytes.TrimSpace(r)
+		if bytes.HasPrefix(noSpaceLine, errorPrefix) {
+			hasErrorPrefix = true
+		}
+		if !bytes.HasPrefix(noSpaceLine, headerData) || hasErrorPrefix {
+			if hasErrorPrefix {
+				noSpaceLine = bytes.TrimPrefix(noSpaceLine, headerData)
+			}
+		}
+
+		noPrefixLine := bytes.TrimPrefix(noSpaceLine, headerData)
+
+		var openAICompletion schemas.OpenAIChatStreamCompletion
+
+		decoder := json.NewDecoder(bytes.NewReader(noPrefixLine))
+		if err := decoder.Decode(&openAICompletion); err != nil {
+			if err == io.EOF {
+				// Handle EOF error
+				return
+			}
+			errChannel <- fmt.Errorf("failed to parse openai chat response: %w", err)
+			c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+			continue
+		}
+
+		response := schemas.UnifiedChatResponse{
+			ID:       openAICompletion.ID,
+			Created:  openAICompletion.Created,
+			Provider: providerName,
+			Model:    openAICompletion.Model,
+			Cached:   false,
+			ModelResponse: schemas.ProviderResponse{
+				SystemID: map[string]string{
+					"system_fingerprint": openAICompletion.SystemFingerprint,
+				},
+				Message: schemas.ChatMessage{
+					Role:    openAICompletion.StreamChoice[0].Delta.Role,
+					Content: openAICompletion.StreamChoice[0].Delta.Content,
+					Name:    "",
+				},
+				TokenCount: schemas.TokenCount{
+					PromptTokens:   openAICompletion.Usage.PromptTokens,
+					ResponseTokens: openAICompletion.Usage.CompletionTokens,
+					TotalTokens:    openAICompletion.Usage.TotalTokens,
+				},
+			},
+		}
+		responseChannel <- &response
+	}
 }

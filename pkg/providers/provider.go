@@ -16,6 +16,7 @@ import (
 type LangModelProvider interface {
 	Provider() string
 	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
+	StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (chan *schemas.UnifiedChatResponse, chan error)
 }
 
 type Model interface {
@@ -102,6 +103,17 @@ func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatReques
 	}
 
 	_ = m.errorBudget.Take(1)
+
+	return resp, err
+}
+
+func (m *LangModel) StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (chan *schemas.UnifiedChatResponse, chan error) {
+	// TODO: we may want to track time-to-first-byte to "normalize" response latency wrt response size
+	//startedAt := time.Now()
+	resp, err := m.client.StreamChat(ctx, request)
+
+	// Do we want to track latency in case of errors as well?
+	//m.latency.Add(float64(time.Since(startedAt)))
 
 	return resp, err
 }

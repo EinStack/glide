@@ -71,6 +71,16 @@ type OpenAIChatCompletion struct {
 	Usage             Usage    `json:"usage"`
 }
 
+type OpenAIChatStreamCompletion struct {
+	ID                string                       `json:"id"`
+	Object            string                       `json:"object"`
+	Created           int                          `json:"created"`
+	Model             string                       `json:"model"`
+	SystemFingerprint string                       `json:"system_fingerprint"`
+	StreamChoice      []ChatCompletionStreamChoice `json:"choices"`
+	Usage             Usage                        `json:"usage"`
+}
+
 type Choice struct {
 	Index        int         `json:"index"`
 	Message      ChatMessage `json:"message"`
@@ -78,10 +88,21 @@ type Choice struct {
 	FinishReason string      `json:"finish_reason"`
 }
 
+type ChatCompletionStreamChoice struct {
+	Index        int                             `json:"index"`
+	Delta        ChatCompletionStreamChoiceDelta `json:"delta"`
+	FinishReason string                          `json:"finish_reason"`
+}
+
 type Usage struct {
 	PromptTokens     float64 `json:"prompt_tokens"`
 	CompletionTokens float64 `json:"completion_tokens"`
 	TotalTokens      float64 `json:"total_tokens"`
+}
+
+type ChatCompletionStreamChoiceDelta struct {
+	Content string `json:"content,omitempty"`
+	Role    string `json:"role,omitempty"`
 }
 
 // Cohere Chat Response
