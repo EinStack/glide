@@ -616,6 +616,17 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.OverrideChatRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "model_id": {
+                    "type": "string"
+                }
+            }
+        },
         "schemas.ProviderResponse": {
             "type": "object",
             "properties": {
@@ -659,8 +670,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
                 },
-                "model": {
-                    "type": "string"
+                "override": {
+                    "$ref": "#/definitions/schemas.OverrideChatRequest"
                 }
             }
         },

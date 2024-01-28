@@ -613,6 +613,17 @@
                 }
             }
         },
+        "schemas.OverrideChatRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "model_id": {
+                    "type": "string"
+                }
+            }
+        },
         "schemas.ProviderResponse": {
             "type": "object",
             "properties": {
@@ -656,8 +667,8 @@
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
                 },
-                "model": {
-                    "type": "string"
+                "override": {
+                    "$ref": "#/definitions/schemas.OverrideChatRequest"
                 }
             }
         },

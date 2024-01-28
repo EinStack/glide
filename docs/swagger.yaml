@@ -335,6 +335,13 @@ definitions:
           or assistant.
         type: string
     type: object
+  schemas.OverrideChatRequest:
+    properties:
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+      model_id:
+        type: string
+    type: object
   schemas.ProviderResponse:
     properties:
       message:
@@ -363,8 +370,8 @@ definitions:
         items:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
-      model:
-        type: string
+      override:
+        $ref: '#/definitions/schemas.OverrideChatRequest'
     type: object
   schemas.UnifiedChatResponse:
     properties:
