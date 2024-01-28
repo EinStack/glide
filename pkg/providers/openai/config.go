@@ -31,6 +31,7 @@ func DefaultParams() Params {
 		N:           1,
 		StopWords:   []string{},
 		Tools:       []string{},
+		Stream:      true,
 	}
 }
 

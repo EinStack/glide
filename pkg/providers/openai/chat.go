@@ -92,46 +92,48 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	return chatResponse, nil
 }
 
-func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (chan *schemas.UnifiedChatResponse, chan error) {
+func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatRequest) (chan *schemas.UnifiedChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
+	// Create channels for receiving responses and errors
+	responseChannel := make(chan *schemas.UnifiedChatResponse, 100)
+	errChannel := make(chan error, 100)
 
-	if chatRequest.Stream {
-		// Create channels for receiving responses and errors
-		responseChannel := make(chan *schemas.UnifiedChatResponse, 3)
-		errChannel := make(chan error, 3)
+	fmt.Println("Starting streaming chat request")
+	
+	c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
 
-		fmt.Println("Starting streaming chat request")
+	fmt.Println("Finished streaming chat request")
 
-		// defer close(responseChannel)
-		// defer close(errChannel)
+	// Create a channel to send individual responses
+	responseStream := make(chan *schemas.UnifiedChatResponse)
 
-		c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
-
-		// Handle streaming responses and errors
+	// Handle streaming responses and errors
+	go func() {
+		defer close(errChannel) // Close the channel when the function exits
+		defer close(responseStream) // Close the responseStream channel when the function exits
+		defer close(responseChannel)
 		for {
 			select {
 			case chatResponse := <-responseChannel:
-				// Process the streaming response
-				fmt.Println("Received response:", chatResponse)
-				if chatResponse.ModelResponse.Message.Content == "[DONE]" {
-					fmt.Print("Done")
-					close(responseChannel)
-					// return chatResponse, nil
+				if chatResponse != nil {
+					// Send non-nil responses to the responseStream channel
+					responseStream <- chatResponse
 				}
-				return responseChannel, nil
 			case err := <-errChannel:
-				// Handle the error
-				fmt.Println("Received error:", err)
-				return nil, errChannel
+				if err != nil {
+					// Handle the error
+					fmt.Println("Received error:", err)
+				}
 			default:
 				fmt.Println("DEFAULT")
 			}
 		}
-	}
-	return nil, nil
-}
+	}()
 
+	// Return the responseStream channel
+	return responseStream, nil
+}
 func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
@@ -277,7 +279,6 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		return
 	}
 
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -316,18 +317,18 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		hasErrorPrefix bool
 	)
 
-	// Read the response body into a byte slice
-	// bodyBytes, _ := io.ReadAll(resp.Body)
-
-	// fmt.Println(string(bodyBytes))
-
 	// Create a scanner to read from the response body
 	// TODO: NEed to figure out why it only returns the first line
-	reader := bufio.NewReader(resp.Body)
+	//reader := bufio.NewReader(resp.Body)
+	scanner := bufio.NewScanner(resp.Body)
 
-	for {
-		r, err := reader.ReadBytes('\n')
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
 		if err != nil {
+			fmt.Println("err: ", err)
 			if err == io.EOF {
 				// Handle EOF error
 				errChannel <- fmt.Errorf("EOF: %w", err)
@@ -338,7 +339,7 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		}
 
 		// Apply the processing steps to each chunk
-		noSpaceLine := bytes.TrimSpace(r)
+		noSpaceLine := bytes.TrimSpace(line)
 		if bytes.HasPrefix(noSpaceLine, errorPrefix) {
 			hasErrorPrefix = true
 		}
@@ -349,6 +350,14 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		}
 
 		noPrefixLine := bytes.TrimPrefix(noSpaceLine, headerData)
+
+
+		if string(noPrefixLine) == "[DONE]" {
+			resp.Body.Close()
+			return
+		}
+
+		//fmt.Println("noPrefixLine: ", string(noPrefixLine))
 
 		var openAICompletion schemas.OpenAIChatStreamCompletion
 

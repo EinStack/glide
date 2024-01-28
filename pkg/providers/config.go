@@ -60,13 +60,13 @@ func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvide
 	switch {
 	case c.OpenAI != nil:
 		return openai.NewClient(c.OpenAI, c.Client, tel)
-	//case c.AzureOpenAI != nil:
-		//return azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
-	//case c.Cohere != nil:
-		//return cohere.NewClient(c.Cohere, c.Client, tel)
-	//case c.OctoML != nil:
+	// case c.AzureOpenAI != nil:
+	// return azureopenai.NewClient(c.AzureOpenAI, c.Client, tel)
+	// case c.Cohere != nil:
+	// return cohere.NewClient(c.Cohere, c.Client, tel)
+	// case c.OctoML != nil:
 	//	return octoml.NewClient(c.OctoML, c.Client, tel)
-	//case c.Anthropic != nil:
+	// case c.Anthropic != nil:
 	//	return anthropic.NewClient(c.Anthropic, c.Client, tel)
 	default:
 		return nil, ErrProviderNotFound
