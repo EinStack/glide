@@ -82,13 +82,13 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 
 	if chatRequest.Stream {
 		// Create channels for receiving responses and errors
-	   responseChannel := make(chan *schemas.UnifiedChatResponse, 5)
-	   errChannel := make(chan error, 5)
+	   responseChannel := make(chan *schemas.UnifiedChatResponse, 3)
+	   errChannel := make(chan error, 3)
 
 	   fmt.Println("Starting streaming chat request")
 
-	   defer close(responseChannel)
-       defer close(errChannel)
+	   //defer close(responseChannel)
+       //defer close(errChannel)
 
 	   c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
 
@@ -98,6 +98,11 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 		   case chatResponse := <-responseChannel:
 			   // Process the streaming response
 			   fmt.Println("Received response:", chatResponse)
+			   if chatResponse.ModelResponse.Message.Content == "[DONE]" {
+				   	fmt.Print("Done")
+					close(responseChannel)
+                	return chatResponse, nil
+            }
 			   //return chatResponse, nil
 		   case err := <-errChannel:
 			   // Handle the error
@@ -377,6 +382,5 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		}
 		responseChannel <- &response
 	}
-	// ... (remaining code)
 }
 
