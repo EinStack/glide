@@ -57,7 +57,6 @@ func (p *Provider) Load(configPath string) (*Provider, error) {
 	}
 
 	err = p.validator.Struct(cfg)
-
 	if err != nil {
 		return p, p.formatValidationError(configPath, err)
 	}

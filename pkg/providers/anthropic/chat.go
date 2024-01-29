@@ -178,7 +178,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				Content: anthropicCompletion.Content[0].Text,
 				Name:    "",
 			},
-			TokenUsage: schemas.TokenCount{
+			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   0, // Anthropic doesn't send prompt tokens
 				ResponseTokens: 0,
 				TotalTokens:    0,
