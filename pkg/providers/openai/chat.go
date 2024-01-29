@@ -98,8 +98,8 @@ func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatReq
 	// Create channels for receiving responses and errors
 	responseChannel := make(chan *schemas.UnifiedChatResponse, 100)
 	errChannel := make(chan error, 100)
-	
-	err :=c.doStreamingChatRequest(ctx, chatRequest, responseChannel)
+
+	err := c.doStreamingChatRequest(ctx, chatRequest, responseChannel)
 
 	// Create a channel to send individual responses
 	responseStream := make(chan *schemas.UnifiedChatResponse)
@@ -107,7 +107,7 @@ func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatReq
 
 	// Handle streaming responses and errors
 	go func() {
-		defer close(errChannel) // Close the channel when the function exits
+		defer close(errChannel)     // Close the channel when the function exits
 		defer close(responseStream) // Close the responseStream channel when the function exits
 		defer close(responseChannel)
 		defer close(errResponseStream)
@@ -243,7 +243,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	return &response, nil
 }
 
-func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatRequest, responseChannel chan *schemas.UnifiedChatResponse) (error) {
+func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatRequest, responseChannel chan *schemas.UnifiedChatResponse) error {
 	defer close(responseChannel)
 
 	// build request payload
@@ -276,7 +276,6 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		err := fmt.Errorf("failed to send openai chat request: %w", err)
 		return err
 	}
-
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -316,7 +315,7 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 
 	// Create a scanner to read from the response body
 	// TODO: NEed to figure out why it only returns the first line
-	//reader := bufio.NewReader(resp.Body)
+	// reader := bufio.NewReader(resp.Body)
 	scanner := bufio.NewScanner(resp.Body)
 
 	for scanner.Scan() {
@@ -346,23 +345,17 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 
 		noPrefixLine := bytes.TrimPrefix(noSpaceLine, headerData)
 
-
 		if string(noPrefixLine) == "[DONE]" {
 			resp.Body.Close()
 			return nil
 		}
 
-		//fmt.Println("noPrefixLine: ", string(noPrefixLine))
+		// fmt.Println("noPrefixLine: ", string(noPrefixLine))
 
 		var openAICompletion schemas.OpenAIChatStreamCompletion
 
 		decoder := json.NewDecoder(bytes.NewReader(noPrefixLine))
 		if err := decoder.Decode(&openAICompletion); err != nil {
-			if err == io.EOF {
-				// Handle EOF error
-				c.telemetry.Logger.Error("EOF Error", zap.Error(err))
-				return err
-			}
 			c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 			continue
 		}

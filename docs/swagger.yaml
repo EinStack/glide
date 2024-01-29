@@ -244,6 +244,9 @@ definitions:
         items:
           type: string
         type: array
+      stream:
+        description: 'TODO: we are not supporting this at the moment'
+        type: boolean
       temperature:
         type: number
       tool_choice: {}
@@ -281,7 +284,7 @@ definitions:
       openai:
         allOf:
         - $ref: '#/definitions/openai.Config'
-        description: Add other providers like
+        description: 'Add other providers like:'
       weight:
         type: integer
     required:

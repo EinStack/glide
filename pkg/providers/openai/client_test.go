@@ -39,7 +39,6 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err = w.Write(chatResponse)
-
 		if err != nil {
 			t.Errorf("error on sending chat response: %v", err)
 		}
@@ -87,7 +86,6 @@ func TestOpenAIClient_StreamChatRequest(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err = w.Write(chatResponse)
-
 		if err != nil {
 			t.Errorf("error on sending chat response: %v", err)
 		}

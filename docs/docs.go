@@ -485,6 +485,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "stream": {
+                    "description": "TODO: we are not supporting this at the moment",
+                    "type": "boolean"
+                },
                 "temperature": {
                     "type": "number"
                 },
@@ -540,7 +544,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/octoml.Config"
                 },
                 "openai": {
-                    "description": "Add other providers like",
+                    "description": "Add other providers like:",
                     "allOf": [
                         {
                             "$ref": "#/definitions/openai.Config"
