@@ -195,7 +195,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				Content: cohereCompletion.Text,
 				Name:    "",
 			},
-			TokenCount: schemas.TokenCount{
+			TokenUsage: schemas.TokenCount{
 				PromptTokens:   cohereCompletion.TokenCount.PromptTokens,
 				ResponseTokens: cohereCompletion.TokenCount.ResponseTokens,
 				TotalTokens:    cohereCompletion.TokenCount.TotalTokens,

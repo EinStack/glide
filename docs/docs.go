@@ -650,11 +650,11 @@ const docTemplate = `{
                     }
                 },
                 "tokenCount": {
-                    "$ref": "#/definitions/schemas.TokenCount"
+                    "$ref": "#/definitions/schemas.TokenUsage"
                 }
             }
         },
-        "schemas.TokenCount": {
+        "schemas.TokenUsage": {
             "type": "object",
             "properties": {
                 "promptTokens": {
