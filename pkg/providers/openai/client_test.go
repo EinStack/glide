@@ -102,7 +102,7 @@ func TestOpenAIClient_StreamChatRequest(t *testing.T) {
 
 	// providerCfg.BaseURL = openAIServer.URL
 
-	providerCfg.APIKey = "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"
+	providerCfg.APIKey = ""
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)

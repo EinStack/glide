@@ -98,21 +98,19 @@ func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatReq
 	// Create channels for receiving responses and errors
 	responseChannel := make(chan *schemas.UnifiedChatResponse, 100)
 	errChannel := make(chan error, 100)
-
-	fmt.Println("Starting streaming chat request")
 	
-	c.doStreamingChatRequest(ctx, chatRequest, responseChannel, errChannel)
-
-	fmt.Println("Finished streaming chat request")
+	err :=c.doStreamingChatRequest(ctx, chatRequest, responseChannel)
 
 	// Create a channel to send individual responses
 	responseStream := make(chan *schemas.UnifiedChatResponse)
+	errResponseStream := make(chan error)
 
 	// Handle streaming responses and errors
 	go func() {
 		defer close(errChannel) // Close the channel when the function exits
 		defer close(responseStream) // Close the responseStream channel when the function exits
 		defer close(responseChannel)
+		defer close(errResponseStream)
 		for {
 			select {
 			case chatResponse := <-responseChannel:
@@ -123,7 +121,7 @@ func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatReq
 			case err := <-errChannel:
 				if err != nil {
 					// Handle the error
-					fmt.Println("Received error:", err)
+					errResponseStream <- err
 				}
 			default:
 				fmt.Println("DEFAULT")
@@ -132,8 +130,9 @@ func (c *Client) StreamChat(ctx context.Context, request *schemas.UnifiedChatReq
 	}()
 
 	// Return the responseStream channel
-	return responseStream, nil
+	return responseStream, err
 }
+
 func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
@@ -244,21 +243,20 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	return &response, nil
 }
 
-func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatRequest, responseChannel chan *schemas.UnifiedChatResponse, errChannel chan error) {
+func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatRequest, responseChannel chan *schemas.UnifiedChatResponse) (error) {
 	defer close(responseChannel)
-	defer close(errChannel)
 
 	// build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		errChannel <- fmt.Errorf("unable to marshal openai chat request payload: %w", err)
-		return
+		err := fmt.Errorf("unable to marshal openai chat request payload: %w", err)
+		return err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		errChannel <- fmt.Errorf("unable to create openai chat request: %w", err)
-		return
+		err := fmt.Errorf("unable to create openai chat request: %w", err)
+		return err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
@@ -275,15 +273,14 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		errChannel <- fmt.Errorf("failed to send openai chat request: %w", err)
-		return
+		err := fmt.Errorf("failed to send openai chat request: %w", err)
+		return err
 	}
 
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			errChannel <- fmt.Errorf("failed to read openai chat response: %w", err)
 			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
 		}
 
@@ -298,17 +295,17 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 			retryAfter := resp.Header.Get("Retry-After")
 			cooldownDelay, err := time.ParseDuration(retryAfter)
 			if err != nil {
-				errChannel <- fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-				return
+				c.telemetry.Logger.Error("failed to parse cooldown delay from headers", zap.Error(err))
+				return err
 			}
 
-			errChannel <- clients.NewRateLimitError(&cooldownDelay)
-			return
+			err = clients.NewRateLimitError(&cooldownDelay)
+			return err
 		}
 
 		// Server & client errors result in the same error to keep gateway resilient
-		errChannel <- clients.ErrProviderUnavailable
-		return
+		err = clients.ErrProviderUnavailable
+		return err
 	}
 
 	var (
@@ -328,12 +325,10 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 			continue
 		}
 		if err != nil {
-			fmt.Println("err: ", err)
 			if err == io.EOF {
-				// Handle EOF error
-				errChannel <- fmt.Errorf("EOF: %w", err)
+				c.telemetry.Logger.Error("EOF Error", zap.Error(err))
+				return err
 			}
-			errChannel <- fmt.Errorf("failed to read openai chat response: %w", err)
 			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
 			continue
 		}
@@ -354,7 +349,7 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 
 		if string(noPrefixLine) == "[DONE]" {
 			resp.Body.Close()
-			return
+			return nil
 		}
 
 		//fmt.Println("noPrefixLine: ", string(noPrefixLine))
@@ -365,9 +360,9 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		if err := decoder.Decode(&openAICompletion); err != nil {
 			if err == io.EOF {
 				// Handle EOF error
-				return
+				c.telemetry.Logger.Error("EOF Error", zap.Error(err))
+				return err
 			}
-			errChannel <- fmt.Errorf("failed to parse openai chat response: %w", err)
 			c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 			continue
 		}
@@ -396,4 +391,5 @@ func (c *Client) doStreamingChatRequest(ctx context.Context, payload *ChatReques
 		}
 		responseChannel <- &response
 	}
+	return nil
 }
