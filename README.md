@@ -3,10 +3,14 @@
     <img src="docs/logo/glide_no_bgd.png" width="300px" alt="Glide GH Header" />
 </div>
 
-[![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
+
 [![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
-![Discord](https://img.shields.io/discord/1181281407813828710)
+[![Discord](https://img.shields.io/discord/1181281407813828710)](https://discord.gg/pt53Ej7rrc)
+[![Documentation](https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F)](https://glide.einstack.ai/)
+[![LICENSE](https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/EinStack/glide/blob/main/LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield)
+
+---
 
 Glide is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
 
@@ -20,7 +24,7 @@ model failover, caching, key management, etc.
 
 Take a look at the develop branch.
 
-Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
+Check out our [documentation](https://glide.einstack.ai)!
 
 > [!Warning]
 > Glide is under active development right now. Give us a star to support the project ✨
@@ -32,7 +36,7 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
-- Straightforward and simple maintenance and configuration, centrilized API key control & management & rotation, etc.
+- Straightforward and simple maintenance and configuration, centralized API key control & management & rotation, etc.
 
 ## Supported Providers
 
@@ -52,7 +56,7 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 
 Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
 
-Detailed info on routers can be found [here](https://backlandlabs.mintlify.app/essentials/routers).
+Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
 
 #### Available Routers
 
@@ -96,7 +100,7 @@ make up
 
 ### 4. Sample API Request to `/chat` endpoint
 
-See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction) for more details.
+See [API Reference](https://glide.einstack.ai/api-reference/introduction) for more details.
 
 ```json
 {
@@ -120,7 +124,7 @@ Finally, Glide comes with OpenAPI documentation that is accessible via http://12
 
 That's it 🙌
 
-Use [our documentation](https://backlandlabs.mintlify.app/introduction) to further learn about Glide capabilities and configs.
+Use [our documentation](https://glide.einstack.ai) to further learn about Glide capabilities and configs.
 
 ---
 
@@ -169,7 +173,7 @@ Coming Soon
 
 - Join [Discord](https://discord.gg/pt53Ej7rrc) for real-time discussion
 
-Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
+Open [an issue](https://github.com/EinStack/glide/issues) or start [a discussion](https://github.com/EinStack/glide/discussions) 
 if there is a feature or an enhancement you'd like to see in Glide.
 
 ## Contribute
@@ -181,10 +185,12 @@ if there is a feature or an enhancement you'd like to see in Glide.
 
 Thanks everyone for already put their effort to make Glide better and more feature-rich: 
 
-<a href="https://github.com/modelgateway/glide/graphs/contributors">
+<a href="https://github.com/EinStack/glide/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=modelgateway/glide" />
 </a>
 
-
 ## License
+
+Apache 2.0
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_large)

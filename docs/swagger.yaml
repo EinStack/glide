@@ -403,14 +403,14 @@ host: localhost:9099
 info:
   contact:
     name: Glide Community
-    url: https://github.com/modelgateway/glide
+    url: https://github.com/EinStack/glide
   description: API documentation for Glide, an open-source lightweight high-performance
     model gateway
   license:
     name: Apache 2.0
-    url: https://github.com/modelgateway/glide/blob/develop/LICENSE
-  title: Glide Gateway
-  version: "1.0"
+    url: https://github.com/EinStack/glide/blob/develop/LICENSE
+  title: Glide
+  version: 0.0.1
 paths:
   /v1/health/:
     get:
