@@ -79,14 +79,13 @@ func (m *LangModel) Weight() int {
 }
 
 func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
-	// TODO: we may want to track time-to-first-byte to "normalize" response latency wrt response size
 	startedAt := time.Now()
 	resp, err := m.client.Chat(ctx, request)
 
-	// Do we want to track latency in case of errors as well?
-	m.latency.Add(float64(time.Since(startedAt)))
-
 	if err == nil {
+		// record latency per token to normalize measurements
+		m.latency.Add(float64(time.Since(startedAt)) / resp.ModelResponse.TokenUsage.ResponseTokens)
+
 		// successful response
 		resp.ModelID = m.modelID
 

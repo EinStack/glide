@@ -39,10 +39,10 @@ type UnifiedChatResponse struct {
 type ProviderResponse struct {
 	SystemID   map[string]string `json:"responseId,omitempty"`
 	Message    ChatMessage       `json:"message"`
-	TokenCount TokenCount        `json:"tokenCount"`
+	TokenUsage TokenUsage        `json:"tokenCount"`
 }
 
-type TokenCount struct {
+type TokenUsage struct {
 	PromptTokens   float64 `json:"promptTokens"`
 	ResponseTokens float64 `json:"responseTokens"`
 	TotalTokens    float64 `json:"totalTokens"`

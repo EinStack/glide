@@ -358,9 +358,9 @@ definitions:
           type: string
         type: object
       tokenCount:
-        $ref: '#/definitions/schemas.TokenCount'
+        $ref: '#/definitions/schemas.TokenUsage'
     type: object
-  schemas.TokenCount:
+  schemas.TokenUsage:
     properties:
       promptTokens:
         type: number

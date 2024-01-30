@@ -176,7 +176,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				Content: openAICompletion.Choices[0].Message.Content,
 				Name:    "",
 			},
-			TokenCount: schemas.TokenCount{
+			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   openAICompletion.Usage.PromptTokens,
 				ResponseTokens: openAICompletion.Usage.CompletionTokens,
 				TotalTokens:    openAICompletion.Usage.TotalTokens,
