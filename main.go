@@ -11,10 +11,14 @@ import (
 //	@description	API documentation for Glide, an open-source lightweight high-performance model gateway
 
 //	@contact.name	Glide Community
-//	@contact.url	https://github.com/EinStack/glide
+//	@contact.url	https://github.com/EinStack/glide/discussions/categories/general
+//  @contact.email  contact@einstack.ai
 
 //	@license.name	Apache 2.0
 //	@license.url	https://github.com/EinStack/glide/blob/develop/LICENSE
+
+// @externalDocs.description  Documentation
+// @externalDocs.url          https://glide.einstack.ai/
 
 // @host		localhost:9099
 // @BasePath	/

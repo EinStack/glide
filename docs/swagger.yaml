@@ -399,11 +399,15 @@ definitions:
       router:
         type: string
     type: object
+externalDocs:
+  description: Documentation
+  url: https://glide.einstack.ai/
 host: localhost:9099
 info:
   contact:
+    email: contact@einstack.ai
     name: Glide Community
-    url: https://github.com/EinStack/glide
+    url: https://github.com/EinStack/glide/discussions/categories/general
   description: API documentation for Glide, an open-source lightweight high-performance
     model gateway
   license:

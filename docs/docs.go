@@ -11,7 +11,8 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "Glide Community",
-            "url": "https://github.com/EinStack/glide"
+            "url": "https://github.com/EinStack/glide/discussions/categories/general",
+            "email": "contact@einstack.ai"
         },
         "license": {
             "name": "Apache 2.0",
@@ -714,6 +715,10 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "externalDocs": {
+        "description": "Documentation",
+        "url": "https://glide.einstack.ai/"
     }
 }`
 
