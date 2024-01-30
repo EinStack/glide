@@ -7,8 +7,8 @@
         "description": "API documentation for Glide, an open-source lightweight high-performance model gateway",
         "title": "Glide",
         "contact": {
-            "name": "Glide Community",
-            "url": "https://github.com/EinStack/glide/discussions/categories/general",
+            "name": "EinStack Community",
+            "url": "https://github.com/EinStack/glide/",
             "email": "contact@einstack.ai"
         },
         "license": {

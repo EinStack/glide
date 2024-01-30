@@ -10,8 +10,8 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Glide Community",
-            "url": "https://github.com/EinStack/glide/discussions/categories/general",
+            "name": "EinStack Community",
+            "url": "https://github.com/EinStack/glide/",
             "email": "contact@einstack.ai"
         },
         "license": {

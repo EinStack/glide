@@ -10,8 +10,8 @@ import (
 //	@version		0.0.1
 //	@description	API documentation for Glide, an open-source lightweight high-performance model gateway
 
-//	@contact.name	Glide Community
-//	@contact.url	https://github.com/EinStack/glide/discussions/categories/general
+//	@contact.name	EinStack Community
+//	@contact.url	https://github.com/EinStack/glide/
 //  @contact.email  contact@einstack.ai
 
 //	@license.name	Apache 2.0
