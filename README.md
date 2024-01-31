@@ -35,7 +35,7 @@ Check out our [documentation](https://glide.einstack.ai)!
 - **High availability** and **resiliency** when working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
-- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
+- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring (coming soon)
 - Straightforward and simple maintenance and configuration, centralized API key control & management & rotation, etc.
 
 ## Supported Providers
