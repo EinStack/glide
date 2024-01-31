@@ -2,8 +2,14 @@ package schemas
 
 // UnifiedChatRequest defines Glide's Chat Request Schema unified across all language models
 type UnifiedChatRequest struct {
-	Message        ChatMessage   `json:"message"`
-	MessageHistory []ChatMessage `json:"messageHistory"`
+	Message        ChatMessage         `json:"message"`
+	MessageHistory []ChatMessage       `json:"messageHistory"`
+	Override       OverrideChatRequest `json:"override,omitempty"`
+}
+
+type OverrideChatRequest struct {
+	Model   string      `json:"model_id"`
+	Message ChatMessage `json:"message"`
 }
 
 func NewChatFromStr(message string) *UnifiedChatRequest {
@@ -33,10 +39,10 @@ type UnifiedChatResponse struct {
 type ProviderResponse struct {
 	SystemID   map[string]string `json:"responseId,omitempty"`
 	Message    ChatMessage       `json:"message"`
-	TokenCount TokenCount        `json:"tokenCount"`
+	TokenUsage TokenUsage        `json:"tokenCount"`
 }
 
-type TokenCount struct {
+type TokenUsage struct {
 	PromptTokens   float64 `json:"promptTokens"`
 	ResponseTokens float64 `json:"responseTokens"`
 	TotalTokens    float64 `json:"totalTokens"`

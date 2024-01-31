@@ -10,12 +10,13 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Glide Community",
-            "url": "https://github.com/modelgateway/glide"
+            "name": "EinStack Community",
+            "url": "https://github.com/EinStack/glide/",
+            "email": "contact@einstack.ai"
         },
         "license": {
             "name": "Apache 2.0",
-            "url": "https://github.com/modelgateway/glide/blob/develop/LICENSE"
+            "url": "https://github.com/EinStack/glide/blob/develop/LICENSE"
         },
         "version": "{{.Version}}"
     },
@@ -626,6 +627,17 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.OverrideChatRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "model_id": {
+                    "type": "string"
+                }
+            }
+        },
         "schemas.ProviderResponse": {
             "type": "object",
             "properties": {
@@ -639,11 +651,11 @@ const docTemplate = `{
                     }
                 },
                 "tokenCount": {
-                    "$ref": "#/definitions/schemas.TokenCount"
+                    "$ref": "#/definitions/schemas.TokenUsage"
                 }
             }
         },
-        "schemas.TokenCount": {
+        "schemas.TokenUsage": {
             "type": "object",
             "properties": {
                 "promptTokens": {
@@ -668,6 +680,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
+                },
+                "override": {
+                    "$ref": "#/definitions/schemas.OverrideChatRequest"
                 }
             }
         },
@@ -700,16 +715,20 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "externalDocs": {
+        "description": "Documentation",
+        "url": "https://glide.einstack.ai/"
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "0.0.1",
 	Host:             "localhost:9099",
 	BasePath:         "/",
 	Schemes:          []string{"http"},
-	Title:            "Glide Gateway",
+	Title:            "Glide",
 	Description:      "API documentation for Glide, an open-source lightweight high-performance model gateway",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

@@ -1,10 +1,16 @@
 # Glide: Cloud-Native LLM Gateway for Seamless LLMOps
 <div align="center">
-    <img src="docs/images/glide.png" width="400px" alt="Glide GH Header" />
+    <img src="docs/logo/glide_no_bgd.png" width="300px" alt="Glide GH Header" />
 </div>
 
-[![LICENSE](https://img.shields.io/github/license/modelgateway/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/modelgateway/glide/blob/main/LICENSE)
+
 [![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
+[![Discord](https://img.shields.io/discord/1181281407813828710)](https://discord.gg/pt53Ej7rrc)
+[![Documentation](https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F)](https://glide.einstack.ai/)
+[![LICENSE](https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/EinStack/glide/blob/main/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield)
+
+---
 
 Glide is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
 
@@ -14,9 +20,11 @@ so you can dive into tackling your core challenges.
 Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
 model failover, caching, key management, etc. 
 
+<img src="docs/images/marketecture.svg" />
+
 Take a look at the develop branch.
 
-Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
+Check out our [documentation](https://glide.einstack.ai)!
 
 > [!Warning]
 > Glide is under active development right now. Give us a star to support the project ✨
@@ -28,7 +36,7 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
-- Straightforward and simple maintenance and configuration, centrilized API key control & management & rotation, etc.
+- Straightforward and simple maintenance and configuration, centralized API key control & management & rotation, etc.
 
 ## Supported Providers
 
@@ -48,7 +56,7 @@ Check out our [documentation](https://backlandlabs.mintlify.app/introduction)!
 
 Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
 
-Detailed info on routers can be found [here](https://backlandlabs.mintlify.app/essentials/routers).
+Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
 
 #### Available Routers
 
@@ -62,43 +70,47 @@ Detailed info on routers can be found [here](https://backlandlabs.mintlify.app/e
 
 ## Get Started
 
-#### Install
+### Installation
 
-The easiest way to deploy Glide is to build from source.
+The easiest way to deploy Glide is to our [demo repository](https://github.com/EinStack/glide-demo.git) and [docker-compose](https://docs.docker.com/compose/).
 
-Steps to build a container with Docker can be found [here](https://backlandlabs.mintlify.app/introduction#install-and-deploy).
+### 1. Clone the demo repository
 
-#### Set Configuration File
-
-Find detailed information on configuration [here](https://backlandlabs.mintlify.app/essentials/configuration).
-
-```yaml
-telemetry:
-  logging:
-    level: debug  # debug, info, warn, error, fatal
-    encoding: console
-
-routers:
-  language:
-    - id: myrouter
-      models:
-        - id: openai
-          openai:
-            api_key: ""
+```bash
+git clone https://github.com/EinStack/glide-demo.git
 ```
 
-#### Sample API Request to `/chat` endpoint
+### 2. Init Configs
 
-See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction) for more details.
+The demo repository comes with a basic config. Additionally, you need to init your secrets by running:
+
+```bash
+make init # from the demo root
+```
+
+This will create the `secrets` directory with one `.OPENAI_API_KEY` file that you need to put your key to.
+
+### 3. Start Glide
+
+After that, just use docker compose via this command to start your demo environment:
+
+```bash
+make up
+```
+
+### 4. Sample API Request to `/chat` endpoint
+
+See [API Reference](https://glide.einstack.ai/api-reference/introduction) for more details.
 
 ```json
 {
+ "model": "gpt-3.5-turbo", # this is not required but can be used to specify different prompts to different models
  "message":
       {
         "role": "user",
         "content": "Where was it played?"
       },
-    "messageHistory": [
+  "messageHistory": [
       {"role": "system", "content": "You are a helpful assistant."},
       {"role": "user", "content": "Who won the world series in 2020?"},
       {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."}
@@ -108,13 +120,60 @@ See [API Reference](https://backlandlabs.mintlify.app/api-reference/introduction
 
 ### API Docs
 
-Once deployed, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+
+That's it 🙌
+
+Use [our documentation](https://glide.einstack.ai) to further learn about Glide capabilities and configs.
+
+---
+
+Other ways to install Glide are available:
+
+### Homebrew (MacOS)
+
+```bash
+brew tap einstack/tap
+brew install einstack/tap/glide
+```
+
+### Snapcraft (Linux)
+
+Coming Soon
+
+### Docker Images
+
+Glide provides official images in our [GHCR](https://github.com/EinStack/glide/pkgs/container/glide):
+
+- Alpine 3.19:
+```bash
+docker pull ghcr.io/einstack/glide:latest-alpine 
+```
+
+- Ubuntu 22.04 LTS:
+```bash
+docker pull ghcr.io/einstack/glide:latest-ubuntu
+```
+
+- Google Distroless (non-root)
+```bash
+docker pull ghcr.io/einstack/glide:latest-distroless
+```
+
+- RedHat UBI 8.9 Micro
+```bash
+docker pull ghcr.io/einstack/glide:latest-redhat
+```
+
+### Helm Chart
+
+Coming Soon
 
 ## Community
 
 - Join [Discord](https://discord.gg/pt53Ej7rrc) for real-time discussion
 
-Open [an issue](https://github.com/modelgateway/glide/issues) or start [a discussion](https://github.com/modelgateway/glide/discussions) 
+Open [an issue](https://github.com/EinStack/glide/issues) or start [a discussion](https://github.com/EinStack/glide/discussions) 
 if there is a feature or an enhancement you'd like to see in Glide.
 
 ## Contribute
@@ -126,6 +185,12 @@ if there is a feature or an enhancement you'd like to see in Glide.
 
 Thanks everyone for already put their effort to make Glide better and more feature-rich: 
 
-<a href="https://github.com/modelgateway/glide/graphs/contributors">
+<a href="https://github.com/EinStack/glide/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=modelgateway/glide" />
 </a>
+
+## License
+
+Apache 2.0
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_large)

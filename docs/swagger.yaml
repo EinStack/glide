@@ -342,6 +342,13 @@ definitions:
           or assistant.
         type: string
     type: object
+  schemas.OverrideChatRequest:
+    properties:
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+      model_id:
+        type: string
+    type: object
   schemas.ProviderResponse:
     properties:
       message:
@@ -351,9 +358,9 @@ definitions:
           type: string
         type: object
       tokenCount:
-        $ref: '#/definitions/schemas.TokenCount'
+        $ref: '#/definitions/schemas.TokenUsage'
     type: object
-  schemas.TokenCount:
+  schemas.TokenUsage:
     properties:
       promptTokens:
         type: number
@@ -370,6 +377,8 @@ definitions:
         items:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
+      override:
+        $ref: '#/definitions/schemas.OverrideChatRequest'
     type: object
   schemas.UnifiedChatResponse:
     properties:
@@ -390,18 +399,22 @@ definitions:
       router:
         type: string
     type: object
+externalDocs:
+  description: Documentation
+  url: https://glide.einstack.ai/
 host: localhost:9099
 info:
   contact:
-    name: Glide Community
-    url: https://github.com/modelgateway/glide
+    email: contact@einstack.ai
+    name: EinStack Community
+    url: https://github.com/EinStack/glide/
   description: API documentation for Glide, an open-source lightweight high-performance
     model gateway
   license:
     name: Apache 2.0
-    url: https://github.com/modelgateway/glide/blob/develop/LICENSE
-  title: Glide Gateway
-  version: "1.0"
+    url: https://github.com/EinStack/glide/blob/develop/LICENSE
+  title: Glide
+  version: 0.0.1
 paths:
   /v1/health/:
     get:

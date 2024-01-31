@@ -5,16 +5,17 @@
     "swagger": "2.0",
     "info": {
         "description": "API documentation for Glide, an open-source lightweight high-performance model gateway",
-        "title": "Glide Gateway",
+        "title": "Glide",
         "contact": {
-            "name": "Glide Community",
-            "url": "https://github.com/modelgateway/glide"
+            "name": "EinStack Community",
+            "url": "https://github.com/EinStack/glide/",
+            "email": "contact@einstack.ai"
         },
         "license": {
             "name": "Apache 2.0",
-            "url": "https://github.com/modelgateway/glide/blob/develop/LICENSE"
+            "url": "https://github.com/EinStack/glide/blob/develop/LICENSE"
         },
-        "version": "1.0"
+        "version": "0.0.1"
     },
     "host": "localhost:9099",
     "basePath": "/",
@@ -623,6 +624,17 @@
                 }
             }
         },
+        "schemas.OverrideChatRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "model_id": {
+                    "type": "string"
+                }
+            }
+        },
         "schemas.ProviderResponse": {
             "type": "object",
             "properties": {
@@ -636,11 +648,11 @@
                     }
                 },
                 "tokenCount": {
-                    "$ref": "#/definitions/schemas.TokenCount"
+                    "$ref": "#/definitions/schemas.TokenUsage"
                 }
             }
         },
-        "schemas.TokenCount": {
+        "schemas.TokenUsage": {
             "type": "object",
             "properties": {
                 "promptTokens": {
@@ -665,6 +677,9 @@
                     "items": {
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
+                },
+                "override": {
+                    "$ref": "#/definitions/schemas.OverrideChatRequest"
                 }
             }
         },
@@ -697,5 +712,9 @@
                 }
             }
         }
+    },
+    "externalDocs": {
+        "description": "Documentation",
+        "url": "https://glide.einstack.ai/"
     }
 }

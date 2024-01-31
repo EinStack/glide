@@ -5,6 +5,21 @@ The changelog consists of three categories:
 - **Improvements** - bugfixes, performance and other types of improvements to existing functionality
 - **Miscellaneous** - all other updates like build, release, CLI, etc.
 
+## 0.0.1 (Jan 31st, 2024)
+
+### Features
+
+- ✨ #81: Allow to chat message based for specific models (@mkrueger12)
+
+### Improvements
+
+- 🔧 #78: Normalize response latency by response token count (@roma-glushko)
+- 📝 #112 added the CLI banner info (@roma-glushko)
+
+### Miscellaneous
+
+- 📝 #114 Make links actual across the project (@roma-glushko)
+
 ## 0.0.1-rc.2 (Jan 22nd, 2024)
 
 ### Improvements

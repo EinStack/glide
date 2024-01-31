@@ -75,6 +75,14 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatReque
 
 			langModel := model.(providers.LanguageModel)
 
+			// Check if there is an override in the request
+			if request.Override != (schemas.OverrideChatRequest{}) {
+				// Override the message if the language model ID matches the override model ID
+				if langModel.ID() == request.Override.Model {
+					request.Message = request.Override.Message
+				}
+			}
+
 			resp, err := langModel.Chat(ctx, request)
 			if err != nil {
 				r.telemetry.Logger.Warn(

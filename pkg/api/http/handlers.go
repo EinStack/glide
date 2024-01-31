@@ -33,10 +33,12 @@ type Handler = func(ctx context.Context, c *app.RequestContext)
 //	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(ctx context.Context, c *app.RequestContext) {
+		// Unmarshal request body
 		var req *schemas.UnifiedChatRequest
 
 		err := json.Unmarshal(c.Request.Body(), &req)
 		if err != nil {
+			// Return bad request error
 			c.JSON(consts.StatusBadRequest, ErrorSchema{
 				Message: err.Error(),
 			})
@@ -44,8 +46,10 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 			return
 		}
 
+		// Bind JSON to request
 		err = c.BindJSON(&req)
 		if err != nil {
+			// Return bad request error
 			c.JSON(consts.StatusBadRequest, ErrorSchema{
 				Message: err.Error(),
 			})
@@ -53,10 +57,12 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 			return
 		}
 
+		// Get router ID from path
 		routerID := c.Param("router")
 		router, err := routerManager.GetLangRouter(routerID)
 
 		if errors.Is(err, routers.ErrRouterNotFound) {
+			// Return not found error
 			c.JSON(consts.StatusNotFound, ErrorSchema{
 				Message: err.Error(),
 			})
@@ -64,9 +70,10 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 			return
 		}
 
+		// Chat with router
 		resp, err := router.Chat(ctx, req)
 		if err != nil {
-			// TODO: do a better handling, not everything is going to be an internal error
+			// Return internal server error
 			c.JSON(consts.StatusInternalServerError, ErrorSchema{
 				Message: err.Error(),
 			})
@@ -74,6 +81,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 			return
 		}
 
+		// Return chat response
 		c.JSON(consts.StatusOK, resp)
 	}
 }
