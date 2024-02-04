@@ -139,7 +139,21 @@ brew install einstack/tap/glide
 
 ### Snapcraft (Linux)
 
-Coming Soon
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/glide)
+
+```bash
+snap install glide
+```
+
+To upgrade the already installed package, you just need to run:
+
+```bash
+snap refresh glide
+```
+
+Detailed instruction on Snapcraft installation for different Linux distos:
+
+- 
 
 ### Docker Images
 
