@@ -5,8 +5,8 @@ on:
     tags:
       - "*"
 
-    branches:
-      - main
+#    branches:
+#      - main
 
 permissions:
   contents: write
