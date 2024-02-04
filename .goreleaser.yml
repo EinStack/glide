@@ -279,10 +279,6 @@ snapcrafts:
       - beta
       - candidate
       - stable
-      - "{{ .Major }}.{{ .Minor }}/edge"
-      - "{{ .Major }}.{{ .Minor }}/beta"
-      - "{{ .Major }}.{{ .Minor }}/candidate"
-      - "{{ .Major }}.{{ .Minor }}/stable"
 
     # A guardrail to prevent you from releasing a snap to all your users before
     # it is ready.
