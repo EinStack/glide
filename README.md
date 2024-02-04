@@ -72,6 +72,9 @@ Detailed info on routers can be found [here](https://glide.einstack.ai/essential
 
 ### Installation
 
+> [!Note]
+> Windows users should follow an instruction right from [the demo README file](https://github.com/EinStack/glide-demo) that specifies how to do the steps without the `make` command as Windows doesn't come with it by default.
+
 The easiest way to deploy Glide is to our [demo repository](https://github.com/EinStack/glide-demo.git) and [docker-compose](https://docs.docker.com/compose/).
 
 ### 1. Clone the demo repository
