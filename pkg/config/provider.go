@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -38,6 +39,10 @@ func NewProvider() *Provider {
 		Config:    nil,
 		validator: configValidator,
 	}
+}
+
+func (p *Provider) LoadDotEnv(envPath string) error {
+	return godotenv.Load(envPath)
 }
 
 func (p *Provider) Load(configPath string) (*Provider, error) {

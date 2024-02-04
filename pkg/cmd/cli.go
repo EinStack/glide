@@ -1,12 +1,12 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
 	"glide/pkg"
 	"glide/pkg/config"
-
-	"github.com/spf13/cobra"
 )
 
+var dotEnvFile string
 var cfgFile string
 
 const Description = `
@@ -36,7 +36,16 @@ func NewCLI() *cobra.Command {
 		Long:    Description,
 		Version: pkg.FullVersion,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			configProvider, err := config.NewProvider().Load(cfgFile)
+			configProvider := config.NewProvider()
+
+			err := configProvider.LoadDotEnv(dotEnvFile)
+
+			if err != nil {
+
+			}
+
+			_, err = configProvider.Load(cfgFile)
+
 			if err != nil {
 				return err
 			}
@@ -52,7 +61,9 @@ func NewCLI() *cobra.Command {
 		SilenceErrors: true,
 	}
 
+	cli.PersistentFlags().StringVarP(&dotEnvFile, "env", "e", ".env", "dotenv file")
 	cli.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
+
 	_ = cli.MarkPersistentFlagRequired("config")
 
 	return cli
