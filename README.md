@@ -153,7 +153,19 @@ snap refresh glide
 
 Detailed instruction on Snapcraft installation for different Linux distos:
 
-- 
+- [Arch](https://snapcraft.io/install/glide/arch)
+- [CentOS](https://snapcraft.io/install/glide/centos)
+- [Debian](https://snapcraft.io/install/glide/debian)
+- [elementaryOS](https://snapcraft.io/install/glide/elementary)
+- [Fedora](https://snapcraft.io/install/glide/fedora)
+- [KDE Neon](https://snapcraft.io/install/glide/kde-neon)
+- [Kubuntu](https://snapcraft.io/install/glide/kubuntu)
+- [Manjaro](https://snapcraft.io/install/glide/manjaro)
+- [Pop! OS](https://snapcraft.io/install/glide/pop)
+- [openSUSE](https://snapcraft.io/install/glide/opensuse)
+- [RHEL](https://snapcraft.io/install/glide/rhel)
+- [Ubuntu](https://snapcraft.io/install/glide/ubuntu)
+- [Raspberry Pi](https://snapcraft.io/install/glide/raspbian)
 
 ### Docker Images
 
