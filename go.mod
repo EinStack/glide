@@ -7,6 +7,7 @@ require (
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/hertz-contrib/swagger v0.1.0
+	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/files v1.0.1
