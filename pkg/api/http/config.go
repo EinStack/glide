@@ -2,8 +2,9 @@ package http
 
 import (
 	"fmt"
-	"github.com/cloudwego/hertz/pkg/network/standard"
 	"time"
+
+	"github.com/cloudwego/hertz/pkg/network/standard"
 
 	"github.com/cloudwego/hertz/pkg/common/config"
 
