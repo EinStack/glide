@@ -45,6 +45,8 @@ archives:
         format: zip
     files:
       - LICENSE
+      - CHANGELOG.md
+      - ROADMAP.md
 
 checksum:
   name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
@@ -185,7 +187,7 @@ brews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     #
     # Templates: allowed
-    skip_upload: false # auto
+    skip_upload: true # auto
 
     # Packages your package depends on.
     dependencies: []
@@ -262,11 +264,6 @@ snapcrafts:
     # we live in tweetspace and your description wants to look good in the snap
     # store.
     description: A open simple blazing-fast model gateway for rapid development of production GenAI apps
-
-    # Disable this configuration.
-    #
-    # Templates: allowed (since v1.20)
-    disable: true
 
     # Channels in store where snap will be pushed.
     #
@@ -351,7 +348,7 @@ snapcrafts:
 announce:
   discord:
     # Whether its enabled or not.
-    enabled: true
+    enabled: false
 
     # Message template to use while publishing.
     #
