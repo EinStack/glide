@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"sync"
 
 	"glide/pkg/routers"
@@ -14,6 +15,7 @@ import (
 type ServerManager struct {
 	httpServer *http.Server
 	shutdownWG *sync.WaitGroup
+	telemetry  *telemetry.Telemetry
 }
 
 func NewServerManager(cfg *Config, tel *telemetry.Telemetry, router *routers.RouterManager) (*ServerManager, error) {
@@ -27,6 +29,7 @@ func NewServerManager(cfg *Config, tel *telemetry.Telemetry, router *routers.Rou
 	return &ServerManager{
 		httpServer: httpServer,
 		shutdownWG: &sync.WaitGroup{},
+		telemetry:  tel,
 	}, nil
 }
 
@@ -37,10 +40,11 @@ func (mgr *ServerManager) Start() {
 		go func() {
 			defer mgr.shutdownWG.Done()
 
-			// TODO: log the error
 			err := mgr.httpServer.Run()
 
-			println(err)
+			if err != nil {
+				mgr.telemetry.Logger.Error("error on running HTTP server", zap.Error(err))
+			}
 		}()
 	}
 }

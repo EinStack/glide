@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	"glide/pkg/cmd"
+	"log"
 )
 
 //	@title			Glide
