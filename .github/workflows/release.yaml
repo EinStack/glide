@@ -5,8 +5,8 @@ on:
     tags:
       - "*"
 
-#    branches:
-#      - main
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -72,12 +72,12 @@ jobs:
       - name: login into Github Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
-#      - name: build ${{ matrix.image }} image
-#        working-directory: ./images
-#        env:
-#          BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
-#        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
-#
-#      - name: publish ${{ matrix.image }} image to Github Container Registry
-#        working-directory: ./images
-#        run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
+      - name: build ${{ matrix.image }} image
+        working-directory: ./images
+        env:
+          BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
+        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to Github Container Registry
+        working-directory: ./images
+        run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}

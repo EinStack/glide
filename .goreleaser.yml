@@ -187,7 +187,7 @@ brews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     #
     # Templates: allowed
-    skip_upload: true # auto
+    skip_upload: false # auto
 
     # Packages your package depends on.
     dependencies: []
@@ -327,7 +327,7 @@ snapcrafts:
 announce:
   discord:
     # Whether its enabled or not.
-    enabled: false
+    enabled: true
 
     # Message template to use while publishing.
     #
