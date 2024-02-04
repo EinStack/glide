@@ -1,15 +1,17 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
+
 	"github.com/spf13/cobra"
 	"glide/pkg"
 	"glide/pkg/config"
-	"log"
 )
 
-var dotEnvFile string
-var cfgFile string
+var (
+	dotEnvFile string
+	cfgFile    string
+)
 
 const Description = `
  ██████╗ ██╗     ██╗██████╗ ███████╗
@@ -45,11 +47,10 @@ func NewCLI() *cobra.Command {
 			if err != nil {
 				log.Println("⚠️failed to load dotenv file: ", err) // don't have an inited logger at this moment
 			} else {
-				log.Println(fmt.Sprintf("🔧dot env file loaded (%v)", dotEnvFile))
+				log.Printf("🔧dot env file loaded (%v)", dotEnvFile)
 			}
 
 			_, err = configProvider.Load(cfgFile)
-
 			if err != nil {
 				return err
 			}

@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/joho/godotenv"
 
 	"github.com/go-playground/validator/v10"
 
