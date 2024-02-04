@@ -2,12 +2,12 @@ package http
 
 import (
 	"fmt"
+	"github.com/cloudwego/hertz/pkg/network/standard"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/config"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/network/netpoll"
 )
 
 type ServerConfig struct {
@@ -43,7 +43,9 @@ func (cfg *ServerConfig) ToServer() *server.Hertz {
 	// More configs are listed on https://www.cloudwego.io/docs/hertz/tutorials/basic-feature/engine/
 	serverOptions := []config.Option{
 		server.WithHostPorts(cfg.Address()),
-		server.WithTransport(netpoll.NewTransporter),
+		// https://www.cloudwego.io/docs/hertz/tutorials/basic-feature/network-lib/#choosing-appropriate-network-library
+		server.WithTransport(standard.NewTransporter),
+		server.WithStreamBody(true),
 	}
 
 	if cfg.IdleTimeout != nil {

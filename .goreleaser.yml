@@ -14,6 +14,7 @@ builds:
       - linux
       - darwin
       - freebsd
+      - windows
     goarch:
       - amd64
       - arm
