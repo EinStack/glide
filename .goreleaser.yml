@@ -317,14 +317,6 @@ snapcrafts:
     assumes:
       - snapd2.38
 
-    # his top-level keyword to define a hook with a plug to access more
-    # privileges.
-    #
-    # Since: v1.19
-    hooks:
-      install:
-        - network
-
     # Each binary built by GoReleaser is an app inside the snap. In this section
     # you can declare extra details for those binaries. It is optional.
     # See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
