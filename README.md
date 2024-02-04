@@ -157,7 +157,7 @@ Detailed instruction on Snapcraft installation for different Linux distos:
 
 ### Docker Images
 
-Glide provides official images in our [GHCR](https://github.com/EinStack/glide/pkgs/container/glide):
+Glide provides official images in our [GHCR](https://github.com/EinStack/glide/pkgs/container/glide) & [DockerHub](https://hub.docker.com/u/einstack  ):
 
 - Alpine 3.19:
 ```bash
