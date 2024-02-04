@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"sync"
+
+	"go.uber.org/zap"
 
 	"glide/pkg/routers"
 
@@ -41,7 +42,6 @@ func (mgr *ServerManager) Start() {
 			defer mgr.shutdownWG.Done()
 
 			err := mgr.httpServer.Run()
-
 			if err != nil {
 				mgr.telemetry.Logger.Error("error on running HTTP server", zap.Error(err))
 			}
