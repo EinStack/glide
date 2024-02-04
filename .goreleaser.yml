@@ -319,15 +319,6 @@ snapcrafts:
     apps:
       # The name of the app must be the same name as the binary built or the snapcraft name.
       glide:
-        # If you any to pass args to your binary, you can add them with the
-        # args option.
-        args: --foo
-
-        # The kind of wrapper to generate for the given command.
-        #
-        # Since: v1.6
-        adapter: none
-
         # You can override the command name.
         #
         # Default: AppName
