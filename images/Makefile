@@ -99,3 +99,19 @@ publish-ghcr-%: ## Push images to Github Registry
 			docker push ghcr.io/$(REPOSITORY):latest; \
 		fi; \
 	}
+
+publish-dockerhub-%: ## Push images to Docker Hub
+	@echo "🚚Pushing the $* image to Github Registry.."
+	@docker tag $(REPOSITORY):$(VERSION)-$* $(REPOSITORY):$(VERSION)-$*
+	@echo "- pushing $(REPOSITORY):$(VERSION)-$*"
+	@docker push $(REPOSITORY):$(VERSION)-$*
+	@echo $(VERSION) | grep -q $(RC_PART) || { \
+		docker tag $(REPOSITORY):$(VERSION)-$* $(REPOSITORY):latest-$*; \
+		echo "- pushing $(REPOSITORY):latest-$*"; \
+		docker push $(REPOSITORY):latest-$*; \
+		if [ "$*" = "alpine" ]; then \
+			docker tag $(REPOSITORY):$(VERSION)-$* $(REPOSITORY):latest; \
+			echo "- pushing $(REPOSITORY):latest"; \
+			docker push $(REPOSITORY):latest; \
+		fi; \
+	}
