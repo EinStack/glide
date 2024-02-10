@@ -5,7 +5,7 @@ telemetry:
 
 routers:
   language:
-    - id: myrouter
+    - id: default
       models:
         - id: openai
           openai:

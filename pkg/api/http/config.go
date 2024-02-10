@@ -21,10 +21,10 @@ type ServerConfig struct {
 }
 
 func DefaultServerConfig() *ServerConfig {
-	maxReqBodySize := 4 * 1024 * 1024
-	readTimeout := 3 * time.Second
-	writeTimeout := 3 * time.Second
-	idleTimeout := 1 * time.Second
+	maxReqBodySizeBytes := 4 * 1024 * 1024 // 4Mb
+	readTimeout := 3 * time.Minute
+	writeTimeout := 3 * time.Minute
+	idleTimeout := 3 * time.Minute
 
 	return &ServerConfig{
 		Host:               "127.0.0.1",
@@ -32,7 +32,7 @@ func DefaultServerConfig() *ServerConfig {
 		IdleTimeout:        &idleTimeout,
 		ReadTimeout:        &readTimeout,
 		WriteTimeout:       &writeTimeout,
-		MaxRequestBodySize: &maxReqBodySize,
+		MaxRequestBodySize: &maxReqBodySizeBytes,
 	}
 }
 
