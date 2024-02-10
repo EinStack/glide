@@ -71,6 +71,7 @@ func (e *Expander) expandFileDirectives(content string) string {
 		}
 
 		filePath := matches[1]
+
 		content, err := os.ReadFile(filepath.Clean(filePath))
 		if err != nil {
 			log.Printf("could not expand the file directive (${file:%s}): %v", filePath, err)

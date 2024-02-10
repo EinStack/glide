@@ -37,6 +37,7 @@ func TestAnthropicClient_ChatRequest(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+
 		_, err = w.Write(chatResponse)
 		if err != nil {
 			t.Errorf("error on sending chat response: %v", err)
@@ -68,7 +69,7 @@ func TestAnthropicClient_ChatRequest(t *testing.T) {
 
 func TestAnthropicClient_BadChatRequest(t *testing.T) {
 	// Anthropic Messages API: https://docs.anthropic.com/claude/reference/messages_post
-	AnthropicMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	AnthropicMock := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Return a non-OK status code
 		w.WriteHeader(http.StatusBadRequest)
 	})

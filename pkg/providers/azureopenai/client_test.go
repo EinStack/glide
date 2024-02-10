@@ -37,6 +37,7 @@ func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+
 		_, err = w.Write(chatResponse)
 		if err != nil {
 			t.Errorf("error on sending chat response: %v", err)
@@ -66,7 +67,7 @@ func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
 }
 
 func TestAzureOpenAIClient_ChatError(t *testing.T) {
-	azureOpenAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	azureOpenAIMock := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	})
 
@@ -99,7 +100,7 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 
 func TestDoChatRequest_ErrorResponse(t *testing.T) {
 	// Create a mock HTTP server that returns a non-OK status code
-	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}))
 

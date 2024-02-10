@@ -97,7 +97,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 //	@Success		200	{object}	http.RouterListSchema
 //	@Router			/v1/language/ [GET]
 func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
-	return func(ctx context.Context, c *app.RequestContext) {
+	return func(_ context.Context, c *app.RequestContext) {
 		configuredRouters := routerManager.GetLangRouters()
 		cfgs := make([]*routers.LangRouterConfig, 0, len(configuredRouters))
 
