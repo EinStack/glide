@@ -39,7 +39,7 @@ func NewCLI() *cobra.Command {
 		Short:   "🐦Glide is an open-source, lightweight, high-performance model gateway",
 		Long:    Description,
 		Version: pkg.FullVersion,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			configProvider := config.NewProvider()
 
 			err := configProvider.LoadDotEnv(dotEnvFile)
