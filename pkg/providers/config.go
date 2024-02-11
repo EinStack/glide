@@ -6,6 +6,7 @@ import (
 
 	"glide/pkg/routers/latency"
 
+	"glide/pkg/providers/bedrock"
 	"glide/pkg/providers/clients"
 
 	"glide/pkg/routers/health"
@@ -33,6 +34,7 @@ type LangModelConfig struct {
 	Cohere      *cohere.Config      `yaml:"cohere,omitempty" json:"cohere,omitempty"`
 	OctoML      *octoml.Config      `yaml:"octoml,omitempty" json:"octoml,omitempty"`
 	Anthropic   *anthropic.Config   `yaml:"anthropic,omitempty" json:"anthropic,omitempty"`
+	Bedrock     *bedrock.Config     `yaml:"bedrock,omitempty" json:"bedrock,omitempty"`
 }
 
 func DefaultLangModelConfig() *LangModelConfig {
@@ -68,6 +70,8 @@ func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvide
 		return octoml.NewClient(c.OctoML, c.Client, tel)
 	case c.Anthropic != nil:
 		return anthropic.NewClient(c.Anthropic, c.Client, tel)
+	case c.Bedrock != nil:
+		return anthropic.NewClient(c.Anthropic, c.Client, tel)
 	default:
 		return nil, ErrProviderNotFound
 	}
@@ -93,6 +97,10 @@ func (c *LangModelConfig) validateOneProvider() error {
 	}
 
 	if c.Anthropic != nil {
+		providersConfigured++
+	}
+
+	if c.Bedrock != nil {
 		providersConfigured++
 	}
 
