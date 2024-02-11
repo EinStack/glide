@@ -19,9 +19,9 @@ type ServerConfig struct {
 
 func DefaultServerConfig() *ServerConfig {
 	maxReqBodySizeBytes := 4 * 1024 * 1024 // 4Mb
-	readTimeout := 3 * time.Minute
-	writeTimeout := 3 * time.Minute
-	idleTimeout := 3 * time.Minute
+	readTimeout := 30 * time.Second
+	writeTimeout := 1 * time.Minute
+	idleTimeout := 30 * time.Second
 
 	return &ServerConfig{
 		Host:               "127.0.0.1",
@@ -47,7 +47,8 @@ func (cfg *ServerConfig) ToServer() *fiber.App {
 		StreamRequestBody:            true,
 		Immutable:                    false,
 		DisablePreParseMultipartForm: true,
-		EnablePrintRoutes:            true,
+		EnablePrintRoutes:            false,
+		DisableStartupMessage:        false,
 	}
 
 	if cfg.IdleTimeout != nil {

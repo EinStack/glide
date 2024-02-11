@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofiber/contrib/fiberzap/v2"
+
 	"github.com/gofiber/contrib/swagger"
 
 	"github.com/gofiber/fiber/v2"
@@ -39,6 +41,10 @@ func (srv *Server) Run() error {
 		BasePath: "/v1/",
 		Path:     "swagger",
 		FilePath: "./docs/swagger.json",
+	}))
+
+	srv.server.Use(fiberzap.New(fiberzap.Config{
+		Logger: srv.telemetry.Logger,
 	}))
 
 	v1 := srv.server.Group("/v1")
