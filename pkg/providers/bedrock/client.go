@@ -34,7 +34,7 @@ type Client struct {
 
 // NewClient creates a new OpenAI client for the OpenAI API.
 func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry) (*Client, error) {
-	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint)
+	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint, providerConfig.Model, "/invoke")
 	if err != nil {
 		return nil, err
 	}

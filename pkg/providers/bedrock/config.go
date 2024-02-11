@@ -7,17 +7,17 @@ import (
 // Params defines OpenAI-specific model params with the specific validation of values
 // TODO: Add validations
 type Params struct {
-	Temperature  float64  `yaml:"temperature,omitempty" json:"temperature"`
-	TopP         float64  `yaml:"top_p,omitempty" json:"top_p"`
-	MaxTokens    int      `yaml:"max_tokens,omitempty" json:"max_tokens"`
-	StopSequence []string `yaml:"stop_sequences,omitempty" json:"stop"`
+	Temperature  float64  `yaml:"temperature" json:"temperature"`
+	TopP         float64  `yaml:"top_p" json:"top_p"`
+	MaxTokens    int      `yaml:"max_tokens" json:"max_tokens"`
+	StopSequence []string `yaml:"stop_sequences" json:"stop"`
 }
 
 func DefaultParams() Params {
 	return Params{
-		Temperature:  0.8,
+		Temperature:  0,
 		TopP:         1,
-		MaxTokens:    100,
+		MaxTokens:    512,
 		StopSequence: []string{},
 	}
 }
@@ -35,8 +35,9 @@ type Config struct {
 	ChatEndpoint  string        `yaml:"chatEndpoint" json:"chatEndpoint" validate:"required"`
 	Model         string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
-	AccessKey     fields.Secret `yaml:"access_key" json:"-" validate:"required"`
-	SecretKey     fields.Secret `yaml:"secret_key" json:"-" validate:"required"`
+	AccessKey     string        `yaml:"access_key" json:"-" validate:"required"`
+	SecretKey     string        `yaml:"secret_key" json:"-" validate:"required"`
+	AWSRegion     string        `yaml:"aws_region" json:"awsRegion" validate:"required"`
 	DefaultParams *Params       `yaml:"defaultParams,omitempty" json:"defaultParams"`
 }
 

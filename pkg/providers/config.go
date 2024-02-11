@@ -106,12 +106,12 @@ func (c *LangModelConfig) validateOneProvider() error {
 
 	// check other providers here
 	if providersConfigured == 0 {
-		return fmt.Errorf("exactly one provider must be cofigured for model \"%v\", none is configured", c.ID)
+		return fmt.Errorf("exactly one provider must be configured for model \"%v\", none is configured", c.ID)
 	}
 
 	if providersConfigured > 1 {
 		return fmt.Errorf(
-			"exactly one provider must be cofigured for model \"%v\", %v are configured",
+			"exactly one provider must be configured for model \"%v\", %v are configured",
 			c.ID,
 			providersConfigured,
 		)

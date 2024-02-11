@@ -5,14 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"time"
+	"strings"
 
-	"glide/pkg/providers/clients"
+	//"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
+
 	"go.uber.org/zap"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
 type ChatMessage struct {
@@ -20,36 +25,38 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
-// ChatRequest is an OpenAI-specific request schema
+// ChatRequest is an Bedrock-specific request schema
 type ChatRequest struct {
-	Messages     []ChatMessage `json:"inputText"`
-	Temperature  float64       `json:"temperature,omitempty"`
-	TopP         float64       `json:"topP,omitempty"`
-	MaxTokens    int           `json:"MaxTokenCount,omitempty"`
-	StopSequence []string      `json:"stopSequences,omitempty"`
+	Messages     string `json:"inputText"`
+	TextGenerationConfig TextGenerationConfig `json:"textGenerationConfig"`
+}
+
+type TextGenerationConfig struct {
+	Temperature    float64  `json:"temperature"`
+    TopP           float64  `json:"topP"`
+    MaxTokenCount  int      `json:"maxTokenCount"`
+    StopSequences  []string `json:"stopSequences,omitempty"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Temperature:  cfg.DefaultParams.Temperature,
-		TopP:         cfg.DefaultParams.TopP,
-		MaxTokens:    cfg.DefaultParams.MaxTokens,
-		StopSequence: cfg.DefaultParams.StopSequence,
+		TextGenerationConfig: TextGenerationConfig{
+			MaxTokenCount: cfg.DefaultParams.MaxTokens,
+			StopSequences: cfg.DefaultParams.StopSequence,
+			Temperature:   cfg.DefaultParams.Temperature,
+			TopP:          cfg.DefaultParams.TopP,
+		},
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []ChatMessage {
-	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
+func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) string {
+	// message history not yet supported for AWS models
 
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
+	message := fmt.Sprintf("Role: %s, Content: %s", request.Message.Role, request.Message.Content)
 
-	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
 
-	return messages
+	return message
 }
 
 // Chat sends a chat request to the specified OpenAI model.
@@ -81,7 +88,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal openai chat request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal bedrock request payload: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
@@ -89,64 +96,35 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
-	req.Header.Set("Content-Type", "application/json")
+	_ = req
 
-	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
-		"openai chat request",
-		zap.String("chat_url", c.chatURL),
-		zap.Any("payload", payload),
+	cfg, _ := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.config.AccessKey, c.config.SecretKey, "")),
+		config.WithRegion(c.config.AWSRegion),
 	)
 
-	resp, err := c.httpClient.Do(req)
+	client := bedrockruntime.NewFromConfig(cfg)
+
+	result, err := client.InvokeModel(context.Background(), &bedrockruntime.InvokeModelInput{
+		ModelId:     aws.String(c.config.Model),
+		ContentType: aws.String("application/json"),
+		Body:        rawPayload,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to send openai chat request: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "no such host") {
+			fmt.Printf("Error: The Bedrock service is not available in the selected region. Please double-check the service availability for your region at https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/.\n")
+		} else if strings.Contains(errMsg, "Could not resolve the foundation model") {
+			fmt.Printf("Error: Could not resolve the foundation model from model identifier: \"%v\". Please verify that the requested model exists and is accessible within the specified region.\n", c.config.Model)
+		} else {
+			fmt.Printf("Error: Couldn't invoke model. Here's why: %v\n", err)
 		}
-
-		c.telemetry.Logger.Error(
-			"openai chat request failed",
-			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
-			zap.Any("headers", resp.Header),
-		)
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			// Read the value of the "Retry-After" header to get the cooldown delay
-			retryAfter := resp.Header.Get("Retry-After")
-
-			// Parse the value to get the duration
-			cooldownDelay, err := time.ParseDuration(retryAfter)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-			}
-
-			return nil, clients.NewRateLimitError(&cooldownDelay)
-		}
-
-		// Server & client errors result in the same error to keep gateway resilient
-		return nil, clients.ErrProviderUnavailable
-	}
-
-	// Read the response body into a byte slice
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
-		return nil, err
 	}
 
 	// Parse the response JSON
-	var openAICompletion schemas.OpenAIChatCompletion
+	var bedrockCompletion schemas.BedrockChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(result.Body, &bedrockCompletion)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
@@ -154,24 +132,24 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
-		Provider: providerName,
-		Model:    openAICompletion.Model,
+		ID:       "",
+		Created:  0,
+		Provider: "bedrock",
+		Model:    c.config.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
+				"system_fingerprint": "",
 			},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
+				Role:    "assistant",
+				Content: bedrockCompletion.Results[0].OutputText,
 				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   float64(bedrockCompletion.Results[0].TokenCount),
+				ResponseTokens: float64(bedrockCompletion.Results[0].TokenCount),
+				TotalTokens:    float64(bedrockCompletion.Results[0].TokenCount),
 			},
 		},
 	}
