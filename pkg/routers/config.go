@@ -114,7 +114,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 	}
 
 	if len(models) == 1 {
-		tel.Logger.Warn(
+		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
 			fmt.Sprintf("Router \"%v\" has only one active model defined. "+
 				"This is not recommended for production setups. "+
 				"Define at least a few models to leverage resiliency logic Glide provides",
