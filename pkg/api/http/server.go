@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -69,5 +70,14 @@ func (srv *Server) Shutdown(ctx context.Context) error {
 	c, cancel := context.WithTimeout(ctx, exitWaitTime)
 	defer cancel()
 
-	return srv.server.ShutdownWithContext(c)
+	if err := srv.server.ShutdownWithContext(c); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			srv.telemetry.Logger.Info("Server closed forcefully due to shutdown timeout")
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
 }
