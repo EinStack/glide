@@ -100,8 +100,9 @@ func TestAWSBedrockClient_ChatRequest(t *testing.T) {
 	clientCfg := clients.DefaultClientConfig()
 
 	providerCfg.BaseURL = openAIServer.URL
-
-	println(providerCfg.ChatEndpoint)
+	providerCfg.AWSRegion = "us-west-2"
+	providerCfg.AccessKey = ""
+	providerCfg.SecretKey = ""
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
