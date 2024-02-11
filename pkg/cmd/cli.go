@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"glide/pkg/version"
 	"log"
+
+	"glide/pkg/version"
 
 	"github.com/spf13/cobra"
 	"glide/pkg"

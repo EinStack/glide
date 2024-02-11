@@ -3,9 +3,12 @@ package http
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/gofiber/contrib/swagger"
+
 	"github.com/gofiber/fiber/v2"
 	_ "glide/docs" // importing docs package to include them into the binary
-	"time"
 
 	"glide/pkg/routers"
 
@@ -31,7 +34,12 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 }
 
 func (srv *Server) Run() error {
-	srv.server.Use(NotFoundHandler)
+	srv.server.Use(swagger.New(swagger.Config{
+		Title:    "Glide API Docs",
+		BasePath: "/v1/",
+		Path:     "swagger",
+		FilePath: "./docs/swagger.json",
+	}))
 
 	v1 := srv.server.Group("/v1")
 
@@ -40,10 +48,9 @@ func (srv *Server) Run() error {
 
 	v1.Get("/health/", HealthHandler)
 
-	//schemaDocURL := swagger.URL(fmt.Sprintf("http://%v/v1/swagger/doc.json", srv.config.Address()))
-	//v1.GET("/swagger/*any", swagger.WrapHandler(swaggerFiles.Handler, schemaDocURL))
+	srv.server.Use(NotFoundHandler)
 
-	return srv.server.Listen(":9099") // TODO: take it from configs
+	return srv.server.Listen(srv.config.Address())
 }
 
 func (srv *Server) Shutdown(ctx context.Context) error {
@@ -56,5 +63,5 @@ func (srv *Server) Shutdown(ctx context.Context) error {
 	c, cancel := context.WithTimeout(ctx, exitWaitTime)
 	defer cancel()
 
-	return srv.server.ShutdownWithContext(c) //nolint:contextcheck
+	return srv.server.ShutdownWithContext(c)
 }

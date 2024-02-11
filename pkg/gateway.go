@@ -3,10 +3,11 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"glide/pkg/version"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"glide/pkg/version"
 
 	"glide/pkg/routers"
 
@@ -67,7 +68,7 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
 	gw.configProvider.Start()
-	gw.serverManager.Start()
+	gw.serverManager.Start() //nolint:contextcheck
 
 	signal.Notify(gw.signalC, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer signal.Stop(gw.signalC)

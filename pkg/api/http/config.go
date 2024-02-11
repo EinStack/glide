@@ -2,9 +2,10 @@ package http
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"glide/pkg/version"
-	"time"
 )
 
 type ServerConfig struct {
@@ -46,7 +47,7 @@ func (cfg *ServerConfig) ToServer() *fiber.App {
 		StreamRequestBody:            true,
 		Immutable:                    false,
 		DisablePreParseMultipartForm: true,
-		EnablePrintRoutes:            false,
+		EnablePrintRoutes:            true,
 	}
 
 	if cfg.IdleTimeout != nil {
