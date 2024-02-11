@@ -2,13 +2,9 @@ package http
 
 import (
 	"fmt"
+	"github.com/gofiber/fiber/v2"
+	"glide/pkg/version"
 	"time"
-
-	"github.com/cloudwego/hertz/pkg/network/standard"
-
-	"github.com/cloudwego/hertz/pkg/common/config"
-
-	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 type ServerConfig struct {
@@ -40,30 +36,34 @@ func (cfg *ServerConfig) Address() string {
 	return fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
 }
 
-func (cfg *ServerConfig) ToServer() *server.Hertz {
-	// More configs are listed on https://www.cloudwego.io/docs/hertz/tutorials/basic-feature/engine/
-	serverOptions := []config.Option{
-		server.WithHostPorts(cfg.Address()),
-		// https://www.cloudwego.io/docs/hertz/tutorials/basic-feature/network-lib/#choosing-appropriate-network-library
-		server.WithTransport(standard.NewTransporter),
-		server.WithStreamBody(true),
+func (cfg *ServerConfig) ToServer() *fiber.App {
+	// More configs are listed on https://docs.gofiber.io/api/fiber
+	// TODO: Consider alternative JSON marshallers that provides better performance over the standard marshaller
+	serverConfig := fiber.Config{
+		AppName:                      "glide",
+		DisableDefaultDate:           true,
+		ServerHeader:                 fmt.Sprintf("glide/%v", version.Version),
+		StreamRequestBody:            true,
+		Immutable:                    false,
+		DisablePreParseMultipartForm: true,
+		EnablePrintRoutes:            false,
 	}
 
 	if cfg.IdleTimeout != nil {
-		serverOptions = append(serverOptions, server.WithIdleTimeout(*cfg.IdleTimeout))
+		serverConfig.IdleTimeout = *cfg.IdleTimeout
 	}
 
 	if cfg.ReadTimeout != nil {
-		serverOptions = append(serverOptions, server.WithReadTimeout(*cfg.ReadTimeout))
+		serverConfig.ReadTimeout = *cfg.ReadTimeout
 	}
 
 	if cfg.WriteTimeout != nil {
-		serverOptions = append(serverOptions, server.WithWriteTimeout(*cfg.WriteTimeout))
+		serverConfig.WriteTimeout = *cfg.WriteTimeout
 	}
 
 	if cfg.MaxRequestBodySize != nil {
-		serverOptions = append(serverOptions, server.WithMaxRequestBodySize(*cfg.MaxRequestBodySize))
+		serverConfig.BodyLimit = *cfg.MaxRequestBodySize
 	}
 
-	return server.Default(serverOptions...)
+	return fiber.New(serverConfig)
 }
