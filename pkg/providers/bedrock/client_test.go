@@ -113,7 +113,7 @@ func TestAWSBedrockClient_ChatRequest(t *testing.T) {
 
 	response, _ := client.Chat(ctx, &request)
 
-	 r, _ := json.Marshal(response)
+	r, _ := json.Marshal(response)
 
-	 println(string(r))
+	println(string(r))
 }
