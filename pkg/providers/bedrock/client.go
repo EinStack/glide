@@ -9,12 +9,8 @@ import (
 	"glide/pkg/telemetry"
 )
 
-// TODO: Explore resource pooling
-// TODO: Optimize Type use
-// TODO: Explore Hertz TLS & resource pooling
-
 const (
-	providerName = "openai"
+	providerName = "bedrock"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.

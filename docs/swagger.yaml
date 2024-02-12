@@ -90,6 +90,37 @@ definitions:
       user:
         type: string
     type: object
+  bedrock.Config:
+    properties:
+      awsRegion:
+        type: string
+      baseUrl:
+        type: string
+      chatEndpoint:
+        type: string
+      defaultParams:
+        $ref: '#/definitions/bedrock.Params'
+      model:
+        type: string
+    required:
+    - awsRegion
+    - baseUrl
+    - chatEndpoint
+    - model
+    type: object
+  bedrock.Params:
+    properties:
+      max_tokens:
+        type: integer
+      stop:
+        items:
+          type: string
+        type: array
+      temperature:
+        type: number
+      top_p:
+        type: number
+    type: object
   clients.ClientConfig:
     properties:
       timeout:
@@ -262,6 +293,8 @@ definitions:
         $ref: '#/definitions/anthropic.Config'
       azureopenai:
         $ref: '#/definitions/azureopenai.Config'
+      bedrock:
+        $ref: '#/definitions/bedrock.Config'
       client:
         $ref: '#/definitions/clients.ClientConfig'
       cohere:

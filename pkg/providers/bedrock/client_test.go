@@ -20,8 +20,7 @@ import (
 )
 
 func TestBedrockClient_ChatRequest(t *testing.T) {
-	// OpenAI Chat API: https://platform.openai.com/docs/api-reference/chat/create
-	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	bedrockMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawPayload, _ := io.ReadAll(r.Body)
 
 		var data interface{}
@@ -44,20 +43,20 @@ func TestBedrockClient_ChatRequest(t *testing.T) {
 		}
 	})
 
-	openAIServer := httptest.NewServer(openAIMock)
-	defer openAIServer.Close()
+	BedrockServer := httptest.NewServer(bedrockMock)
+	defer BedrockServer.Close()
 
 	ctx := context.Background()
 	providerCfg := DefaultConfig()
 	clientCfg := clients.DefaultClientConfig()
 
-	providerCfg.BaseURL = openAIServer.URL
+	providerCfg.BaseURL = BedrockServer.URL
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
-		Role:    "human",
+		Role:    "user",
 		Content: "What's the biggest animal?",
 	}}
 

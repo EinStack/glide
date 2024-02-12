@@ -57,7 +57,7 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
-		Role:    "human",
+		Role:    "user",
 		Content: "What's the biggest animal?",
 	}}
 

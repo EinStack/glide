@@ -256,6 +256,52 @@ const docTemplate = `{
                 }
             }
         },
+        "bedrock.Config": {
+            "type": "object",
+            "required": [
+                "awsRegion",
+                "baseUrl",
+                "chatEndpoint",
+                "model"
+            ],
+            "properties": {
+                "awsRegion": {
+                    "type": "string"
+                },
+                "baseUrl": {
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/bedrock.Params"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "bedrock.Params": {
+            "type": "object",
+            "properties": {
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "top_p": {
+                    "type": "number"
+                }
+            }
+        },
         "clients.ClientConfig": {
             "type": "object",
             "properties": {
@@ -516,6 +562,9 @@ const docTemplate = `{
                 },
                 "azureopenai": {
                     "$ref": "#/definitions/azureopenai.Config"
+                },
+                "bedrock": {
+                    "$ref": "#/definitions/bedrock.Config"
                 },
                 "client": {
                     "$ref": "#/definitions/clients.ClientConfig"
