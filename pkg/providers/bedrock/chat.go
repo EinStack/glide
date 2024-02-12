@@ -130,7 +130,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   float64(bedrockCompletion.Results[0].TokenCount),
-				ResponseTokens: float64(bedrockCompletion.Results[0].TokenCount),
+				ResponseTokens: -1,
 				TotalTokens:    float64(bedrockCompletion.Results[0].TokenCount),
 			},
 		},
