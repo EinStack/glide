@@ -116,5 +116,8 @@ publish-dockerhub-%: ## Push images to Docker Hub
 			docker tag $(REPOSITORY):$(VERSION)-$* $(REPOSITORY):latest; \
 			echo "- pushing $(REPOSITORY):latest"; \
 			docker push $(REPOSITORY):latest; \
+			docker tag $(REPOSITORY):$(VERSION)-$* $(REPOSITORY):$(VERSION); \
+			echo "- pushing $(REPOSITORY):$(VERSION)"; \
+			docker push $(REPOSITORY):$(VERSION); \
 		fi; \
 	}
