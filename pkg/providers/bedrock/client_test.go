@@ -68,9 +68,4 @@ func TestBedrockClient_ChatRequest(t *testing.T) {
 	response, err := client.Chat(ctx, &request)
 
 	println(response, err)
-
-	//require.NoError(t, err)
-
-	//require.Equal(t, "chatcmpl-123", response.ID)
 }
-
