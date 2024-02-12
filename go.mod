@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.5.6
 	github.com/cloudwego/hertz v0.7.3
 	github.com/go-playground/validator/v10 v10.17.0
+	github.com/google/uuid v1.6.0
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/hertz-contrib/swagger v0.1.0
 	github.com/joho/godotenv v1.5.1

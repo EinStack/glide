@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
+	"time"
 
 	//"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
 
 	"go.uber.org/zap"
+
+	"github.com/google/uuid"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -81,10 +83,9 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.UnifiedChatResponse, error) {
-	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal bedrock request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal chat request payload: %w", err)
 	}
 
 	cfg, _ := config.LoadDefaultConfig(ctx,
@@ -100,17 +101,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Body:        rawPayload,
 	})
 	if err != nil {
-		errMsg := err.Error()
-		if strings.Contains(errMsg, "no such host") {
-			c.telemetry.Logger.Error("Error: The Bedrock service is not available in the selected region. Please double-check the service availability for your region at https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/.\n")
-		} else if strings.Contains(errMsg, "Could not resolve the foundation model") {
-			c.telemetry.Logger.Error("Error: Could not resolve the foundation model from model identifier. Please verify that the requested model exists and is accessible within the specified region.\n")
-		} else {
-			c.telemetry.Logger.Error("Error: Couldn't invoke model. Here's why: %v\n", zap.Error(err))
-		}
+		c.telemetry.Logger.Error("Error: Couldn't invoke model. Here's why: %v\n", zap.Error(err))
+		return nil, err
 	}
 
-	// Parse the response JSON
 	var bedrockCompletion schemas.BedrockChatCompletion
 
 	err = json.Unmarshal(result.Body, &bedrockCompletion)
@@ -119,16 +113,15 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	// Map response to UnifiedChatResponse schema
 	response := schemas.UnifiedChatResponse{
-		ID:       "",
-		Created:  0,
-		Provider: "bedrock",
+		ID:       uuid.NewString(),
+		Created:  int(time.Now().Unix()),
+		Provider: "aws-bedrock",
 		Model:    c.config.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
-				"system_fingerprint": "",
+				"system_fingerprint": "none",
 			},
 			Message: schemas.ChatMessage{
 				Role:    "assistant",
