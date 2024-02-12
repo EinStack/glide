@@ -14,15 +14,21 @@ builds:
       - linux
       - darwin
       - freebsd
+      - openbsd
       - windows
     goarch:
       - amd64
       - arm
       - arm64
+      - ppc64le
+      - s390x
+      - riscv64
     goarm:
       - '7'
       - '6'
     ignore:
+      - goos: darwin
+        goarch: '386'
       - goos: openbsd
         goarch: arm
       - goos: openbsd
@@ -31,7 +37,7 @@ builds:
         goarch: arm
       - goos: freebsd
         goarch: arm64
-      - goos: linux
+      - goos: windows
         goarch: arm
 
 changelog:
