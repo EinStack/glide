@@ -65,9 +65,9 @@ func TestRouterConfig_BuildModels(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, routers, 2)
 	require.Len(t, routers[0].models, 1)
-	require.IsType(t, routers[0].routing, &routing.PriorityRouting{})
+	require.IsType(t, &routing.PriorityRouting{}, routers[0].routing)
 	require.Len(t, routers[1].models, 1)
-	require.IsType(t, routers[1].routing, &routing.LeastLatencyRouting{})
+	require.IsType(t, &routing.LeastLatencyRouting{}, routers[1].routing)
 }
 
 func TestRouterConfig_InvalidSetups(t *testing.T) {

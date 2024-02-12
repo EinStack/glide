@@ -14,14 +14,21 @@ builds:
       - linux
       - darwin
       - freebsd
+      - openbsd
+      - windows
     goarch:
       - amd64
       - arm
       - arm64
+      - ppc64le
+      - s390x
+      - riscv64
     goarm:
       - '7'
       - '6'
     ignore:
+      - goos: darwin
+        goarch: '386'
       - goos: openbsd
         goarch: arm
       - goos: openbsd
@@ -30,7 +37,7 @@ builds:
         goarch: arm
       - goos: freebsd
         goarch: arm64
-      - goos: linux
+      - goos: windows
         goarch: arm
 
 changelog:
@@ -45,6 +52,8 @@ archives:
         format: zip
     files:
       - LICENSE
+      - CHANGELOG.md
+      - ROADMAP.md
 
 checksum:
   name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
@@ -220,6 +229,107 @@ brews:
         # Templates: allowed
         url: 'git@github.com:EinStack/homebrew-tap.git'
         private_key: '{{ .Env.BREW_TAP_PRIVATE_KEY }}'
+
+snapcrafts:
+  - #
+    # ID of the snapcraft config, must be unique.
+    #
+    # Default: 'default'
+    id: glide
+
+    # Build IDs for the builds you want to create snapcraft packages for.
+    builds:
+      - glide
+
+    # You can change the name of the package.
+    #
+    # Default: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    # Templates: allowed
+    name_template: '{{ .ProjectName }}_v{{ .Tag }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+
+    # The name of the snap. This is optional.
+    #
+    # Default: ProjectName
+    name: glide
+
+    # The canonical title of the application, displayed in the software
+    # centre graphical frontends.
+    #
+    # Since: v1.19
+    title: Glide
+
+    # Whether to publish the snap to the snapcraft store.
+    # Remember you need to `snapcraft login` first.
+    publish: true
+
+    # Single-line elevator pitch for your amazing snap.
+    # 79 char long at most.
+    summary: A open simple blazing-fast model gateway
+
+    # This the description of your snap. You have a paragraph or two to tell the
+    # most important story about your snap. Keep it under 100 words though,
+    # we live in tweetspace and your description wants to look good in the snap
+    # store.
+    description: A open simple blazing-fast model gateway for rapid development of production GenAI apps
+
+    # Channels in store where snap will be pushed.
+    #
+    # More info about channels here:
+    # https://snapcraft.io/docs/reference/channels
+    #
+    # Default:
+    #   grade is 'stable': ["edge", "beta", "candidate", "stable"]
+    #   grade is 'devel': ["edge", "beta"]
+    # Templates: allowed (since v1.15)
+    channel_templates:
+      - edge
+      - beta
+      - candidate
+      - stable
+
+    # A guardrail to prevent you from releasing a snap to all your users before
+    # it is ready.
+    # `devel` will let you release only to the `edge` and `beta` channels in the
+    # store. `stable` will let you release also to the `candidate` and `stable`
+    # channels.
+    grade: stable
+
+    # Snaps can be setup to follow three different confinement policies:
+    # `strict`, `devmode` and `classic`. A strict confinement where the snap
+    # can only read and write in its own namespace is recommended. Extra
+    # permissions for strict snaps can be declared as `plugs` for the app, which
+    # are explained later. More info about confinement here:
+    # https://snapcraft.io/docs/reference/confinement
+    confinement: strict
+
+    # Your app's license, based on SPDX license expressions:
+    # https://spdx.org/licenses
+    license: Apache-2.0
+
+    # A snap of type base to be used as the execution environment for this snap.
+    # Valid values are:
+    # * bare - Empty base snap;
+    # * core - Ubuntu Core 16;
+    # * core18 - Ubuntu Core 18.
+    base: core20
+
+    # A list of features that must be supported by the core in order for
+    # this snap to install.
+    #
+    # Since: v1.19
+    assumes:
+      - snapd2.38
+
+    # Each binary built by GoReleaser is an app inside the snap. In this section
+    # you can declare extra details for those binaries. It is optional.
+    # See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
+    apps:
+      # The name of the app must be the same name as the binary built or the snapcraft name.
+      glide:
+        # You can override the command name.
+        #
+        # Default: AppName
+        command: glide
 
 announce:
   discord:

@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"glide/pkg/version"
+
 	"glide/pkg/routers"
 
 	"glide/pkg/config"
@@ -41,8 +43,8 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 		return nil, err
 	}
 
-	tel.Logger.Info("🐦Glide is starting up", zap.String("version", FullVersion))
-	tel.Logger.Debug("config loaded successfully:\n" + configProvider.GetStr())
+	tel.Logger.Info("🐦Glide is starting up", zap.String("version", version.FullVersion))
+	tel.Logger.Debug("✅ config loaded successfully:\n" + configProvider.GetStr())
 
 	routerManager, err := routers.NewManager(&cfg.Routers, tel)
 	if err != nil {
@@ -66,7 +68,7 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
 	gw.configProvider.Start()
-	gw.serverManager.Start()
+	gw.serverManager.Start() //nolint:contextcheck
 
 	signal.Notify(gw.signalC, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer signal.Stop(gw.signalC)

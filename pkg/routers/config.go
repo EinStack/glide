@@ -29,11 +29,11 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 		seenIDs[routerConfig.ID] = true
 
 		if !routerConfig.Enabled {
-			tel.Logger.Info("router is disabled, skipping", zap.String("routerID", routerConfig.ID))
+			tel.Logger.Info(fmt.Sprintf("Router \"%v\" is disabled, skipping", routerConfig.ID))
 			continue
 		}
 
-		tel.Logger.Debug("init router", zap.String("routerID", routerConfig.ID))
+		tel.Logger.Debug("Init router", zap.String("routerID", routerConfig.ID))
 
 		router, err := NewLangRouter(&c.LanguageRouters[idx], tel)
 		if err != nil {
@@ -82,7 +82,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 
 		if !modelConfig.Enabled {
 			tel.Logger.Info(
-				"model is disabled, skipping",
+				"Model is disabled, skipping",
 				zap.String("router", c.ID),
 				zap.String("model", modelConfig.ID),
 			)
@@ -91,7 +91,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 		}
 
 		tel.Logger.Debug(
-			"init lang model",
+			"Init lang model",
 			zap.String("router", c.ID),
 			zap.String("model", modelConfig.ID),
 		)
@@ -114,11 +114,12 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 	}
 
 	if len(models) == 1 {
-		tel.Logger.Warn(
-			"router has only one active model defined. "+
+		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
+			fmt.Sprintf("Router \"%v\" has only one active model defined. "+
 				"This is not recommended for production setups. "+
 				"Define at least a few models to leverage resiliency logic Glide provides",
-			zap.String("router", c.ID),
+				c.ID,
+			),
 		)
 	}
 

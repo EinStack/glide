@@ -1,6 +1,7 @@
 package health
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -58,7 +59,7 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 	parts := strings.Split(string(text), budgetSeparator)
 
 	if len(parts) != 2 {
-		return fmt.Errorf("invalid format")
+		return errors.New("invalid format")
 	}
 
 	budget, err := strconv.Atoi(parts[0])
@@ -73,7 +74,7 @@ func (b *ErrorBudget) UnmarshalText(text []byte) error {
 	unit := Unit(parts[1])
 
 	if unit != MILLI && unit != SEC && unit != MIN && unit != HOUR {
-		return fmt.Errorf("invalid unit (supported: ms, s, m, h)")
+		return errors.New("invalid unit (supported: ms, s, m, h)")
 	}
 
 	b.budget = uint(budget)

@@ -35,7 +35,7 @@ Check out our [documentation](https://glide.einstack.ai)!
 - **High availability** and **resiliency** when working with external model providers. Automatic **fallbacks** on provider failures, rate limits, transient errors. Smart retries to reduce communication latency.
 - Support **popular LLM providers**.
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
-- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring.
+- **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring (coming soon)
 - Straightforward and simple maintenance and configuration, centralized API key control & management & rotation, etc.
 
 ## Supported Providers
@@ -71,6 +71,9 @@ Detailed info on routers can be found [here](https://glide.einstack.ai/essential
 ## Get Started
 
 ### Installation
+
+> [!Note]
+> Windows users should follow an instruction right from [the demo README file](https://github.com/EinStack/glide-demo) that specifies how to do the steps without the `make` command as Windows doesn't come with it by default.
 
 The easiest way to deploy Glide is to our [demo repository](https://github.com/EinStack/glide-demo.git) and [docker-compose](https://docs.docker.com/compose/).
 
@@ -120,7 +123,7 @@ See [API Reference](https://glide.einstack.ai/api-reference/introduction) for mo
 
 ### API Docs
 
-Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger
 
 That's it 🙌
 
@@ -139,11 +142,37 @@ brew install einstack/tap/glide
 
 ### Snapcraft (Linux)
 
-Coming Soon
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/glide)
+
+```bash
+snap install glide
+```
+
+To upgrade the already installed package, you just need to run:
+
+```bash
+snap refresh glide
+```
+
+Detailed instruction on Snapcraft installation for different Linux distos:
+
+- [Arch](https://snapcraft.io/install/glide/arch)
+- [CentOS](https://snapcraft.io/install/glide/centos)
+- [Debian](https://snapcraft.io/install/glide/debian)
+- [elementaryOS](https://snapcraft.io/install/glide/elementary)
+- [Fedora](https://snapcraft.io/install/glide/fedora)
+- [KDE Neon](https://snapcraft.io/install/glide/kde-neon)
+- [Kubuntu](https://snapcraft.io/install/glide/kubuntu)
+- [Manjaro](https://snapcraft.io/install/glide/manjaro)
+- [Pop! OS](https://snapcraft.io/install/glide/pop)
+- [openSUSE](https://snapcraft.io/install/glide/opensuse)
+- [RHEL](https://snapcraft.io/install/glide/rhel)
+- [Ubuntu](https://snapcraft.io/install/glide/ubuntu)
+- [Raspberry Pi](https://snapcraft.io/install/glide/raspbian)
 
 ### Docker Images
 
-Glide provides official images in our [GHCR](https://github.com/EinStack/glide/pkgs/container/glide):
+Glide provides official images in our [GHCR](https://github.com/EinStack/glide/pkgs/container/glide) & [DockerHub](https://hub.docker.com/u/einstack  ):
 
 - Alpine 3.19:
 ```bash

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudwego/hertz/pkg/common/config"
-
-	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/network/netpoll"
+	"github.com/gofiber/fiber/v2"
+	"glide/pkg/version"
 )
 
 type ServerConfig struct {
@@ -20,10 +18,10 @@ type ServerConfig struct {
 }
 
 func DefaultServerConfig() *ServerConfig {
-	maxReqBodySize := 4 * 1024 * 1024
-	readTimeout := 3 * time.Second
-	writeTimeout := 3 * time.Second
-	idleTimeout := 1 * time.Second
+	maxReqBodySizeBytes := 4 * 1024 * 1024 // 4Mb
+	readTimeout := 30 * time.Second
+	writeTimeout := 1 * time.Minute
+	idleTimeout := 30 * time.Second
 
 	return &ServerConfig{
 		Host:               "127.0.0.1",
@@ -31,7 +29,7 @@ func DefaultServerConfig() *ServerConfig {
 		IdleTimeout:        &idleTimeout,
 		ReadTimeout:        &readTimeout,
 		WriteTimeout:       &writeTimeout,
-		MaxRequestBodySize: &maxReqBodySize,
+		MaxRequestBodySize: &maxReqBodySizeBytes,
 	}
 }
 
@@ -39,28 +37,35 @@ func (cfg *ServerConfig) Address() string {
 	return fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
 }
 
-func (cfg *ServerConfig) ToServer() *server.Hertz {
-	// More configs are listed on https://www.cloudwego.io/docs/hertz/tutorials/basic-feature/engine/
-	serverOptions := []config.Option{
-		server.WithHostPorts(cfg.Address()),
-		server.WithTransport(netpoll.NewTransporter),
+func (cfg *ServerConfig) ToServer() *fiber.App {
+	// More configs are listed on https://docs.gofiber.io/api/fiber
+	// TODO: Consider alternative JSON marshallers that provides better performance over the standard marshaller
+	serverConfig := fiber.Config{
+		AppName:                      "glide",
+		DisableDefaultDate:           true,
+		ServerHeader:                 fmt.Sprintf("glide/%v", version.Version),
+		StreamRequestBody:            true,
+		Immutable:                    false,
+		DisablePreParseMultipartForm: true,
+		EnablePrintRoutes:            false,
+		DisableStartupMessage:        false,
 	}
 
 	if cfg.IdleTimeout != nil {
-		serverOptions = append(serverOptions, server.WithIdleTimeout(*cfg.IdleTimeout))
+		serverConfig.IdleTimeout = *cfg.IdleTimeout
 	}
 
 	if cfg.ReadTimeout != nil {
-		serverOptions = append(serverOptions, server.WithReadTimeout(*cfg.ReadTimeout))
+		serverConfig.ReadTimeout = *cfg.ReadTimeout
 	}
 
 	if cfg.WriteTimeout != nil {
-		serverOptions = append(serverOptions, server.WithWriteTimeout(*cfg.WriteTimeout))
+		serverConfig.WriteTimeout = *cfg.WriteTimeout
 	}
 
 	if cfg.MaxRequestBodySize != nil {
-		serverOptions = append(serverOptions, server.WithMaxRequestBodySize(*cfg.MaxRequestBodySize))
+		serverConfig.BodyLimit = *cfg.MaxRequestBodySize
 	}
 
-	return server.Default(serverOptions...)
+	return fiber.New(serverConfig)
 }

@@ -33,6 +33,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Snapcraft Setup
+        run: |
+          sudo apt-get update
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+          mkdir -p $HOME/.cache/snapcraft/download
+          mkdir -p $HOME/.cache/snapcraft/stage-packages
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
@@ -41,6 +48,7 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
           DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
@@ -64,6 +72,9 @@ jobs:
       - name: login into Github Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
+      - name: login into Github Container Registry
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack $ --password-stdin
+
       - name: build ${{ matrix.image }} image
         working-directory: ./images
         env:
@@ -73,3 +84,7 @@ jobs:
       - name: publish ${{ matrix.image }} image to Github Container Registry
         working-directory: ./images
         run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to Github Container Registry
+        working-directory: ./images
+        run: VERSION=${{ github.ref_name }} make publish-docherhub-${{ matrix.image }}

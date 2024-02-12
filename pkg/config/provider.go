@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/joho/godotenv"
+
 	"github.com/go-playground/validator/v10"
 
 	"gopkg.in/yaml.v3"
@@ -38,6 +40,10 @@ func NewProvider() *Provider {
 		Config:    nil,
 		validator: configValidator,
 	}
+}
+
+func (p *Provider) LoadDotEnv(envPath string) error {
+	return godotenv.Load(envPath)
 }
 
 func (p *Provider) Load(configPath string) (*Provider, error) {
