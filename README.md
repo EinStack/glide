@@ -123,7 +123,7 @@ See [API Reference](https://glide.einstack.ai/api-reference/introduction) for mo
 
 ### API Docs
 
-Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger
 
 That's it 🙌
 

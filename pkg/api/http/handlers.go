@@ -1,18 +1,15 @@
 package http
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
+
+	"github.com/gofiber/fiber/v2"
 
 	"glide/pkg/api/schemas"
 	"glide/pkg/routers"
-
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
-type Handler = func(ctx context.Context, c *app.RequestContext)
+type Handler = func(c *fiber.Ctx) error
 
 // Swagger 101:
 // - https://github.com/swaggo/swag/tree/master/example/celler
@@ -32,57 +29,39 @@ type Handler = func(ctx context.Context, c *app.RequestContext)
 //	@Failure		404	{object}	http.ErrorSchema
 //	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
-	return func(ctx context.Context, c *app.RequestContext) {
+	return func(c *fiber.Ctx) error {
 		// Unmarshal request body
 		var req *schemas.UnifiedChatRequest
 
-		err := json.Unmarshal(c.Request.Body(), &req)
+		err := c.BodyParser(&req)
 		if err != nil {
-			// Return bad request error
-			c.JSON(consts.StatusBadRequest, ErrorSchema{
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
 				Message: err.Error(),
 			})
-
-			return
-		}
-
-		// Bind JSON to request
-		err = c.BindJSON(&req)
-		if err != nil {
-			// Return bad request error
-			c.JSON(consts.StatusBadRequest, ErrorSchema{
-				Message: err.Error(),
-			})
-
-			return
 		}
 
 		// Get router ID from path
-		routerID := c.Param("router")
+		routerID := c.Params("router")
 		router, err := routerManager.GetLangRouter(routerID)
 
 		if errors.Is(err, routers.ErrRouterNotFound) {
 			// Return not found error
-			c.JSON(consts.StatusNotFound, ErrorSchema{
+			return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
 				Message: err.Error(),
 			})
-
-			return
 		}
 
 		// Chat with router
-		resp, err := router.Chat(ctx, req)
+		resp, err := router.Chat(c.Context(), req)
 		if err != nil {
 			// Return internal server error
-			c.JSON(consts.StatusInternalServerError, ErrorSchema{
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorSchema{
 				Message: err.Error(),
 			})
-
-			return
 		}
 
 		// Return chat response
-		c.JSON(consts.StatusOK, resp)
+		return c.Status(fiber.StatusOK).JSON(resp)
 	}
 }
 
@@ -97,7 +76,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 //	@Success		200	{object}	http.RouterListSchema
 //	@Router			/v1/language/ [GET]
 func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
-	return func(_ context.Context, c *app.RequestContext) {
+	return func(c *fiber.Ctx) error {
 		configuredRouters := routerManager.GetLangRouters()
 		cfgs := make([]*routers.LangRouterConfig, 0, len(configuredRouters))
 
@@ -105,7 +84,7 @@ func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 			cfgs = append(cfgs, router.Config)
 		}
 
-		c.JSON(consts.StatusOK, RouterListSchema{Routers: cfgs})
+		return c.Status(fiber.StatusOK).JSON(RouterListSchema{Routers: cfgs})
 	}
 }
 
@@ -119,6 +98,12 @@ func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 //	@Produce	json
 //	@Success	200	{object}	http.HealthSchema
 //	@Router		/v1/health/ [get]
-func HealthHandler(_ context.Context, c *app.RequestContext) {
-	c.JSON(consts.StatusOK, HealthSchema{Healthy: true})
+func HealthHandler(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(HealthSchema{Healthy: true})
+}
+
+func NotFoundHandler(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
+		Message: "The route is not found",
+	})
 }
