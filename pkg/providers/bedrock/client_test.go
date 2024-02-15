@@ -3,6 +3,7 @@ package bedrock
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -53,8 +54,8 @@ func TestBedrockClient_ChatRequest(t *testing.T) {
 	clientCfg := clients.DefaultClientConfig()
 
 	providerCfg.BaseURL = BedrockServer.URL
-	providerCfg.AccessKey = "123"
-	providerCfg.SecretKey = "456"
+	providerCfg.AccessKey = "abc"
+	providerCfg.SecretKey = "def"
 	providerCfg.AWSRegion = "us-west-2"
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
@@ -66,6 +67,10 @@ func TestBedrockClient_ChatRequest(t *testing.T) {
 	}}
 
 	response, err := client.Chat(ctx, &request)
+
+	responseString := fmt.Sprintf("%+v", response)
+	// errString := fmt.Sprintf("%+v", err)
+	fmt.Println(responseString)
 
 	println(response, err)
 }
