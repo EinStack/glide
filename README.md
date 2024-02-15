@@ -9,7 +9,7 @@
 [![Documentation](https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F)](https://glide.einstack.ai/)
 [![LICENSE](https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/EinStack/glide/blob/main/LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield)
-
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/einstack)](https://artifacthub.io/packages/helm/einstack/glide)
 ---
 
 Glide is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
@@ -123,7 +123,7 @@ See [API Reference](https://glide.einstack.ai/api-reference/introduction) for mo
 
 ### API Docs
 
-Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger/index.html
+Finally, Glide comes with OpenAPI documentation that is accessible via http://127.0.0.1:9099/v1/swagger
 
 That's it 🙌
 
@@ -196,7 +196,32 @@ docker pull ghcr.io/einstack/glide:latest-redhat
 
 ### Helm Chart
 
-Coming Soon
+Add the EinStack repository:
+
+```bash
+helm repo add einstack https://einstack.github.io/helm-charts
+helm repo update
+```
+
+Before installing the Helm chart, you need to create a Kubernetes secret with your API keys like:
+
+```bash
+kubectl create secret generic api-keys --from-literal=OPENAI_API_KEY=sk-abcdXYZ
+```
+
+Then, you need to create a custom values.yaml file to override the secret name like:
+
+```yaml
+# save as custom.values.yaml, for example
+glide:
+    apiKeySecret: "api-keys"
+```
+
+Then, you should be able to install Glide's chart via:
+
+```
+helm upgrade glide-gateway einstack/glide --values custom.values.yaml --install
+```
 
 ## Community
 

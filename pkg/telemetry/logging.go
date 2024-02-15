@@ -1,8 +1,6 @@
 package telemetry
 
 import (
-	"github.com/cloudwego/hertz/pkg/common/hlog"
-	hertzzap "github.com/hertz-contrib/logger/zap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -62,31 +60,6 @@ func (c *LogConfig) ToZapConfig() *zap.Config {
 	return &zapConfig
 }
 
-func NewHertzLogger(zapConfig *zap.Config) (*hertzzap.Logger, error) {
-	// Both hertzzap and zap have a set of private methods that prevents from leveraging
-	//  their native encoder & sink building functionality
-	//  We had to copy & paste some of those to get it working
-	var encoder zapcore.Encoder
-
-	if zapConfig.Encoding == "console" {
-		encoder = zapcore.NewConsoleEncoder(zapConfig.EncoderConfig)
-	} else {
-		encoder = zapcore.NewJSONEncoder(zapConfig.EncoderConfig)
-	}
-
-	sink, _, err := zap.Open(zapConfig.OutputPaths...)
-	if err != nil {
-		return nil, err
-	}
-
-	return hertzzap.NewLogger(
-		hertzzap.WithCoreEnc(encoder),
-		hertzzap.WithCoreWs(sink),
-		hertzzap.WithCoreLevel(zapConfig.Level),
-		hertzzap.WithZapOptions(zap.AddCallerSkip(3)),
-	), nil
-}
-
 func NewLogger(cfg *LogConfig) (*zap.Logger, error) {
 	zapConfig := cfg.ToZapConfig()
 
@@ -94,13 +67,6 @@ func NewLogger(cfg *LogConfig) (*zap.Logger, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	hertzLogger, err := NewHertzLogger(zapConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	hlog.SetLogger(hertzLogger)
 
 	return logger, nil
 }

@@ -9,9 +9,4 @@ routers:
       models:
         - id: openai
           openai:
-            api_key: ""
-        - id: azureopenai
-          azureopenai:
-            api_key: ""
-            model: ""
-            base_url: ""
+            api_key: "${env:OPENAI_API_KEY}"

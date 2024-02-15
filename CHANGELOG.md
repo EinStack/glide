@@ -5,6 +5,24 @@ The changelog consists of three categories:
 - **Improvements** - bugfixes, performance and other types of improvements to existing functionality
 - **Miscellaneous** - all other updates like build, release, CLI, etc.
 
+## 0.0.2-rc.1 (Feb 12th, 2024)
+
+### Features
+
+- ✨#117 Allow to load dotenv files (@roma-glushko)
+
+### Improvements
+
+- ✨👷#91 Support for Windows (@roma-glushko)
+- 👷 #139 Build Glide for OpenBSD and ppc65le, s390x, riscv64 architectures (@roma-glushko)
+
+### Miscellaneous
+
+- 👷 #92 Release binaries to Snapcraft (@roma-glushko)
+- 👷 #123 publish images to DockerHub (@roma-glushko)
+- 🔧 #136 Migrated all API to Fiber (@roma-glushko)
+- 👷 #139 Create a image tag with pure version (without distro suffix) (@roma-glushko)
+
 ## 0.0.1 (Jan 31st, 2024)
 
 ### Features

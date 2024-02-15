@@ -3,6 +3,8 @@ package cmd
 import (
 	"log"
 
+	"glide/pkg/version"
+
 	"github.com/spf13/cobra"
 	"glide/pkg"
 	"glide/pkg/config"
@@ -38,7 +40,7 @@ func NewCLI() *cobra.Command {
 		Use:     "glide",
 		Short:   "🐦Glide is an open-source, lightweight, high-performance model gateway",
 		Long:    Description,
-		Version: pkg.FullVersion,
+		Version: version.FullVersion,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			configProvider := config.NewProvider()
 
