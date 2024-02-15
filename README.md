@@ -196,7 +196,32 @@ docker pull ghcr.io/einstack/glide:latest-redhat
 
 ### Helm Chart
 
-Coming Soon
+Add the EinStack repository:
+
+```bash
+helm repo add einstack https://einstack.github.io/helm-charts
+helm repo update
+```
+
+Before installing the Helm chart, you need to create a Kubernetes secret with your API keys like:
+
+```bash
+kubectl create secret generic api-keys --from-literal=OPENAI_API_KEY=sk-abcdXYZ
+```
+
+Then, you need to create a custom values.yaml file to override the secret name like:
+
+```yaml
+# save as custom.values.yaml, for example
+glide:
+    apiKeySecret: "api-keys"
+```
+
+Then, you should be able to install Glide's chart via:
+
+```
+helm upgrade glide-gateway einstack/glide --values custom.values.yaml --install
+```
 
 ## Community
 
