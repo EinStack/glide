@@ -1,12 +1,17 @@
 package bedrock
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/url"
 
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
+
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
 const (
@@ -21,6 +26,7 @@ var (
 // Client is a client for accessing OpenAI API
 type Client struct {
 	baseURL             string
+	bedrockClient       *bedrockruntime.Client
 	chatURL             string
 	chatRequestTemplate *ChatRequest
 	config              *Config
@@ -35,8 +41,16 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		return nil, err
 	}
 
+	cfg, _ := config.LoadDefaultConfig(context.TODO(), // Is this the right context?
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(providerConfig.AccessKey, providerConfig.SecretKey, "")),
+		config.WithRegion(providerConfig.AWSRegion),
+	)
+
+	bedrockClient := bedrockruntime.NewFromConfig(cfg)
+
 	c := &Client{
 		baseURL:             providerConfig.BaseURL,
+		bedrockClient:       bedrockClient,
 		chatURL:             chatURL,
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	//"glide/pkg/providers/clients"
-
 	"glide/pkg/api/schemas"
 
 	"go.uber.org/zap"
@@ -15,8 +13,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
@@ -88,14 +84,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("unable to marshal chat request payload: %w", err)
 	}
 
-	cfg, _ := config.LoadDefaultConfig(ctx,
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.config.AccessKey, c.config.SecretKey, "")),
-		config.WithRegion(c.config.AWSRegion),
-	)
-
-	client := bedrockruntime.NewFromConfig(cfg)
-
-	result, err := client.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
+	result, err := c.bedrockClient.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
 		ModelId:     aws.String(c.config.Model),
 		ContentType: aws.String("application/json"),
 		Body:        rawPayload,
