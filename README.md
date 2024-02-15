@@ -217,7 +217,7 @@ glide:
     apiKeySecret: "api-keys"
 ```
 
-Then, you should be able to install Glide's chart via:
+Finally, you should be able to install Glide's chart via:
 
 ```
 helm upgrade glide-gateway einstack/glide --values custom.values.yaml --install
