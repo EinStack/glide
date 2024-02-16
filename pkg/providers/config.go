@@ -71,7 +71,7 @@ func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvide
 	case c.Anthropic != nil:
 		return anthropic.NewClient(c.Anthropic, c.Client, tel)
 	case c.Bedrock != nil:
-		return anthropic.NewClient(c.Anthropic, c.Client, tel)
+		return bedrock.NewClient(c.Bedrock, c.Client, tel)
 	default:
 		return nil, ErrProviderNotFound
 	}
