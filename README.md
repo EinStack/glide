@@ -44,12 +44,14 @@ Check out our [documentation](https://glide.einstack.ai)!
 
 |                                                     | Provider      | Support Status  |
 |-----------------------------------------------------|---------------|-----------------|
-| <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
-| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
-| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
-| <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
 | <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 👍  Supported  |
+| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
+| <img src="docs/images/aws-icon.png" width="18" />  | AWS Bedrock (Titan)    | 👍  Supported  |
+| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
+| <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
+| <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
+
 
 
 ### Routers
