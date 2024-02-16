@@ -165,3 +165,13 @@ type Content struct {
 	Type string `json:"type"`
 	Text string `json:"text"`
 }
+
+// Bedrock Chat Response
+type BedrockChatCompletion struct {
+	InputTextTokenCount int `json:"inputTextTokenCount"`
+	Results             []struct {
+		TokenCount       int    `json:"tokenCount"`
+		OutputText       string `json:"outputText"`
+		CompletionReason string `json:"completionReason"`
+	} `json:"results"`
+}

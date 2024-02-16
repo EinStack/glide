@@ -1,0 +1,1 @@
+{"provider":"bedrock","model":"amazon.titan-text-express-v1","modelResponse":{"responseId":{"system_fingerprint":""},"message":{"role":"assistant","content":"\nThe largest animal in the world is the blue whale, which can reach lengths of over 100 feet and weigh as much as 200 tons."},"tokenCount":{"promptTokens":34,"responseTokens":34,"totalTokens":34}}}

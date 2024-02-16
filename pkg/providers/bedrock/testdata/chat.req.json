@@ -1,0 +1,12 @@
+{
+  "model": "amazon.titan-text-express-v1",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What's the biggest animal?"
+    }
+  ],
+  "temperature": 0.8,
+  "top_p": 1,
+  "max_tokens": 100
+}
