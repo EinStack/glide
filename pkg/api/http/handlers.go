@@ -85,22 +85,6 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 	}
 }
 
-// LangStreamChatHandler
-//
-//	@id				glide-language-chat-stream
-//	@Summary		Language Chat
-//	@Description	Talk to different LLM Stream Chat APIs via a unified websocket endpoint
-//	@tags			Language
-//	@Param			router	    			path		string	true	"Router ID"
-//	@Param			Connection				header		string	true	"Websocket Connection Type"
-//	@Param			Upgrade 				header		string	true	"Upgrade header"
-//	@Param			Sec-WebSocket-Key  		header		string	true	"Websocket Security Token"
-//	@Param			Sec-WebSocket-Version  	header		string	true	"Websocket Security Token"
-//	@Accept			json
-//	@Success		101
-//	@Failure		426
-//	@Failure		404	{object}	http.ErrorSchema
-//	@Router			/v1/language/{router}/chatStream [GET]
 func LangStreamChatHandler() Handler {
 	// TODO: expose websocket connection configs https://github.com/gofiber/contrib/tree/main/websocket
 	return websocket.New(func(c *websocket.Conn) {
