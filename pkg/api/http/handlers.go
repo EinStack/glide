@@ -116,10 +116,12 @@ func LangStreamChatHandler() Handler {
 
 		for {
 			if err = c.ReadJSON(&chatRequest); err != nil {
+				// TODO: handle the normal websocket termination by clients (1000)
 				log.Println("read:", err)
 				break
 			}
 
+			// TODO: call the requested router
 			log.Printf("recv req: %s", chatRequest.Message.Content)
 
 			if err = c.WriteJSON(chatRequest); err != nil {
@@ -127,6 +129,8 @@ func LangStreamChatHandler() Handler {
 				break
 			}
 		}
+
+		// TODO: handle termination gracefully
 	})
 }
 
