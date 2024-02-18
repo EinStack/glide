@@ -1,18 +1,17 @@
-# Glide: Cloud-Native LLM Gateway for Seamless LLMOps
 <div align="center">
     <img src="docs/logo/glide_no_bgd.png" width="300px" alt="Glide GH Header" />
+    <h1>Glide: Cloud-Native LLM Gateway for Seamless LLMOps</h1>
+    <a href="https://codecov.io/github/EinStack/glide"><img src="https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9" alt="CodeCov" /></a>
+    <a href="https://discord.gg/pt53Ej7rrc"><img src="https://img.shields.io/discord/1181281407813828710" alt="Discord" /></a>
+    <a href="https://glide.einstack.ai/"><img src="https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F" alt="Glide Docs" /></a>
+    <a href="https://github.com/EinStack/glide/blob/main/LICENSE"><img src="https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8" alt="License" /></a>
+    <a href="https://artifacthub.io/packages/helm/einstack/glide"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/einstack" alt="ArtifactHub" /></a>
+    <a href="https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield" alt="FOSSA Status" /></a>
 </div>
 
-
-[![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
-[![Discord](https://img.shields.io/discord/1181281407813828710)](https://discord.gg/pt53Ej7rrc)
-[![Documentation](https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F)](https://glide.einstack.ai/)
-[![LICENSE](https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/EinStack/glide/blob/main/LICENSE)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/einstack)](https://artifacthub.io/packages/helm/einstack/glide)
 ---
 
-Glide is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
+**Glide** is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
 
 We take all problems of managing and communicating with external providers out of your applications,
 so you can dive into tackling your core challenges.
