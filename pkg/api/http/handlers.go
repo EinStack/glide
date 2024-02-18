@@ -2,9 +2,10 @@ package http
 
 import (
 	"errors"
+	"log"
+
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-	"log"
 
 	"glide/pkg/api/schemas"
 	"glide/pkg/routers"
@@ -71,7 +72,6 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 		if websocket.IsWebSocketUpgrade(c) {
 			routerID := c.Params("router")
 			_, err := routerManager.GetLangRouter(routerID)
-
 			if err != nil {
 				return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
 					Message: err.Error(),
