@@ -104,26 +104,25 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 func LangStreamChatHandler() Handler {
 	// TODO: expose websocket connection configs https://github.com/gofiber/contrib/tree/main/websocket
 	return websocket.New(func(c *websocket.Conn) {
-		log.Println(c.Params("router"))
+		routerID := c.Params("router")
+		log.Println("routerID: ", routerID)
 
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 
 		var (
-			mt  int
-			msg []byte
-			err error
+			err         error
+			chatRequest schemas.UnifiedChatRequest
 		)
 
 		for {
-			if mt, msg, err = c.ReadMessage(); err != nil {
+			if err = c.ReadJSON(&chatRequest); err != nil {
 				log.Println("read:", err)
 				break
 			}
 
-			log.Printf("msg type: %s", mt)
-			log.Printf("recv: %s", msg)
+			log.Printf("recv req: %s", chatRequest.Message.Content)
 
-			if err = c.WriteMessage(mt, msg); err != nil {
+			if err = c.WriteJSON(chatRequest); err != nil {
 				log.Println("write:", err)
 				break
 			}
