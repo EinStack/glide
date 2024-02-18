@@ -15,7 +15,7 @@ import (
 // LangModelProvider defines an interface a provider should fulfill to be able to serve language chat requests
 type LangModelProvider interface {
 	Provider() string
-	Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error)
+	Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error)
 }
 
 type Model interface {
@@ -78,7 +78,7 @@ func (m *LangModel) Weight() int {
 	return m.weight
 }
 
-func (m *LangModel) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (m *LangModel) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	startedAt := time.Now()
 	resp, err := m.client.Chat(ctx, request)
 
