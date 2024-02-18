@@ -53,6 +53,9 @@ func (srv *Server) Run() error {
 	v1.Get("/language/", LangRoutersHandler(srv.routerManager))
 	v1.Post("/language/:router/chat/", LangChatHandler(srv.routerManager))
 
+	v1.Use("/language/:router/chatStream", LangStreamRouterValidator(srv.routerManager))
+	v1.Get("/language/:router/chatStream", LangStreamChatHandler())
+
 	v1.Get("/health/", HealthHandler)
 
 	srv.server.Use(NotFoundHandler)

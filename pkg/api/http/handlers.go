@@ -2,8 +2,9 @@ package http
 
 import (
 	"errors"
-
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"log"
 
 	"glide/pkg/api/schemas"
 	"glide/pkg/routers"
@@ -18,7 +19,7 @@ type Handler = func(c *fiber.Ctx) error
 //
 //	@id				glide-language-chat
 //	@Summary		Language Chat
-//	@Description	Talk to different LLMs Chat API via unified endpoint
+//	@Description	Talk to different LLM Chat APIs via unified endpoint
 //	@tags			Language
 //	@Param			router	path	string						true	"Router ID"
 //	@Param			payload	body	schemas.UnifiedChatRequest	true	"Request Data"
@@ -63,6 +64,71 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 		// Return chat response
 		return c.Status(fiber.StatusOK).JSON(resp)
 	}
+}
+
+func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
+	return func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			routerID := c.Params("router")
+			_, err := routerManager.GetLangRouter(routerID)
+
+			if err != nil {
+				return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
+					Message: err.Error(),
+				})
+			}
+
+			return c.Next()
+		}
+
+		return fiber.ErrUpgradeRequired
+	}
+}
+
+// LangStreamChatHandler
+//
+//	@id				glide-language-chat-stream
+//	@Summary		Language Chat
+//	@Description	Talk to different LLM Stream Chat APIs via a unified websocket endpoint
+//	@tags			Language
+//	@Param			router	    			path		string	true	"Router ID"
+//	@Param			Connection				header		string	true	"Websocket Connection Type"
+//	@Param			Upgrade 				header		string	true	"Upgrade header"
+//	@Param			Sec-WebSocket-Key  		header		string	true	"Websocket Security Token"
+//	@Param			Sec-WebSocket-Version  	header		string	true	"Websocket Security Token"
+//	@Accept			json
+//	@Success		101
+//	@Failure		426
+//	@Failure		404	{object}	http.ErrorSchema
+//	@Router			/v1/language/{router}/chatStream [GET]
+func LangStreamChatHandler() Handler {
+	// TODO: expose websocket connection configs https://github.com/gofiber/contrib/tree/main/websocket
+	return websocket.New(func(c *websocket.Conn) {
+		log.Println(c.Params("router"))
+
+		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
+
+		var (
+			mt  int
+			msg []byte
+			err error
+		)
+
+		for {
+			if mt, msg, err = c.ReadMessage(); err != nil {
+				log.Println("read:", err)
+				break
+			}
+
+			log.Printf("msg type: %s", mt)
+			log.Printf("recv: %s", msg)
+
+			if err = c.WriteMessage(mt, msg); err != nil {
+				log.Println("write:", err)
+				break
+			}
+		}
+	})
 }
 
 // LangRoutersHandler
