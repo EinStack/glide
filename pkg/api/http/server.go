@@ -41,7 +41,7 @@ func (srv *Server) Run() error {
 		Title:    "Glide API Docs",
 		BasePath: "/v1/",
 		Path:     "swagger",
-		FilePath: "./docs/swagger.json",
+		FilePath: "./docs/swagger.yaml",
 	}))
 
 	srv.server.Use(fiberzap.New(fiberzap.Config{
