@@ -91,7 +91,6 @@ See [API Reference](https://glide.einstack.ai/api-reference/introduction) for mo
 
 ```json
 {
- "model": "gpt-3.5-turbo", # this is not required but can be used to specify different prompts to different models
  "message":
       {
         "role": "user",
