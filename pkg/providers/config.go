@@ -36,7 +36,7 @@ type LangModelConfig struct {
 	OctoML      *octoml.Config      `yaml:"octoml,omitempty" json:"octoml,omitempty"`
 	Anthropic   *anthropic.Config   `yaml:"anthropic,omitempty" json:"anthropic,omitempty"`
 	Bedrock     *bedrock.Config     `yaml:"bedrock,omitempty" json:"bedrock,omitempty"`
-	Ollama 	    *ollama.Config      `yaml:"ollama,omitempty" json:"ollama,omitempty"`
+	Ollama      *ollama.Config      `yaml:"ollama,omitempty" json:"ollama,omitempty"`
 }
 
 func DefaultLangModelConfig() *LangModelConfig {

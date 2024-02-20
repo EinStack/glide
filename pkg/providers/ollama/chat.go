@@ -41,7 +41,7 @@ type ChatRequest struct {
 	NumPredict   int           `json:"num_predict,omitempty"`
 	TopK         int           `json:"top_k,omitempty"`
 	TopP         float64       `json:"top_p,omitempty"`
-	Stream       bool          `json:"stream,omitempty"`
+	Stream       bool          `json:"stream"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
@@ -111,6 +111,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal openai chat request payload: %w", err)
 	}
+
+	println(string(rawPayload))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
@@ -191,14 +193,14 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"system_fingerprint": "",
 			},
 			Message: schemas.ChatMessage{
-				Role:    "system",
-				Content: ollamaCompletion.Response,
+				Role:    ollamaCompletion.Message.Role,
+				Content: ollamaCompletion.Message.Content,
 				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   float64(ollamaCompletion.PromptEvalCount),
+				PromptTokens:   float64(ollamaCompletion.EvalCount),
 				ResponseTokens: float64(ollamaCompletion.EvalCount),
-				TotalTokens:    float64(ollamaCompletion.PromptEvalCount) + float64(ollamaCompletion.EvalCount),
+				TotalTokens:    float64(ollamaCompletion.EvalCount),
 			},
 		},
 	}

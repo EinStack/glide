@@ -1,5 +1,5 @@
 {
-  "model": "gpt-3.5-turbo",
+  "model": "llama2",
   "messages": [
     {
       "role": "human",
@@ -7,9 +7,5 @@
     }
   ],
   "temperature": 0.8,
-  "top_p": 1,
-  "max_tokens": 100,
-  "n": 1,
-  "user": null,
-  "seed": null
+  "stream": false
 }

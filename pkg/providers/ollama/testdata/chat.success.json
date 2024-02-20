@@ -1,21 +1,15 @@
 {
-  "id": "chatcmpl-123",
-  "object": "chat.completion",
-  "created": 1677652288,
-  "model": "gpt-3.5-turbo-0613",
-  "system_fingerprint": "fp_44709d6fcb",
-  "choices": [{
-    "index": 0,
-    "message": {
-      "role": "assistant",
-      "content": "\n\nHello there, how may I assist you today?"
-    },
-    "logprobs": null,
-    "finish_reason": "stop"
-  }],
-  "usage": {
-    "prompt_tokens": 9,
-    "completion_tokens": 12,
-    "total_tokens": 21
-  }
+  "model": "registry.ollama.ai/library/llama2:latest",
+  "created_at": "2023-12-12T14:13:43.416799Z",
+  "message": {
+    "role": "assistant",
+    "content": "Hello! How are you today?"
+  },
+  "done": true,
+  "total_duration": 5191566416,
+  "load_duration": 2154458,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 383809000,
+  "eval_count": 298,
+  "eval_duration": 4799921000
 }
