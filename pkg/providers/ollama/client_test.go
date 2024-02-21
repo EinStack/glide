@@ -61,9 +61,37 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 		Content: "What's the biggest animal?",
 	}}
 
-	response, _ := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &request)
 
 	println(response)
 
 	require.NoError(t, err)
+}
+
+func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
+	// Create a mock HTTP server that returns a non-OK status code
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+
+	defer mockServer.Close()
+
+	// Create a new client with the mock server URL
+	client := &Client{
+		httpClient: http.DefaultClient,
+		chatURL:    mockServer.URL,
+		config:     DefaultConfig(),
+		telemetry:  telemetry.NewTelemetryMock(),
+	}
+
+	// Create a chat request payload
+	payload := &ChatRequest{
+		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
+	}
+
+	// Call the chatRequest function
+	_, err := client.doChatRequest(context.Background(), payload)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "provider is not available")
 }
