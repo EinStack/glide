@@ -95,3 +95,33 @@ func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "provider is not available")
 }
+
+func TestOllamaClient_ChatRequest_SuccessfulResponse(t *testing.T) {
+	// Create a mock HTTP server that returns an OK status code and a sample response
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"response": "OK"}`))
+	}))
+
+	defer mockServer.Close()
+
+	// Create a new client with the mock server URL
+	client := &Client{
+		httpClient: http.DefaultClient,
+		chatURL:    mockServer.URL,
+		config:     DefaultConfig(),
+		telemetry:  telemetry.NewTelemetryMock(),
+	}
+
+	// Create a chat request payload
+	payload := &ChatRequest{
+		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
+	}
+
+	// Call the chatRequest function
+	response, err := client.doChatRequest(context.Background(), payload)
+
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	require.Equal(t, "", response.ModelResponse.Message.Role)
+}
