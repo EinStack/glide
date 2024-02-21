@@ -1,21 +1,23 @@
-# Glide: Cloud-Native LLM Gateway for Seamless LLMOps
 <div align="center">
     <img src="docs/logo/glide_no_bgd.png" width="300px" alt="Glide GH Header" />
+    <h1>Glide: Cloud-Native LLM Gateway for Seamless LLMOps</h1>
+    <a href="https://codecov.io/github/EinStack/glide"><img src="https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9" alt="CodeCov" /></a>
+    <a href="https://discord.gg/pt53Ej7rrc"><img src="https://img.shields.io/discord/1181281407813828710" alt="Discord" /></a>
+    <a href="https://glide.einstack.ai/"><img src="https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F" alt="Glide Docs" /></a>
+    <a href="https://github.com/EinStack/glide/blob/main/LICENSE"><img src="https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8" alt="License" /></a>
+    <a href="https://artifacthub.io/packages/helm/einstack/glide"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/einstack" alt="ArtifactHub" /></a>
+    <a href="https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield" alt="FOSSA Status" /></a>
 </div>
 
-
-[![codecov](https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9)](https://codecov.io/github/EinStack/glide)
-[![Discord](https://img.shields.io/discord/1181281407813828710)](https://discord.gg/pt53Ej7rrc)
-[![Documentation](https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F)](https://glide.einstack.ai/)
-[![LICENSE](https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8)](https://github.com/EinStack/glide/blob/main/LICENSE)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/einstack)](https://artifacthub.io/packages/helm/einstack/glide)
 ---
 
-Glide is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
+**Glide** is your go-to cloud-native LLM gateway, delivering high-performance LLMOps in a lightweight, all-in-one package.
 
 We take all problems of managing and communicating with external providers out of your applications,
 so you can dive into tackling your core challenges.
+
+> [!Important]
+> Give us a star⭐ to support the project and watch👀 our repositories not to miss any update. Appriciate your interest 🙏
 
 Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
 model failover, caching, key management, etc. 
@@ -27,7 +29,7 @@ Take a look at the develop branch.
 Check out our [documentation](https://glide.einstack.ai)!
 
 > [!Warning]
-> Glide is under active development right now. Give us a star to support the project ✨
+> Glide is under active development right now 🛠️
 
 ## Features
 
@@ -37,8 +39,6 @@ Check out our [documentation](https://glide.einstack.ai)!
 - **High performance**. Performance is our priority. We want to keep Glide "invisible" for your latency-wise, while providing rich functionality.
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring (coming soon)
 - Straightforward and simple maintenance and configuration, centralized API key control & management & rotation, etc.
-
-## Supported Providers
 
 ### Large Language Models
 
@@ -51,24 +51,6 @@ Check out our [documentation](https://glide.einstack.ai)!
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 | <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
 | <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
-
-
-
-### Routers
-
-Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
-
-Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
-
-#### Available Routers
-
-| Router      | Description  |
-|---------------|-----------------|
-| Priority        | When the target model fails the request is sent to the secondary model. The entire service instance keeps track of the number of failures for a specific model reducing latency upon model failure  |
-| Least Latency        | This router selects the model with the lowest average latency over time. If the least latency model becomes unhealthy, it will pick the second the best, etc.  |
-| Round Robin        | Split traffic equally among specified models. Great for A/B testing.  |
-| Weighted Round Robin | Split traffic based on weights. For example, 70% of traffic to Model A and 30% of traffic to Model B.  |
-
 
 ## Get Started
 
@@ -109,7 +91,6 @@ See [API Reference](https://glide.einstack.ai/api-reference/introduction) for mo
 
 ```json
 {
- "model": "gpt-3.5-turbo", # this is not required but can be used to specify different prompts to different models
  "message":
       {
         "role": "user",
@@ -224,6 +205,32 @@ Finally, you should be able to install Glide's chart via:
 ```
 helm upgrade glide-gateway einstack/glide --values custom.values.yaml --install
 ```
+
+## SDKs
+
+To let you work with Glide's API with ease, we are going to provide you with SDKs that fits your tech stack:
+
+- Python (coming soon)
+- NodeJS (coming soon)
+- Golang (coming soon)
+- Rust (coming soon)
+
+## Core Concepts
+
+### Routers
+
+Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
+
+Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
+
+#### Available Routers
+
+| Router      | Description  |
+|---------------|-----------------|
+| Priority        | When the target model fails the request is sent to the secondary model. The entire service instance keeps track of the number of failures for a specific model reducing latency upon model failure  |
+| Least Latency        | This router selects the model with the lowest average latency over time. If the least latency model becomes unhealthy, it will pick the second the best, etc.  |
+| Round Robin        | Split traffic equally among specified models. Great for A/B testing.  |
+| Weighted Round Robin | Split traffic based on weights. For example, 70% of traffic to Model A and 30% of traffic to Model B.  |
 
 ## Community
 
