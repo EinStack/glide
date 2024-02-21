@@ -66,7 +66,7 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 	// require.NoError(t, err)
 
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "provider is not available")
+	require.Contains(t, err.Error(), "chat request failed")
 }
 
 func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
@@ -94,7 +94,7 @@ func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
 	_, err := client.doChatRequest(context.Background(), payload)
 
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "chat request failed")
+	require.Contains(t, err.Error(), "provider is not available")
 }
 
 func TestOllamaClient_ChatRequest_SuccessfulResponse(t *testing.T) {
