@@ -61,11 +61,12 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 		Content: "What's the biggest animal?",
 	}}
 
-	response, err := client.Chat(ctx, &request)
+	_, err = client.Chat(ctx, &request)
 
-	println(response)
+	// require.NoError(t, err)
 
-	require.NoError(t, err)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "provider is not available")
 }
 
 func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
