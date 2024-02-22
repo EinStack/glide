@@ -1,4 +1,4 @@
-package octoml
+package ollama
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"glide/pkg/providers/openai"
-
 	"glide/pkg/providers/clients"
+
+	"github.com/google/uuid"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -22,30 +22,48 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
-// ChatRequest is an octoml-specific request schema
+// ChatRequest is an ollama-specific request schema
 type ChatRequest struct {
-	Model            string        `json:"model"`
-	Messages         []ChatMessage `json:"messages"`
-	Temperature      float64       `json:"temperature,omitempty"`
-	TopP             float64       `json:"top_p,omitempty"`
-	MaxTokens        int           `json:"max_tokens,omitempty"`
-	StopWords        []string      `json:"stop,omitempty"`
-	Stream           bool          `json:"stream,omitempty"`
-	FrequencyPenalty int           `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int           `json:"presence_penalty,omitempty"`
+	Model        string        `json:"model"`
+	Messages     []ChatMessage `json:"messages"`
+	Microstat    int           `json:"microstat,omitempty"`
+	MicrostatEta float64       `json:"microstat_eta,omitempty"`
+	MicrostatTau float64       `json:"microstat_tau,omitempty"`
+	NumCtx       int           `json:"num_ctx,omitempty"`
+	NumGqa       int           `json:"num_gqa,omitempty"`
+	NumGpu       int           `json:"num_gpu,omitempty"`
+	NumThread    int           `json:"num_thread,omitempty"`
+	RepeatLastN  int           `json:"repeat_last_n,omitempty"`
+	Temperature  float64       `json:"temperature,omitempty"`
+	Seed         int           `json:"seed,omitempty"`
+	StopWords    []string      `json:"stop,omitempty"`
+	Tfsz         float64       `json:"tfs_z,omitempty"`
+	NumPredict   int           `json:"num_predict,omitempty"`
+	TopK         int           `json:"top_k,omitempty"`
+	TopP         float64       `json:"top_p,omitempty"`
+	Stream       bool          `json:"stream"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
-		Temperature:      cfg.DefaultParams.Temperature,
-		TopP:             cfg.DefaultParams.TopP,
-		MaxTokens:        cfg.DefaultParams.MaxTokens,
-		StopWords:        cfg.DefaultParams.StopWords,
-		Stream:           false, // unsupported right now
-		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
-		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
+		Model:        cfg.Model,
+		Temperature:  cfg.DefaultParams.Temperature,
+		Microstat:    cfg.DefaultParams.Microstat,
+		MicrostatEta: cfg.DefaultParams.MicrostatEta,
+		MicrostatTau: cfg.DefaultParams.MicrostatTau,
+		NumCtx:       cfg.DefaultParams.NumCtx,
+		NumGqa:       cfg.DefaultParams.NumGqa,
+		NumGpu:       cfg.DefaultParams.NumGpu,
+		NumThread:    cfg.DefaultParams.NumThread,
+		RepeatLastN:  cfg.DefaultParams.RepeatLastN,
+		Seed:         cfg.DefaultParams.Seed,
+		StopWords:    cfg.DefaultParams.StopWords,
+		Tfsz:         cfg.DefaultParams.Tfsz,
+		NumPredict:   cfg.DefaultParams.NumPredict,
+		TopP:         cfg.DefaultParams.TopP,
+		TopK:         cfg.DefaultParams.TopK,
+		Stream:       cfg.DefaultParams.Stream,
 	}
 }
 
@@ -62,14 +80,14 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessa
 	return messages
 }
 
-// Chat sends a chat request to the specified octoml model.
+// Chat sends a chat request to the specified ollama model.
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("chat request failed: %w", err)
 	}
 
 	if len(chatResponse.ModelResponse.Message.Content) == 0 {
@@ -91,27 +109,26 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal octoml chat request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal ollama chat request payload: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		return nil, fmt.Errorf("unable to create octoml chat request: %w", err)
+		return nil, fmt.Errorf("unable to create ollama chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"octoml chat request",
+		"ollama chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send octoml chat request: %w", err)
+		return nil, fmt.Errorf("failed to send ollama chat request: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -119,11 +136,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read octoml chat response", zap.Error(err))
+			c.telemetry.Logger.Error("failed to read ollama chat response", zap.Error(err))
 		}
 
 		c.telemetry.Logger.Error(
-			"octoml chat request failed",
+			"ollama chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
@@ -149,39 +166,39 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read octoml chat response", zap.Error(err))
+		c.telemetry.Logger.Error("failed to read ollama chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Parse the response JSON
-	var openAICompletion openai.ChatCompletion // Octo uses the same response schema as OpenAI
+	var ollamaCompletion ChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(bodyBytes, &ollamaCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("failed to parse ollama chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
+		ID:       uuid.NewString(),
+		Created:  int(time.Now().Unix()),
 		Provider: providerName,
-		Model:    openAICompletion.Model,
+		Model:    ollamaCompletion.Model,
 		Cached:   false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
+				"system_fingerprint": "",
 			},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
+				Role:    ollamaCompletion.Message.Role,
+				Content: ollamaCompletion.Message.Content,
 				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   float64(ollamaCompletion.EvalCount),
+				ResponseTokens: float64(ollamaCompletion.EvalCount),
+				TotalTokens:    float64(ollamaCompletion.EvalCount),
 			},
 		},
 	}

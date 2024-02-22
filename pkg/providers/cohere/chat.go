@@ -65,7 +65,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 }
 
 // Chat sends a chat request to the specified cohere model.
-func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
@@ -81,7 +81,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
+func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
 	chatRequest.Message = request.Message.Content
@@ -103,7 +103,7 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 	return chatRequest
 }
 
-func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -170,7 +170,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	// Parse the response JSON
-	var cohereCompletion schemas.CohereChatCompletion
+	var cohereCompletion ChatCompletion
 
 	err = json.Unmarshal(bodyBytes, &cohereCompletion)
 	if err != nil {
@@ -178,8 +178,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	// Map response to UnifiedChatResponse schema
-	response := schemas.UnifiedChatResponse{
+	// Map response to ChatResponse schema
+	response := schemas.ChatResponse{
 		ID:       cohereCompletion.ResponseID,
 		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
 		Provider: providerName,
@@ -206,7 +206,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	return &response, nil
 }
 
-func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse, error) {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))

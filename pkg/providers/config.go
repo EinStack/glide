@@ -6,7 +6,9 @@ import (
 
 	"glide/pkg/routers/latency"
 
+	"glide/pkg/providers/bedrock"
 	"glide/pkg/providers/clients"
+	"glide/pkg/providers/ollama"
 
 	"glide/pkg/routers/health"
 
@@ -33,6 +35,8 @@ type LangModelConfig struct {
 	Cohere      *cohere.Config      `yaml:"cohere,omitempty" json:"cohere,omitempty"`
 	OctoML      *octoml.Config      `yaml:"octoml,omitempty" json:"octoml,omitempty"`
 	Anthropic   *anthropic.Config   `yaml:"anthropic,omitempty" json:"anthropic,omitempty"`
+	Bedrock     *bedrock.Config     `yaml:"bedrock,omitempty" json:"bedrock,omitempty"`
+	Ollama      *ollama.Config      `yaml:"ollama,omitempty" json:"ollama,omitempty"`
 }
 
 func DefaultLangModelConfig() *LangModelConfig {
@@ -68,6 +72,8 @@ func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvide
 		return octoml.NewClient(c.OctoML, c.Client, tel)
 	case c.Anthropic != nil:
 		return anthropic.NewClient(c.Anthropic, c.Client, tel)
+	case c.Bedrock != nil:
+		return bedrock.NewClient(c.Bedrock, c.Client, tel)
 	default:
 		return nil, ErrProviderNotFound
 	}
@@ -96,14 +102,22 @@ func (c *LangModelConfig) validateOneProvider() error {
 		providersConfigured++
 	}
 
+	if c.Bedrock != nil {
+		providersConfigured++
+	}
+
+	if c.Ollama != nil {
+		providersConfigured++
+	}
+
 	// check other providers here
 	if providersConfigured == 0 {
-		return fmt.Errorf("exactly one provider must be cofigured for model \"%v\", none is configured", c.ID)
+		return fmt.Errorf("exactly one provider must be configured for model \"%v\", none is configured", c.ID)
 	}
 
 	if providersConfigured > 1 {
 		return fmt.Errorf(
-			"exactly one provider must be cofigured for model \"%v\", %v are configured",
+			"exactly one provider must be configured for model \"%v\", %v are configured",
 			c.ID,
 			providersConfigured,
 		)

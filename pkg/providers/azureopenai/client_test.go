@@ -55,7 +55,7 @@ func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
+	request := schemas.ChatRequest{Message: schemas.ChatMessage{
 		Role:    "user",
 		Content: "What's the biggest animal?",
 	}}
@@ -88,7 +88,7 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
+	request := schemas.ChatRequest{Message: schemas.ChatMessage{
 		Role:    "user",
 		Content: "What's the biggest animal?",
 	}}

@@ -5,6 +5,18 @@ The changelog consists of three categories:
 - **Improvements** - bugfixes, performance and other types of improvements to existing functionality
 - **Miscellaneous** - all other updates like build, release, CLI, etc.
 
+## 0.0.2-rc.2 (Feb 22nd, 2024)
+
+### Features
+
+- ✨ #142: [Lang Chat Router] Ollama Support (@mkrueger12)
+- ✨ #131: [Lang Chat Router] AWS Bedrock Support (@mkrueger12)
+
+### Miscellaneous
+
+- 👷 #155 Fixing the dockerhub authorization step in the release workflow (@roma-glushko)
+- ♻️  #151: Moved specific provider schemas closer to provider's packages (@roma-glushko)
+
 ## 0.0.2-rc.1 (Feb 12th, 2024)
 
 ### Features
