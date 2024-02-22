@@ -50,6 +50,7 @@ Check out our [documentation](https://glide.einstack.ai)!
 | <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 | <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
+| <img src="docs/images/ollama.png" width="18" />     | Ollama        | 👍  Supported  |
 | <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
 
 ## Get Started

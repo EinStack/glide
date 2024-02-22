@@ -1,0 +1,11 @@
+{
+  "model": "llama2",
+  "messages": [
+    {
+      "role": "human",
+      "content": "What's the biggest animal?"
+    }
+  ],
+  "temperature": 0.8,
+  "stream": false
+}
