@@ -10,45 +10,45 @@ permissions:
   packages: write
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yaml
-  vuln:
-    uses: ./.github/workflows/vuln.yaml
-  release:
-    needs:
-      - lint
-      - vuln
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Snapcraft Setup
-        run: |
-          sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
-          mkdir -p $HOME/.cache/snapcraft/download
-          mkdir -p $HOME/.cache/snapcraft/stage-packages
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
-          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
+#  lint:
+#    uses: ./.github/workflows/lint.yaml
+#  vuln:
+#    uses: ./.github/workflows/vuln.yaml
+#  release:
+#    needs:
+#      - lint
+#      - vuln
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Set up Go
+#        uses: actions/setup-go@v4
+#        with:
+#          go-version: 1.21
+#
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Snapcraft Setup
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+#          mkdir -p $HOME/.cache/snapcraft/download
+#          mkdir -p $HOME/.cache/snapcraft/stage-packages
+#
+#      - name: Run GoReleaser
+#        uses: goreleaser/goreleaser-action@v5
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: release --clean
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
+#          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+#          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+#          BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
   images:
     strategy:
       matrix:
@@ -67,7 +67,7 @@ jobs:
           fetch-depth: 0
 
       - name: login into Github Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: login into Docker
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack --password-stdin
