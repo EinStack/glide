@@ -104,7 +104,7 @@ publish-ghcr-%: ## Push images to Github Registry
 	}
 
 publish-dockerhub-%: ## Push images to Docker Hub
-	@echo "🚚Pushing the $* image to Github Registry.."
+	@echo "🚚Pushing the $* image to Docker Hub.."
 	@docker tag $(REPOSITORY):$(VERSION)-$* $(REPOSITORY):$(VERSION)-$*
 	@echo "- pushing $(REPOSITORY):$(VERSION)-$*"
 	@docker push $(REPOSITORY):$(VERSION)-$*
