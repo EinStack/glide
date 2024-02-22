@@ -98,7 +98,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/schemas.UnifiedChatRequest"
+                            "$ref": "#/definitions/schemas.ChatRequest"
                         }
                     }
                 ],
@@ -106,7 +106,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schemas.UnifiedChatResponse"
+                            "$ref": "#/definitions/schemas.ChatResponse"
                         }
                     },
                     "400": {
@@ -757,6 +757,52 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.ChatRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "messageHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.ChatMessage"
+                    }
+                },
+                "override": {
+                    "$ref": "#/definitions/schemas.OverrideChatRequest"
+                }
+            }
+        },
+        "schemas.ChatResponse": {
+            "type": "object",
+            "properties": {
+                "cached": {
+                    "type": "boolean"
+                },
+                "created": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "modelResponse": {
+                    "$ref": "#/definitions/schemas.ProviderResponse"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "router": {
+                    "type": "string"
+                }
+            }
+        },
         "schemas.OverrideChatRequest": {
             "type": "object",
             "properties": {
@@ -796,52 +842,6 @@ const docTemplate = `{
                 },
                 "totalTokens": {
                     "type": "number"
-                }
-            }
-        },
-        "schemas.UnifiedChatRequest": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "$ref": "#/definitions/schemas.ChatMessage"
-                },
-                "messageHistory": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/schemas.ChatMessage"
-                    }
-                },
-                "override": {
-                    "$ref": "#/definitions/schemas.OverrideChatRequest"
-                }
-            }
-        },
-        "schemas.UnifiedChatResponse": {
-            "type": "object",
-            "properties": {
-                "cached": {
-                    "type": "boolean"
-                },
-                "created": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "modelResponse": {
-                    "$ref": "#/definitions/schemas.ProviderResponse"
-                },
-                "model_id": {
-                    "type": "string"
-                },
-                "provider": {
-                    "type": "string"
-                },
-                "router": {
-                    "type": "string"
                 }
             }
         }

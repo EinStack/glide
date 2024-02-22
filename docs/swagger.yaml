@@ -429,6 +429,36 @@ definitions:
           or assistant.
         type: string
     type: object
+  schemas.ChatRequest:
+    properties:
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+      messageHistory:
+        items:
+          $ref: '#/definitions/schemas.ChatMessage'
+        type: array
+      override:
+        $ref: '#/definitions/schemas.OverrideChatRequest'
+    type: object
+  schemas.ChatResponse:
+    properties:
+      cached:
+        type: boolean
+      created:
+        type: integer
+      id:
+        type: string
+      model:
+        type: string
+      model_id:
+        type: string
+      modelResponse:
+        $ref: '#/definitions/schemas.ProviderResponse'
+      provider:
+        type: string
+      router:
+        type: string
+    type: object
   schemas.OverrideChatRequest:
     properties:
       message:
@@ -455,36 +485,6 @@ definitions:
         type: number
       totalTokens:
         type: number
-    type: object
-  schemas.UnifiedChatRequest:
-    properties:
-      message:
-        $ref: '#/definitions/schemas.ChatMessage'
-      messageHistory:
-        items:
-          $ref: '#/definitions/schemas.ChatMessage'
-        type: array
-      override:
-        $ref: '#/definitions/schemas.OverrideChatRequest'
-    type: object
-  schemas.UnifiedChatResponse:
-    properties:
-      cached:
-        type: boolean
-      created:
-        type: integer
-      id:
-        type: string
-      model:
-        type: string
-      model_id:
-        type: string
-      modelResponse:
-        $ref: '#/definitions/schemas.ProviderResponse'
-      provider:
-        type: string
-      router:
-        type: string
     type: object
 externalDocs:
   description: Documentation
@@ -551,14 +551,14 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/schemas.UnifiedChatRequest'
+          $ref: '#/definitions/schemas.ChatRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/schemas.UnifiedChatResponse'
+            $ref: '#/definitions/schemas.ChatResponse'
         "400":
           description: Bad Request
           schema:
