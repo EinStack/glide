@@ -5,7 +5,7 @@ The changelog consists of three categories:
 - **Improvements** - bugfixes, performance and other types of improvements to existing functionality
 - **Miscellaneous** - all other updates like build, release, CLI, etc.
 
-## 0.0.2-rc.2 (Feb 22nd, 2024)
+## 0.0.2-rc.2, 0.0.2 (Feb 22nd, 2024)
 
 ### Features
 
