@@ -61,7 +61,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []ChatMessage {
+func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessage {
 	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
 
 	// Add items from messageHistory first and the new chat message last
@@ -75,7 +75,7 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) []Ch
 }
 
 // Chat sends a chat request to the specified OpenAI model.
-func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
@@ -91,7 +91,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
+func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
 	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
@@ -99,7 +99,7 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 	return chatRequest
 }
 
-func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -166,7 +166,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	// Parse the response JSON
-	var openAICompletion schemas.OpenAIChatCompletion
+	var openAICompletion ChatCompletion
 
 	err = json.Unmarshal(bodyBytes, &openAICompletion)
 	if err != nil {
@@ -174,8 +174,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	// Map response to UnifiedChatResponse schema
-	response := schemas.UnifiedChatResponse{
+	// Map response to ChatResponse schema
+	response := schemas.ChatResponse{
 		ID:       openAICompletion.ID,
 		Created:  openAICompletion.Created,
 		Provider: providerName,

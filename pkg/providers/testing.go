@@ -14,8 +14,8 @@ type ResponseMock struct {
 	Err *error
 }
 
-func (m *ResponseMock) Resp() *schemas.UnifiedChatResponse {
-	return &schemas.UnifiedChatResponse{
+func (m *ResponseMock) Resp() *schemas.ChatResponse {
+	return &schemas.ChatResponse{
 		ID: "rsp0001",
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
@@ -40,7 +40,7 @@ func NewProviderMock(responses []ResponseMock) *ProviderMock {
 	}
 }
 
-func (c *ProviderMock) Chat(_ context.Context, _ *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	response := c.responses[c.idx]
 	c.idx++
 
