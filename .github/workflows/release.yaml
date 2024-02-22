@@ -84,4 +84,4 @@ jobs:
 
       - name: publish ${{ matrix.image }} image to DockerHub
         working-directory: ./images
-        run: VERSION=${{ github.ref_name }} make publish-docherhub-${{ matrix.image }}
+        run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
