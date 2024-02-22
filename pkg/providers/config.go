@@ -8,6 +8,7 @@ import (
 
 	"glide/pkg/providers/bedrock"
 	"glide/pkg/providers/clients"
+	"glide/pkg/providers/ollama"
 
 	"glide/pkg/routers/health"
 
@@ -35,6 +36,7 @@ type LangModelConfig struct {
 	OctoML      *octoml.Config      `yaml:"octoml,omitempty" json:"octoml,omitempty"`
 	Anthropic   *anthropic.Config   `yaml:"anthropic,omitempty" json:"anthropic,omitempty"`
 	Bedrock     *bedrock.Config     `yaml:"bedrock,omitempty" json:"bedrock,omitempty"`
+	Ollama      *ollama.Config      `yaml:"ollama,omitempty" json:"ollama,omitempty"`
 }
 
 func DefaultLangModelConfig() *LangModelConfig {
@@ -101,6 +103,10 @@ func (c *LangModelConfig) validateOneProvider() error {
 	}
 
 	if c.Bedrock != nil {
+		providersConfigured++
+	}
+
+	if c.Ollama != nil {
 		providersConfigured++
 	}
 

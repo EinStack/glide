@@ -40,8 +40,6 @@ Check out our [documentation](https://glide.einstack.ai)!
 - **Production-ready observability** via OpenTelemetry, emit metrics on models health, allows whitebox monitoring (coming soon)
 - Straightforward and simple maintenance and configuration, centralized API key control & management & rotation, etc.
 
-## Supported Providers
-
 ### Large Language Models
 
 |                                                     | Provider      | Support Status  |
@@ -52,25 +50,8 @@ Check out our [documentation](https://glide.einstack.ai)!
 | <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
 | <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
 | <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
+| <img src="docs/images/ollama.png" width="18" />     | Ollama        | 👍  Supported  |
 | <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
-
-
-
-### Routers
-
-Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
-
-Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
-
-#### Available Routers
-
-| Router      | Description  |
-|---------------|-----------------|
-| Priority        | When the target model fails the request is sent to the secondary model. The entire service instance keeps track of the number of failures for a specific model reducing latency upon model failure  |
-| Least Latency        | This router selects the model with the lowest average latency over time. If the least latency model becomes unhealthy, it will pick the second the best, etc.  |
-| Round Robin        | Split traffic equally among specified models. Great for A/B testing.  |
-| Weighted Round Robin | Split traffic based on weights. For example, 70% of traffic to Model A and 30% of traffic to Model B.  |
-
 
 ## Get Started
 
@@ -111,7 +92,6 @@ See [API Reference](https://glide.einstack.ai/api-reference/introduction) for mo
 
 ```json
 {
- "model": "gpt-3.5-turbo", # this is not required but can be used to specify different prompts to different models
  "message":
       {
         "role": "user",
@@ -226,6 +206,32 @@ Finally, you should be able to install Glide's chart via:
 ```
 helm upgrade glide-gateway einstack/glide --values custom.values.yaml --install
 ```
+
+## SDKs
+
+To let you work with Glide's API with ease, we are going to provide you with SDKs that fits your tech stack:
+
+- Python (coming soon)
+- NodeJS (coming soon)
+- Golang (coming soon)
+- Rust (coming soon)
+
+## Core Concepts
+
+### Routers
+
+Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
+
+Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
+
+#### Available Routers
+
+| Router      | Description  |
+|---------------|-----------------|
+| Priority        | When the target model fails the request is sent to the secondary model. The entire service instance keeps track of the number of failures for a specific model reducing latency upon model failure  |
+| Least Latency        | This router selects the model with the lowest average latency over time. If the least latency model becomes unhealthy, it will pick the second the best, etc.  |
+| Round Robin        | Split traffic equally among specified models. Great for A/B testing.  |
+| Weighted Round Robin | Split traffic based on weights. For example, 70% of traffic to Model A and 30% of traffic to Model B.  |
 
 ## Community
 

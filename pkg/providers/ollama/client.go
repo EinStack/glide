@@ -1,4 +1,4 @@
-package openai
+package ollama
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	providerName = "openai"
+	providerName = "ollama"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.

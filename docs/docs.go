@@ -477,6 +477,84 @@ const docTemplate = `{
                 }
             }
         },
+        "ollama.Config": {
+            "type": "object",
+            "required": [
+                "baseUrl",
+                "chatEndpoint",
+                "model"
+            ],
+            "properties": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "chatEndpoint": {
+                    "type": "string"
+                },
+                "defaultParams": {
+                    "$ref": "#/definitions/ollama.Params"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "ollama.Params": {
+            "type": "object",
+            "properties": {
+                "microstat": {
+                    "type": "integer"
+                },
+                "microstat_eta": {
+                    "type": "number"
+                },
+                "microstat_tau": {
+                    "type": "number"
+                },
+                "num_ctx": {
+                    "type": "integer"
+                },
+                "num_gpu": {
+                    "type": "integer"
+                },
+                "num_gqa": {
+                    "type": "integer"
+                },
+                "num_predict": {
+                    "type": "integer"
+                },
+                "num_thread": {
+                    "type": "integer"
+                },
+                "repeat_last_n": {
+                    "type": "integer"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "stop": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "stream": {
+                    "type": "boolean"
+                },
+                "temperature": {
+                    "type": "number"
+                },
+                "tfs_z": {
+                    "type": "number"
+                },
+                "top_k": {
+                    "type": "integer"
+                },
+                "top_p": {
+                    "type": "number"
+                }
+            }
+        },
         "openai.Config": {
             "type": "object",
             "required": [
@@ -588,6 +666,9 @@ const docTemplate = `{
                 },
                 "octoml": {
                     "$ref": "#/definitions/octoml.Config"
+                },
+                "ollama": {
+                    "$ref": "#/definitions/ollama.Config"
                 },
                 "openai": {
                     "description": "Add other providers like",
