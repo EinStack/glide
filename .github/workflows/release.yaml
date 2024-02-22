@@ -67,13 +67,10 @@ jobs:
           fetch-depth: 0
 
       - name: login into Github Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
-      - name: login into Github Container Registry
+      - name: login into Docker
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack --password-stdin
-
-      - name: login into Github Container Registry
-        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack $ --password-stdin
 
       - name: build ${{ matrix.image }} image
         working-directory: ./images
@@ -87,4 +84,4 @@ jobs:
 
       - name: publish ${{ matrix.image }} image to DockerHub
         working-directory: ./images
-        run: VERSION=${{ github.ref_name }} make publish-docherhub-${{ matrix.image }}
+        run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
