@@ -51,6 +51,16 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 	return response.Resp(), nil
 }
 
+func (c *ProviderMock) SupportChatStream() bool {
+	// TODO: implement
+	return false
+}
+
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
+	// TODO: implement
+	return nil
+}
+
 func (c *ProviderMock) Provider() string {
 	return "provider_mock"
 }

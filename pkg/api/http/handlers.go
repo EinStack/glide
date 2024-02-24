@@ -111,7 +111,7 @@ func LangStreamChatHandler() Handler {
 
 		var (
 			err         error
-			chatRequest schemas.UnifiedChatRequest
+			chatRequest schemas.ChatRequest
 		)
 
 		for {
@@ -129,7 +129,6 @@ func LangStreamChatHandler() Handler {
 				break
 			}
 		}
-
 		// TODO: handle termination gracefully
 	})
 }

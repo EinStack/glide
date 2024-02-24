@@ -148,7 +148,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			// Parse the value to get the duration
 			cooldownDelay, err := time.ParseDuration(retryAfter)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+				return nil, fmt.Errorf("Failed to parse cooldown delay from headers: %w", err)
 			}
 
 			return nil, clients.NewRateLimitError(&cooldownDelay)
@@ -161,7 +161,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("Failed to read openai chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -170,7 +170,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &openAICompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("Failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
 

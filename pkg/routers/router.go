@@ -117,3 +117,13 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 
 	return nil, ErrNoModelAvailable
 }
+
+func (r *LangRouter) ChatStream(ctx context.Context) error {
+	if len(r.models) == 0 {
+		return ErrNoModels
+	}
+
+	// TODO: implement
+
+	return nil
+}
