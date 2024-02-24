@@ -46,7 +46,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) string {
+func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) string {
 	// message history not yet supported for AWS models
 	message := fmt.Sprintf("Role: %s, Content: %s", request.Message.Role, request.Message.Content)
 
@@ -54,7 +54,7 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.UnifiedChatRequest) stri
 }
 
 // Chat sends a chat request to the specified bedrock model.
-func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
 
@@ -70,7 +70,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) 
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *ChatRequest {
+func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
 	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
@@ -78,7 +78,7 @@ func (c *Client) createChatRequestSchema(request *schemas.UnifiedChatRequest) *C
 	return chatRequest
 }
 
-func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal chat request payload: %w", err)
@@ -94,7 +94,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	var bedrockCompletion schemas.BedrockChatCompletion
+	var bedrockCompletion ChatCompletion
 
 	err = json.Unmarshal(result.Body, &bedrockCompletion)
 	if err != nil {
@@ -102,7 +102,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
-	response := schemas.UnifiedChatResponse{
+	response := schemas.ChatResponse{
 		ID:       uuid.NewString(),
 		Created:  int(time.Now().Unix()),
 		Provider: "aws-bedrock",

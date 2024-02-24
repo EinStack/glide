@@ -55,7 +55,7 @@ func (r *LangRouter) ID() string {
 	return r.routerID
 }
 
-func (r *LangRouter) Chat(ctx context.Context, request *schemas.UnifiedChatRequest) (*schemas.UnifiedChatResponse, error) {
+func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	if len(r.models) == 0 {
 		return nil, ErrNoModels
 	}

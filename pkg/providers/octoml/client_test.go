@@ -55,7 +55,7 @@ func TestOctoMLClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.UnifiedChatRequest{Message: schemas.ChatMessage{
+	request := schemas.ChatRequest{Message: schemas.ChatMessage{
 		Role:    "human",
 		Content: "What's the biggest animal?",
 	}}
@@ -88,7 +88,7 @@ func TestOctoMLClient_Chat_Error(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a chat request
-	request := schemas.UnifiedChatRequest{
+	request := schemas.ChatRequest{
 		Message: schemas.ChatMessage{
 			Role:    "human",
 			Content: "What's the biggest animal?",

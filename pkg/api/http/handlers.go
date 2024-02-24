@@ -23,17 +23,17 @@ type Handler = func(c *fiber.Ctx) error
 //	@Description	Talk to different LLM Chat APIs via unified endpoint
 //	@tags			Language
 //	@Param			router	path	string						true	"Router ID"
-//	@Param			payload	body	schemas.UnifiedChatRequest	true	"Request Data"
+//	@Param			payload	body	schemas.ChatRequest	true	"Request Data"
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	schemas.UnifiedChatResponse
+//	@Success		200	{object}	schemas.ChatResponse
 //	@Failure		400	{object}	http.ErrorSchema
 //	@Failure		404	{object}	http.ErrorSchema
 //	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
 		// Unmarshal request body
-		var req *schemas.UnifiedChatRequest
+		var req *schemas.ChatRequest
 
 		err := c.BodyParser(&req)
 		if err != nil {
