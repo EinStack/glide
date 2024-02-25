@@ -84,7 +84,6 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 			}
 
 			resp, err := langModel.Chat(ctx, request)
-
 			if err != nil {
 				r.telemetry.Logger.Warn(
 					"Lang model failed processing chat request",
@@ -150,7 +149,6 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 			}
 
 			err = langModel.ChatStream(ctx, request, responseC)
-
 			if err != nil {
 				r.telemetry.Logger.Warn(
 					"Lang model failed processing chat request",
@@ -171,7 +169,6 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 		r.telemetry.Logger.Warn("No healthy model found, wait and retry", zap.String("routerID", r.ID()))
 
 		err := retryIterator.WaitNext(ctx)
-
 		if err != nil {
 			// something has cancelled the context
 			return err

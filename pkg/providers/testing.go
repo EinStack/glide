@@ -56,7 +56,7 @@ func (c *ProviderMock) SupportChatStream() bool {
 	return false
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest, _ chan<- schemas.ChatResponse) error {
 	// TODO: implement
 	return nil
 }

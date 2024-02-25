@@ -3,9 +3,10 @@ package http
 import (
 	"context"
 	"errors"
+	"sync"
+
 	"glide/pkg/telemetry"
 	"go.uber.org/zap"
-	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -44,7 +45,6 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 		var req *schemas.ChatRequest
 
 		err := c.BodyParser(&req)
-
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
 				Message: err.Error(),
@@ -64,7 +64,6 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 
 		// Chat with router
 		resp, err := router.Chat(c.Context(), req)
-
 		if err != nil {
 			// Return internal server error
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorSchema{
@@ -148,6 +147,7 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 				}
 
 				tel.L().Debug("Streaming chat connection is closed by client", zap.Error(err), zap.String("routerID", routerID))
+
 				break
 			}
 

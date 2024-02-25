@@ -3,8 +3,6 @@ package clients
 import (
 	"bytes"
 	"errors"
-
-	"github.com/r3labs/sse/v2"
 )
 
 // Taken from https://github.com/r3labs/sse/blob/master/client.go#L322
@@ -16,8 +14,21 @@ var (
 	headerRetry = []byte("retry:")
 )
 
-func ParseSSEvent(msg []byte) (event *sse.Event, err error) {
-	var e sse.Event
+// Event holds all of the event source fields
+type Event struct {
+	ID      []byte
+	Data    []byte
+	Event   []byte
+	Retry   []byte
+	Comment []byte
+}
+
+func (e *Event) HasContent() bool {
+	return len(e.ID) > 0 || len(e.Data) > 0 || len(e.Event) > 0 || len(e.Retry) > 0
+}
+
+func ParseSSEvent(msg []byte) (event *Event, err error) {
+	var e Event
 
 	if len(msg) < 1 {
 		return nil, errors.New("event message was empty")
@@ -41,7 +52,7 @@ func ParseSSEvent(msg []byte) (event *sse.Event, err error) {
 			e.Retry = append([]byte(nil), trimHeader(len(headerRetry), line)...)
 		default:
 			// Ignore any garbage that doesn't match what we're looking for.
-		}
+		} //nolint:wsl
 	}
 
 	// Trim the last "\n" per the spec.
