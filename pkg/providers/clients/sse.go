@@ -14,7 +14,7 @@ var (
 	headerRetry = []byte("retry:")
 )
 
-// Event holds all of the event source fields
+// Event holds all the event source fields
 type Event struct {
 	ID      []byte
 	Data    []byte
