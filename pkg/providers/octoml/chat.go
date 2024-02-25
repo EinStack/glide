@@ -164,11 +164,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
-		Provider: providerName,
-		Model:    openAICompletion.Model,
-		Cached:   false,
+		ID:        openAICompletion.ID,
+		Created:   openAICompletion.Created,
+		Provider:  providerName,
+		ModelName: openAICompletion.ModelName,
+		Cached:    false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": openAICompletion.SystemFingerprint,

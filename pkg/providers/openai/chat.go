@@ -15,31 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-// ChatRequest is an OpenAI-specific request schema
-type ChatRequest struct {
-	Model            string           `json:"model"`
-	Messages         []ChatMessage    `json:"messages"`
-	Temperature      float64          `json:"temperature,omitempty"`
-	TopP             float64          `json:"top_p,omitempty"`
-	MaxTokens        int              `json:"max_tokens,omitempty"`
-	N                int              `json:"n,omitempty"`
-	StopWords        []string         `json:"stop,omitempty"`
-	Stream           bool             `json:"stream,omitempty"`
-	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int              `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64 `json:"logit_bias,omitempty"`
-	User             *string          `json:"user,omitempty"`
-	Seed             *int             `json:"seed,omitempty"`
-	Tools            []string         `json:"tools,omitempty"`
-	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
-	ResponseFormat   interface{}      `json:"response_format,omitempty"`
-}
-
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
@@ -49,7 +24,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
 		N:                cfg.DefaultParams.N,
 		StopWords:        cfg.DefaultParams.StopWords,
-		Stream:           false, // unsupported right now
+		Stream:           false,
 		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
 		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
 		LogitBias:        cfg.DefaultParams.LogitBias,
@@ -166,9 +141,9 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	// Parse the response JSON
-	var openAICompletion ChatCompletion
+	var chatCompletion ChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
 		c.telemetry.Logger.Error("Failed to parse openai chat response", zap.Error(err))
 		return nil, err
@@ -176,24 +151,24 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
-		Provider: providerName,
-		Model:    openAICompletion.Model,
-		Cached:   false,
+		ID:        chatCompletion.ID,
+		Created:   chatCompletion.Created,
+		Provider:  providerName,
+		ModelName: chatCompletion.ModelName,
+		Cached:    false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
+				"system_fingerprint": chatCompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
+				Role:    chatCompletion.Choices[0].Message.Role,
+				Content: chatCompletion.Choices[0].Message.Content,
 				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   chatCompletion.Usage.PromptTokens,
+				ResponseTokens: chatCompletion.Usage.CompletionTokens,
+				TotalTokens:    chatCompletion.Usage.TotalTokens,
 			},
 		},
 	}

@@ -29,7 +29,7 @@ type ChatResponse struct {
 	Provider      string           `json:"provider,omitempty"`
 	RouterID      string           `json:"router,omitempty"`
 	ModelID       string           `json:"model_id,omitempty"`
-	Model         string           `json:"model,omitempty"`
+	ModelName     string           `json:"model,omitempty"`
 	Cached        bool             `json:"cached,omitempty"`
 	ModelResponse ProviderResponse `json:"modelResponse,omitempty"`
 }

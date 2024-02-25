@@ -180,11 +180,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       cohereCompletion.ResponseID,
-		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
-		Provider: providerName,
-		Model:    c.config.Model,
-		Cached:   false,
+		ID:        cohereCompletion.ResponseID,
+		Created:   int(time.Now().UTC().Unix()), // Cohere doesn't provide this
+		Provider:  providerName,
+		ModelName: c.config.Model,
+		Cached:    false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
 				"generationId": cohereCompletion.GenerationID,

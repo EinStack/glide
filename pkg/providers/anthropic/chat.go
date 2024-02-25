@@ -164,11 +164,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       anthropicCompletion.ID,
-		Created:  int(time.Now().UTC().Unix()), // not provided by anthropic
-		Provider: providerName,
-		Model:    anthropicCompletion.Model,
-		Cached:   false,
+		ID:        anthropicCompletion.ID,
+		Created:   int(time.Now().UTC().Unix()), // not provided by anthropic
+		Provider:  providerName,
+		ModelName: anthropicCompletion.Model,
+		Cached:    false,
 		ModelResponse: schemas.ProviderResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": anthropicCompletion.ID,
