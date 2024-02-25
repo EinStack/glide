@@ -186,14 +186,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Provider:  providerName,
 		ModelName: ollamaCompletion.Model,
 		Cached:    false,
-		ModelResponse: schemas.ProviderResponse{
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": "",
 			},
 			Message: schemas.ChatMessage{
 				Role:    ollamaCompletion.Message.Role,
 				Content: ollamaCompletion.Message.Content,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   float64(ollamaCompletion.EvalCount),

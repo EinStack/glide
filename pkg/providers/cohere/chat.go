@@ -185,7 +185,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Provider:  providerName,
 		ModelName: c.config.Model,
 		Cached:    false,
-		ModelResponse: schemas.ProviderResponse{
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"generationId": cohereCompletion.GenerationID,
 				"responseId":   cohereCompletion.ResponseID,

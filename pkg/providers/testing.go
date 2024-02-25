@@ -17,7 +17,7 @@ type ResponseMock struct {
 func (m *ResponseMock) Resp() *schemas.ChatResponse {
 	return &schemas.ChatResponse{
 		ID: "rsp0001",
-		ModelResponse: schemas.ProviderResponse{
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"ID": "0001",
 			},

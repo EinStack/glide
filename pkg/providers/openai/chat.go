@@ -166,14 +166,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Provider:  providerName,
 		ModelName: chatCompletion.ModelName,
 		Cached:    false,
-		ModelResponse: schemas.ProviderResponse{
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": chatCompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
 				Role:    chatCompletion.Choices[0].Message.Role,
 				Content: chatCompletion.Choices[0].Message.Content,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   chatCompletion.Usage.PromptTokens,

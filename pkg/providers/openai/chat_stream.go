@@ -136,14 +136,13 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 				Provider:  providerName,
 				Cached:    false,
 				ModelName: completionChunk.ModelName,
-				ModelResponse: schemas.ProviderResponse{
+				ModelResponse: schemas.ModelResponse{
 					SystemID: map[string]string{
 						"system_fingerprint": completionChunk.SystemFingerprint,
 					},
 					Message: schemas.ChatMessage{
 						Role:    completionChunk.Choices[0].Delta.Role,
 						Content: completionChunk.Choices[0].Delta.Content,
-						Name:    "",
 					},
 				},
 				// TODO: Pass info if this is the final message

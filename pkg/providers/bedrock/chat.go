@@ -108,7 +108,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Provider:  "aws-bedrock",
 		ModelName: c.config.Model,
 		Cached:    false,
-		ModelResponse: schemas.ProviderResponse{
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": "none",
 			},

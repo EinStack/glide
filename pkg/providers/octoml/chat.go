@@ -169,14 +169,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Provider:  providerName,
 		ModelName: openAICompletion.ModelName,
 		Cached:    false,
-		ModelResponse: schemas.ProviderResponse{
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": openAICompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
 				Role:    openAICompletion.Choices[0].Message.Role,
 				Content: openAICompletion.Choices[0].Message.Content,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   openAICompletion.Usage.PromptTokens,
