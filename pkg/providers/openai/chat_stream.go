@@ -41,7 +41,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"openai stream chat request",
+		"OpenAI stream chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", chatRequest),
 	)
@@ -64,30 +64,35 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 	for {
 		rawEvent, err := reader.ReadEvent()
+
 		if err != nil {
 			if err == io.EOF {
-				// TODO: the stream is over
-				// erChan <- nil
-				// return
+				c.telemetry.L().Debug("Chat stream is over", zap.String("provider", c.Provider()))
+
+				return nil
 			}
 
-			// TODO: we are disconnected
+			c.telemetry.L().Warn(
+				"Chat stream is unexpectedly interrupted by disconnection",
+				zap.String("provider", c.Provider()),
+			)
 
-			// erChan <- err
-			// return
+			return clients.ErrProviderUnavailable
 		}
 
 		event, err := clients.ParseSSEvent(rawEvent)
+
 		if err != nil {
-			// TODO: handle
+			return fmt.Errorf("failed to parse chat stream message: %v", err)
 		}
 
 		if len(event.ID) > 0 || len(event.Data) > 0 || len(event.Event) > 0 || len(event.Retry) > 0 {
 			// has some content
 
 			err = json.Unmarshal(event.Data, &completionChunk)
+
 			if err != nil {
-				// TODO: handle
+				return fmt.Errorf("failed to unmarshal chat stream message: %v", err)
 			}
 
 			// TODO: use objectpool here
@@ -107,6 +112,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 						Name:    "",
 					},
 				},
+				// TODO: Pass info if this is the final message
 			}
 
 			responseC <- chatResponse
@@ -114,8 +120,9 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 		}
 
 		c.telemetry.Logger.Debug(
-			"Received an empty event on OpenAI chat stream",
-			zap.Any("event", event),
+			"Received an empty message in chat stream, skipping it",
+			zap.String("provider", c.Provider()),
+			zap.Any("msg", event),
 		)
 	}
 }

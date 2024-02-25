@@ -86,7 +86,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 			resp, err := langModel.Chat(ctx, request)
 			if err != nil {
 				r.telemetry.Logger.Warn(
-					"lang model failed processing chat request",
+					"Lang model failed processing chat request",
 					zap.String("routerID", r.ID()),
 					zap.String("modelID", langModel.ID()),
 					zap.String("provider", langModel.Provider()),
@@ -103,7 +103,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.telemetry.Logger.Warn("no healthy model found, wait and retry", zap.String("routerID", r.ID()))
+		r.telemetry.Logger.Warn("No healthy model found, wait and retry", zap.String("routerID", r.ID()))
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
@@ -113,17 +113,72 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 	}
 
 	// if we reach this part, then we are in trouble
-	r.telemetry.Logger.Error("no model was available to handle request", zap.String("routerID", r.ID()))
+	r.telemetry.Logger.Error("No model was available to handle request", zap.String("routerID", r.ID()))
 
 	return nil, ErrNoModelAvailable
 }
 
-func (r *LangRouter) ChatStream(ctx context.Context) error {
+func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
 	if len(r.models) == 0 {
 		return ErrNoModels
 	}
 
-	// TODO: implement
+	retryIterator := r.retry.Iterator()
 
-	return nil
+	for retryIterator.HasNext() {
+		modelIterator := r.routing.Iterator()
+
+		for {
+			model, err := modelIterator.Next()
+
+			if errors.Is(err, routing.ErrNoHealthyModels) {
+				// no healthy model in the pool. Let's retry after some time
+				break
+			}
+
+			langModel := model.(providers.LanguageModel)
+
+			if !langModel.SupportChatStream() {
+				r.telemetry.Logger.Warn("Lang model doesn't support streaming chat API",
+					zap.String("routerID", r.ID()),
+					zap.String("modelID", langModel.ID()),
+					zap.String("provider", langModel.Provider()),
+				)
+
+				continue
+			}
+
+			err = langModel.ChatStream(ctx, request, responseC)
+
+			if err != nil {
+				r.telemetry.Logger.Warn(
+					"Lang model failed processing chat request",
+					zap.String("routerID", r.ID()),
+					zap.String("modelID", langModel.ID()),
+					zap.String("provider", langModel.Provider()),
+					zap.Error(err),
+				)
+
+				continue
+			}
+
+			return nil
+		}
+
+		// no providers were available to handle the request,
+		//  so we have to wait a bit with a hope there is some available next time
+		r.telemetry.Logger.Warn("No healthy model found, wait and retry", zap.String("routerID", r.ID()))
+
+		err := retryIterator.WaitNext(ctx)
+
+		if err != nil {
+			// something has cancelled the context
+			return err
+		}
+	}
+
+	// if we reach this part, then we are in trouble
+	r.telemetry.Logger.Error("No model was available to handle request", zap.String("routerID", r.ID()))
+
+	return ErrNoModelAvailable
 }

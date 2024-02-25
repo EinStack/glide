@@ -13,6 +13,10 @@ type Telemetry struct {
 	// TODO: add OTEL meter, tracer
 }
 
+func (t Telemetry) L() *zap.Logger {
+	return t.Logger
+}
+
 func DefaultConfig() *Config {
 	return &Config{
 		LogConfig: DefaultLogConfig(),

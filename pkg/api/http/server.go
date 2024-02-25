@@ -54,7 +54,7 @@ func (srv *Server) Run() error {
 	v1.Post("/language/:router/chat/", LangChatHandler(srv.routerManager))
 
 	v1.Use("/language/:router/chatStream", LangStreamRouterValidator(srv.routerManager))
-	v1.Get("/language/:router/chatStream", LangStreamChatHandler())
+	v1.Get("/language/:router/chatStream", LangStreamChatHandler(srv.telemetry, srv.routerManager))
 
 	v1.Get("/health/", HealthHandler)
 

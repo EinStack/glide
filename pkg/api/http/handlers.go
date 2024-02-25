@@ -1,12 +1,14 @@
 package http
 
 import (
+	"context"
 	"errors"
-	"log"
+	"glide/pkg/telemetry"
+	"go.uber.org/zap"
+	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-
 	"glide/pkg/api/schemas"
 	"glide/pkg/routers"
 )
@@ -71,6 +73,7 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
 			routerID := c.Params("router")
+
 			_, err := routerManager.GetLangRouter(routerID)
 			if err != nil {
 				return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
@@ -101,35 +104,59 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 //	@Failure		426
 //	@Failure		404	{object}	http.ErrorSchema
 //	@Router			/v1/language/{router}/chatStream [GET]
-func LangStreamChatHandler() Handler {
+func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.RouterManager) Handler {
 	// TODO: expose websocket connection configs https://github.com/gofiber/contrib/tree/main/websocket
 	return websocket.New(func(c *websocket.Conn) {
 		routerID := c.Params("router")
-		log.Println("routerID: ", routerID)
-
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 
 		var (
 			err         error
 			chatRequest schemas.ChatRequest
+			wg          sync.WaitGroup
 		)
+
+		chatResponseC := make(chan schemas.ChatResponse)
+		router, _ := routerManager.GetLangRouter(routerID)
+
+		defer c.Conn.Close()
+
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for response := range chatResponseC {
+				if err = c.WriteJSON(response); err != nil {
+					break
+				}
+			}
+		}()
 
 		for {
 			if err = c.ReadJSON(&chatRequest); err != nil {
-				// TODO: handle the normal websocket termination by clients (1000)
-				log.Println("read:", err)
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+					tel.L().Warn("Streaming Chat connection is closed", zap.Error(err), zap.String("routerID", routerID))
+				}
+
+				tel.L().Debug("Streaming chat connection is closed by client", zap.Error(err), zap.String("routerID", routerID))
 				break
 			}
 
-			// TODO: call the requested router
-			log.Printf("recv req: %s", chatRequest.Message.Content)
+			// TODO: handle termination gracefully
+			wg.Add(1)
 
-			if err = c.WriteJSON(chatRequest); err != nil {
-				log.Println("write:", err)
-				break
-			}
+			go func(chatRequest schemas.ChatRequest) {
+				defer wg.Done()
+
+				if err = router.ChatStream(context.Background(), &chatRequest, chatResponseC); err != nil {
+					tel.L().Error("Failed to process streaming chat request", zap.Error(err), zap.String("routerID", routerID))
+				}
+			}(chatRequest)
 		}
-		// TODO: handle termination gracefully
+
+		close(chatResponseC)
+		wg.Wait()
 	})
 }
 

@@ -91,7 +91,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"openai chat request",
+		"OpenAI chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
@@ -110,7 +110,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		}
 
 		c.telemetry.Logger.Error(
-			"openai chat request failed",
+			"OpenAI chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
