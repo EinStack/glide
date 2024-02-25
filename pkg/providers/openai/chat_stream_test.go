@@ -15,6 +15,16 @@ import (
 	"testing"
 )
 
+func TestOpenAIClient_ChatStreamSupported(t *testing.T) {
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
+
+	require.True(t, client.SupportChatStream())
+}
+
 func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawPayload, _ := io.ReadAll(r.Body)
