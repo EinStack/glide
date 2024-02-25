@@ -3,16 +3,17 @@ package openai
 import (
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
-	"glide/pkg/api/schemas"
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"glide/pkg/api/schemas"
+	"glide/pkg/providers/clients"
+	"glide/pkg/telemetry"
 )
 
 func TestOpenAIClient_ChatStreamSupported(t *testing.T) {
@@ -44,7 +45,6 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 		w.Header().Set("Content-Type", "text/event-stream")
 
 		_, err = w.Write(chatResponse)
-
 		if err != nil {
 			t.Errorf("error on sending chat response: %v", err)
 		}

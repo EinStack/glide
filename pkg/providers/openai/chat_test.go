@@ -8,7 +8,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
+	"time"
 
 	"glide/pkg/providers/clients"
 
@@ -65,4 +67,33 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "chatcmpl-123", response.ID)
+}
+
+func TestOpenAIClient_RateLimit(t *testing.T) {
+	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Retry-After", strconv.FormatInt(int64(5*time.Minute), 10))
+		w.WriteHeader(429)
+	})
+
+	openAIServer := httptest.NewServer(openAIMock)
+	defer openAIServer.Close()
+
+	ctx := context.Background()
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+
+	providerCfg.BaseURL = openAIServer.URL
+
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
+
+	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+		Role:    "user",
+		Content: "What's the biggest animal?",
+	}}
+
+	_, err = client.Chat(ctx, &request)
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, clients.RateLimitError{})
 }
