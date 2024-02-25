@@ -31,26 +31,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.tel.Logger.Error(
-				"Failed to read stream chat response error",
-				zap.String("provider", c.Provider()),
-				zap.Int("statusCode", resp.StatusCode),
-				zap.Error(err),
-			)
-		}
-
-		// TODO: handle all specter of errors like in a sync chat API
-		c.tel.L().Error(
-			"Failed to start chat stream",
-			zap.String("provider", c.Provider()),
-			zap.Int("statusCode", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
-			zap.Any("headers", resp.Header),
-		)
-
-		return clients.ErrProviderUnavailable
+		return c.handleChatReqErrs(resp)
 	}
 
 	reader := sse.NewEventStreamReader(resp.Body, 4096) // TODO: should we expose maxBufferSize?
