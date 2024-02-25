@@ -91,7 +91,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"OpenAI chat request",
+		"Chat Request",
+		zap.String("provider", c.Provider()),
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
@@ -105,13 +106,18 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
+
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+			c.telemetry.Logger.Error(
+				"Failed to unmarshal chat response error",
+				zap.String("provider", c.Provider()),
+				zap.Error(err),
+			)
 		}
 
 		c.telemetry.Logger.Error(
 			"OpenAI chat request failed",
-			zap.Int("status_code", resp.StatusCode),
+			zap.Int("statusCode", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
 		)

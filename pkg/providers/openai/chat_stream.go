@@ -30,10 +30,12 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
+
 	if err != nil {
 		return fmt.Errorf("unable to create openai stream chat request: %w", err)
 	}
 
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Accept", "text/event-stream")
@@ -54,7 +56,26 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			c.telemetry.Logger.Error(
+				"Failed to read chat response error",
+				zap.String("provider", c.Provider()),
+				zap.Int("statusCode", resp.StatusCode),
+				zap.Error(err),
+			)
+		}
+
 		// TODO: handle all specter of errors like in a sync chat API
+		c.telemetry.L().Error(
+			"Failed to start chat stream",
+			zap.String("provider", c.Provider()),
+			zap.Int("statusCode", resp.StatusCode),
+			zap.String("response", string(bodyBytes)),
+			zap.Any("headers", resp.Header),
+		)
+
 		return clients.ErrProviderUnavailable
 	}
 
