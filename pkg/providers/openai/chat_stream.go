@@ -15,6 +15,10 @@ import (
 	"glide/pkg/api/schemas"
 )
 
+var (
+	streamDoneMarker = []byte("[DONE]")
+)
+
 func (c *Client) SupportChatStream() bool {
 	return true
 }
@@ -26,13 +30,13 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 	rawPayload, err := json.Marshal(chatRequest)
 	if err != nil {
-		return fmt.Errorf("unable to marshal openai chat stream request payload: %w", err)
+		return fmt.Errorf("unable to marshal openAI chat stream request payload: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 
 	if err != nil {
-		return fmt.Errorf("unable to create openai stream chat request: %w", err)
+		return fmt.Errorf("unable to create OpenAI stream chat request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -43,14 +47,15 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
-		"OpenAI stream chat request",
-		zap.String("chat_url", c.chatURL),
+		"Stream chat request",
+		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", chatRequest),
 	)
 
 	resp, err := c.httpClient.Do(req)
+
 	if err != nil {
-		return fmt.Errorf("failed to send openai stream chat request: %w", err)
+		return fmt.Errorf("failed to send OpenAI stream chat request: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -60,7 +65,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 		if err != nil {
 			c.telemetry.Logger.Error(
-				"Failed to read chat response error",
+				"Failed to read stream chat response error",
 				zap.String("provider", c.Provider()),
 				zap.Int("statusCode", resp.StatusCode),
 				zap.Error(err),
@@ -101,7 +106,13 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 			return clients.ErrProviderUnavailable
 		}
 
+		c.telemetry.L().Debug("Raw chat stream chunk", zap.String("provider", c.Provider()), zap.ByteString("rawChunk", rawEvent))
+
 		event, err := clients.ParseSSEvent(rawEvent)
+
+		if bytes.Equal(event.Data, streamDoneMarker) {
+			return nil
+		}
 
 		if err != nil {
 			return fmt.Errorf("failed to parse chat stream message: %v", err)
@@ -115,6 +126,8 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal chat stream message: %v", err)
 			}
+
+			c.telemetry.L().Debug("Chat response chunk", zap.String("provider", c.Provider()), zap.Any("chunk", completionChunk))
 
 			// TODO: use objectpool here
 			chatResponse := schemas.ChatResponse{

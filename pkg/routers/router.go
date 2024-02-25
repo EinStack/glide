@@ -84,6 +84,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 			}
 
 			resp, err := langModel.Chat(ctx, request)
+
 			if err != nil {
 				r.telemetry.Logger.Warn(
 					"Lang model failed processing chat request",
@@ -178,7 +179,10 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 	}
 
 	// if we reach this part, then we are in trouble
-	r.telemetry.Logger.Error("No model was available to handle request", zap.String("routerID", r.ID()))
+	r.telemetry.Logger.Error(
+		"No model was available to handle request. Try to configure more fallback models to avoid this",
+		zap.String("routerID", r.ID()),
+	)
 
 	return ErrNoModelAvailable
 }

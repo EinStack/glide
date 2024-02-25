@@ -82,18 +82,19 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
+
 	if err != nil {
 		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.telemetry.Logger.Debug(
 		"Chat Request",
 		zap.String("provider", c.Provider()),
-		zap.String("chat_url", c.chatURL),
+		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", payload),
 	)
 
@@ -116,7 +117,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		}
 
 		c.telemetry.Logger.Error(
-			"OpenAI chat request failed",
+			"Chat request failed",
+			zap.String("provider", c.Provider()),
 			zap.Int("statusCode", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
 			zap.Any("headers", resp.Header),
@@ -141,8 +143,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
+
 	if err != nil {
-		c.telemetry.Logger.Error("Failed to read openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("Failed to read chat response", zap.String("provider", c.Provider()), zap.Error(err))
+
 		return nil, err
 	}
 
@@ -151,7 +155,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("Failed to parse openai chat response", zap.Error(err))
+		c.telemetry.Logger.Error("Failed to unmarshal chat response", zap.String("provider", c.Provider()), zap.Error(err))
 		return nil, err
 	}
 
