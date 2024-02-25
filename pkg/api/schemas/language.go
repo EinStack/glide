@@ -2,14 +2,14 @@ package schemas
 
 // ChatRequest defines Glide's Chat Request Schema unified across all language models
 type ChatRequest struct {
-	Message        ChatMessage         `json:"message"`
-	MessageHistory []ChatMessage       `json:"messageHistory"`
-	Override       OverrideChatRequest `json:"override,omitempty"`
+	Message        ChatMessage          `json:"message" validate:"required"`
+	MessageHistory []ChatMessage        `json:"messageHistory"`
+	Override       *OverrideChatRequest `json:"override,omitempty"`
 }
 
 type OverrideChatRequest struct {
-	Model   string      `json:"model_id"`
-	Message ChatMessage `json:"message"`
+	Model   string      `json:"model_id" validate:"required"`
+	Message ChatMessage `json:"message" validate:"required"`
 }
 
 func NewChatFromStr(message string) *ChatRequest {
@@ -51,9 +51,9 @@ type TokenUsage struct {
 // ChatMessage is a message in a chat request.
 type ChatMessage struct {
 	// The role of the author of this message. One of system, user, or assistant.
-	Role string `json:"role"`
+	Role string `json:"role" validate:"required"`
 	// The content of the message.
-	Content string `json:"content"`
+	Content string `json:"content" validate:"required"`
 	// The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,
 	// with a maximum length of 64 characters.
 	Name string `json:"name,omitempty"`

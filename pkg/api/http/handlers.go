@@ -34,10 +34,17 @@ type Handler = func(c *fiber.Ctx) error
 //	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
+		if !c.Is("json") {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
+				Message: "Glide accepts only JSON payloads",
+			})
+		}
+
 		// Unmarshal request body
 		var req *schemas.ChatRequest
 
 		err := c.BodyParser(&req)
+
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
 				Message: err.Error(),
@@ -57,6 +64,7 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 
 		// Chat with router
 		resp, err := router.Chat(c.Context(), req)
+
 		if err != nil {
 			// Return internal server error
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorSchema{
