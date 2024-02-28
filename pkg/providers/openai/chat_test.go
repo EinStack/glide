@@ -8,13 +8,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strconv"
 	"testing"
-	"time"
-
-	"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
+	"glide/pkg/providers/clients"
 
 	"glide/pkg/telemetry"
 
@@ -70,9 +67,9 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 }
 
 func TestOpenAIClient_RateLimit(t *testing.T) {
-	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Retry-After", strconv.FormatInt(int64(5*time.Minute), 10))
-		w.WriteHeader(429)
+	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "5m")
+		w.WriteHeader(http.StatusTooManyRequests)
 	})
 
 	openAIServer := httptest.NewServer(openAIMock)
@@ -95,5 +92,5 @@ func TestOpenAIClient_RateLimit(t *testing.T) {
 	_, err = client.Chat(ctx, &request)
 
 	require.Error(t, err)
-	require.ErrorIs(t, err, clients.RateLimitError{})
+	require.IsType(t, &clients.RateLimitError{}, err)
 }
