@@ -188,7 +188,7 @@ func (c *Client) handleChatReqErrs(resp *http.Response) error {
 		// Parse the value to get the duration
 		cooldownDelay, err := time.ParseDuration(retryAfter)
 		if err != nil {
-			return fmt.Errorf("Failed to parse cooldown delay from headers: %w", err)
+			return fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
 		}
 
 		return clients.NewRateLimitError(&cooldownDelay)
