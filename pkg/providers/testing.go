@@ -29,14 +29,16 @@ func (m *ResponseMock) Resp() *schemas.ChatResponse {
 }
 
 type ProviderMock struct {
-	idx       int
-	responses []ResponseMock
+	idx              int
+	responses        []ResponseMock
+	supportStreaming bool
 }
 
-func NewProviderMock(responses []ResponseMock) *ProviderMock {
+func NewProviderMock(responses []ResponseMock, supportStreaming bool) *ProviderMock {
 	return &ProviderMock{
-		idx:       0,
-		responses: responses,
+		idx:              0,
+		responses:        responses,
+		supportStreaming: supportStreaming,
 	}
 }
 
@@ -52,8 +54,7 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 }
 
 func (c *ProviderMock) SupportChatStream() bool {
-	// TODO: implement
-	return false
+	return c.supportStreaming
 }
 
 func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest, _ chan<- schemas.ChatResponse) error {
