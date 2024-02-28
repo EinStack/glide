@@ -806,6 +806,10 @@ const docTemplate = `{
         },
         "schemas.ChatMessage": {
             "type": "object",
+            "required": [
+                "content",
+                "role"
+            ],
             "properties": {
                 "content": {
                     "description": "The content of the message.",
@@ -823,6 +827,9 @@ const docTemplate = `{
         },
         "schemas.ChatRequest": {
             "type": "object",
+            "required": [
+                "message"
+            ],
             "properties": {
                 "message": {
                     "$ref": "#/definitions/schemas.ChatMessage"
@@ -854,7 +861,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "modelResponse": {
-                    "$ref": "#/definitions/schemas.ProviderResponse"
+                    "$ref": "#/definitions/schemas.ModelResponse"
                 },
                 "model_id": {
                     "type": "string"
@@ -867,18 +874,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schemas.OverrideChatRequest": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "$ref": "#/definitions/schemas.ChatMessage"
-                },
-                "model_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "schemas.ProviderResponse": {
+        "schemas.ModelResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -892,6 +888,21 @@ const docTemplate = `{
                 },
                 "tokenCount": {
                     "$ref": "#/definitions/schemas.TokenUsage"
+                }
+            }
+        },
+        "schemas.OverrideChatRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "model_id"
+            ],
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "model_id": {
+                    "type": "string"
                 }
             }
         },
