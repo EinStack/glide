@@ -428,6 +428,9 @@ definitions:
         description: The role of the author of this message. One of system, user,
           or assistant.
         type: string
+    required:
+    - content
+    - role
     type: object
   schemas.ChatRequest:
     properties:
@@ -439,6 +442,8 @@ definitions:
         type: array
       override:
         $ref: '#/definitions/schemas.OverrideChatRequest'
+    required:
+    - message
     type: object
   schemas.ChatResponse:
     properties:
@@ -453,20 +458,13 @@ definitions:
       model_id:
         type: string
       modelResponse:
-        $ref: '#/definitions/schemas.ProviderResponse'
+        $ref: '#/definitions/schemas.ModelResponse'
       provider:
         type: string
       router:
         type: string
     type: object
-  schemas.OverrideChatRequest:
-    properties:
-      message:
-        $ref: '#/definitions/schemas.ChatMessage'
-      model_id:
-        type: string
-    type: object
-  schemas.ProviderResponse:
+  schemas.ModelResponse:
     properties:
       message:
         $ref: '#/definitions/schemas.ChatMessage'
@@ -476,6 +474,16 @@ definitions:
         type: object
       tokenCount:
         $ref: '#/definitions/schemas.TokenUsage'
+    type: object
+  schemas.OverrideChatRequest:
+    properties:
+      message:
+        $ref: '#/definitions/schemas.ChatMessage'
+      model_id:
+        type: string
+    required:
+    - message
+    - model_id
     type: object
   schemas.TokenUsage:
     properties:
@@ -538,7 +546,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Talk to different LLMs Chat API via unified endpoint
+      description: Talk to different LLM Chat APIs via unified endpoint
       operationId: glide-language-chat
       parameters:
       - description: Router ID
@@ -567,6 +575,51 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/http.ErrorSchema'
+      summary: Language Chat
+      tags:
+      - Language
+  /v1/language/{router}/chatStream:
+    get:
+      consumes:
+      - application/json
+      description: Talk to different LLM Stream Chat APIs via a unified websocket
+        endpoint
+      operationId: glide-language-chat-stream
+      parameters:
+      - description: Router ID
+        in: path
+        name: router
+        required: true
+        type: string
+      - description: Websocket Connection Type
+        in: header
+        name: Connection
+        required: true
+        type: string
+      - description: Upgrade header
+        in: header
+        name: Upgrade
+        required: true
+        type: string
+      - description: Websocket Security Token
+        in: header
+        name: Sec-WebSocket-Key
+        required: true
+        type: string
+      - description: Websocket Security Token
+        in: header
+        name: Sec-WebSocket-Version
+        required: true
+        type: string
+      responses:
+        "101":
+          description: Switching Protocols
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorSchema'
+        "426":
+          description: Upgrade Required
       summary: Language Chat
       tags:
       - Language

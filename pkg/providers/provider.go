@@ -16,8 +16,12 @@ import (
 type LangModelProvider interface {
 	Provider() string
 	Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error)
+
+	SupportChatStream() bool
+	ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error
 }
 
+// Model represent a configured external model and its runtime properties
 type Model interface {
 	ID() string
 	Healthy() bool
@@ -78,6 +82,10 @@ func (m *LangModel) Weight() int {
 	return m.weight
 }
 
+// TODO: Decoration of the provider interface to track some additional things leads
+//  to reimplementing the whole provider interface and may not be as simple in the streaming routing case
+//  We need to revisit this approach
+
 func (m *LangModel) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	startedAt := time.Now()
 	resp, err := m.client.Chat(ctx, request)
@@ -103,4 +111,12 @@ func (m *LangModel) Chat(ctx context.Context, request *schemas.ChatRequest) (*sc
 	_ = m.errorBudget.Take(1)
 
 	return resp, err
+}
+
+func (m *LangModel) SupportChatStream() bool {
+	return m.client.SupportChatStream()
+}
+
+func (m *LangModel) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
+	return m.client.ChatStream(ctx, request, responseC)
 }

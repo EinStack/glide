@@ -72,7 +72,7 @@ const docTemplate = `{
         },
         "/v1/language/{router}/chat": {
             "post": {
-                "description": "Talk to different LLMs Chat API via unified endpoint",
+                "description": "Talk to different LLM Chat APIs via unified endpoint",
                 "consumes": [
                     "application/json"
                 ],
@@ -120,6 +120,70 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/http.ErrorSchema"
                         }
+                    }
+                }
+            }
+        },
+        "/v1/language/{router}/chatStream": {
+            "get": {
+                "description": "Talk to different LLM Stream Chat APIs via a unified websocket endpoint",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Language"
+                ],
+                "summary": "Language Chat",
+                "operationId": "glide-language-chat-stream",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Router ID",
+                        "name": "router",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Websocket Connection Type",
+                        "name": "Connection",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upgrade header",
+                        "name": "Upgrade",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Websocket Security Token",
+                        "name": "Sec-WebSocket-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Websocket Security Token",
+                        "name": "Sec-WebSocket-Version",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorSchema"
+                        }
+                    },
+                    "426": {
+                        "description": "Upgrade Required"
                     }
                 }
             }
@@ -742,6 +806,10 @@ const docTemplate = `{
         },
         "schemas.ChatMessage": {
             "type": "object",
+            "required": [
+                "content",
+                "role"
+            ],
             "properties": {
                 "content": {
                     "description": "The content of the message.",
@@ -759,6 +827,9 @@ const docTemplate = `{
         },
         "schemas.ChatRequest": {
             "type": "object",
+            "required": [
+                "message"
+            ],
             "properties": {
                 "message": {
                     "$ref": "#/definitions/schemas.ChatMessage"
@@ -790,7 +861,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "modelResponse": {
-                    "$ref": "#/definitions/schemas.ProviderResponse"
+                    "$ref": "#/definitions/schemas.ModelResponse"
                 },
                 "model_id": {
                     "type": "string"
@@ -803,18 +874,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schemas.OverrideChatRequest": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "$ref": "#/definitions/schemas.ChatMessage"
-                },
-                "model_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "schemas.ProviderResponse": {
+        "schemas.ModelResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -828,6 +888,21 @@ const docTemplate = `{
                 },
                 "tokenCount": {
                     "$ref": "#/definitions/schemas.TokenUsage"
+                }
+            }
+        },
+        "schemas.OverrideChatRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "model_id"
+            ],
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/schemas.ChatMessage"
+                },
+                "model_id": {
+                    "type": "string"
                 }
             }
         },

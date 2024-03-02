@@ -10,17 +10,23 @@ import (
 	"path/filepath"
 	"testing"
 
-	"glide/pkg/providers/clients"
-
-	"glide/pkg/api/schemas"
-
-	"glide/pkg/telemetry"
-
 	"github.com/stretchr/testify/require"
+	"glide/pkg/api/schemas"
+	"glide/pkg/providers/clients"
+	"glide/pkg/telemetry"
 )
 
-func TestOpenAIClient_ChatRequest(t *testing.T) {
-	// OpenAI Chat API: https://platform.openai.com/docs/api-reference/chat/create
+func TestOpenAIClient_ChatStreamSupported(t *testing.T) {
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
+
+	require.True(t, client.SupportChatStream())
+}
+
+func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawPayload, _ := io.ReadAll(r.Body)
 
@@ -31,12 +37,12 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 			t.Errorf("error decoding payload (%q): %v", string(rawPayload), err)
 		}
 
-		chatResponse, err := os.ReadFile(filepath.Clean("./testdata/chat.success.json"))
+		chatResponse, err := os.ReadFile(filepath.Clean("./testdata/chat_stream.success.txt"))
 		if err != nil {
 			t.Errorf("error reading openai chat mock response: %v", err)
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "text/event-stream")
 
 		_, err = w.Write(chatResponse)
 		if err != nil {
@@ -58,11 +64,11 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 
 	request := schemas.ChatRequest{Message: schemas.ChatMessage{
 		Role:    "user",
-		Content: "What's the biggest animal?",
+		Content: "What's the capital of the United Kingdom?",
 	}}
 
-	response, err := client.Chat(ctx, &request)
-	require.NoError(t, err)
+	responseC := make(chan schemas.ChatResponse, 20)
 
-	require.Equal(t, "chatcmpl-123", response.ID)
+	err = client.ChatStream(ctx, &request, responseC)
+	require.NoError(t, err)
 }

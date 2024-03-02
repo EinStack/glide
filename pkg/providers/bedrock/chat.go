@@ -103,12 +103,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	response := schemas.ChatResponse{
-		ID:       uuid.NewString(),
-		Created:  int(time.Now().Unix()),
-		Provider: "aws-bedrock",
-		Model:    c.config.Model,
-		Cached:   false,
-		ModelResponse: schemas.ProviderResponse{
+		ID:        uuid.NewString(),
+		Created:   int(time.Now().Unix()),
+		Provider:  "aws-bedrock",
+		ModelName: c.config.Model,
+		Cached:    false,
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": "none",
 			},

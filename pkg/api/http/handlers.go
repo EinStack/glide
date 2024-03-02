@@ -1,10 +1,15 @@
 package http
 
 import (
+	"context"
 	"errors"
+	"sync"
 
+	"glide/pkg/telemetry"
+	"go.uber.org/zap"
+
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-
 	"glide/pkg/api/schemas"
 	"glide/pkg/routers"
 )
@@ -18,7 +23,7 @@ type Handler = func(c *fiber.Ctx) error
 //
 //	@id				glide-language-chat
 //	@Summary		Language Chat
-//	@Description	Talk to different LLMs Chat API via unified endpoint
+//	@Description	Talk to different LLM Chat APIs via unified endpoint
 //	@tags			Language
 //	@Param			router	path	string						true	"Router ID"
 //	@Param			payload	body	schemas.ChatRequest	true	"Request Data"
@@ -30,6 +35,12 @@ type Handler = func(c *fiber.Ctx) error
 //	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
+		if !c.Is("json") {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
+				Message: "Glide accepts only JSON payloads",
+			})
+		}
+
 		// Unmarshal request body
 		var req *schemas.ChatRequest
 
@@ -63,6 +74,98 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 		// Return chat response
 		return c.Status(fiber.StatusOK).JSON(resp)
 	}
+}
+
+func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
+	return func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			routerID := c.Params("router")
+
+			_, err := routerManager.GetLangRouter(routerID)
+			if err != nil {
+				return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
+					Message: err.Error(),
+				})
+			}
+
+			return c.Next()
+		}
+
+		return fiber.ErrUpgradeRequired
+	}
+}
+
+// LangStreamChatHandler
+//
+//	@id				glide-language-chat-stream
+//	@Summary		Language Chat
+//	@Description	Talk to different LLM Stream Chat APIs via a unified websocket endpoint
+//	@tags			Language
+//	@Param			router	    			path		string	true	"Router ID"
+//	@Param			Connection				header		string	true	"Websocket Connection Type"
+//	@Param			Upgrade 				header		string	true	"Upgrade header"
+//	@Param			Sec-WebSocket-Key  		header		string	true	"Websocket Security Token"
+//	@Param			Sec-WebSocket-Version  	header		string	true	"Websocket Security Token"
+//	@Accept			json
+//	@Success		101
+//	@Failure		426
+//	@Failure		404	{object}	http.ErrorSchema
+//	@Router			/v1/language/{router}/chatStream [GET]
+func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.RouterManager) Handler {
+	// TODO: expose websocket connection configs https://github.com/gofiber/contrib/tree/main/websocket
+	return websocket.New(func(c *websocket.Conn) {
+		routerID := c.Params("router")
+		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
+
+		var (
+			err         error
+			chatRequest schemas.ChatRequest
+			wg          sync.WaitGroup
+		)
+
+		chatResponseC := make(chan schemas.ChatResponse)
+		router, _ := routerManager.GetLangRouter(routerID)
+
+		defer c.Conn.Close()
+
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for response := range chatResponseC {
+				if err = c.WriteJSON(response); err != nil {
+					break
+				}
+			}
+		}()
+
+		for {
+			if err = c.ReadJSON(&chatRequest); err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+					tel.L().Warn("Streaming Chat connection is closed", zap.Error(err), zap.String("routerID", routerID))
+				}
+
+				tel.L().Debug("Streaming chat connection is closed by client", zap.Error(err), zap.String("routerID", routerID))
+
+				break
+			}
+
+			// TODO: handle termination gracefully
+			wg.Add(1)
+
+			go func(chatRequest schemas.ChatRequest) {
+				defer wg.Done()
+
+				if err = router.ChatStream(context.Background(), &chatRequest, chatResponseC); err != nil {
+					tel.L().Error("Failed to process streaming chat request", zap.Error(err), zap.String("routerID", routerID))
+				}
+			}(chatRequest)
+		}
+
+		close(chatResponseC)
+		wg.Wait()
+	})
 }
 
 // LangRoutersHandler

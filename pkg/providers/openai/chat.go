@@ -15,31 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-// ChatRequest is an OpenAI-specific request schema
-type ChatRequest struct {
-	Model            string           `json:"model"`
-	Messages         []ChatMessage    `json:"messages"`
-	Temperature      float64          `json:"temperature,omitempty"`
-	TopP             float64          `json:"top_p,omitempty"`
-	MaxTokens        int              `json:"max_tokens,omitempty"`
-	N                int              `json:"n,omitempty"`
-	StopWords        []string         `json:"stop,omitempty"`
-	Stream           bool             `json:"stream,omitempty"`
-	FrequencyPenalty int              `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int              `json:"presence_penalty,omitempty"`
-	LogitBias        *map[int]float64 `json:"logit_bias,omitempty"`
-	User             *string          `json:"user,omitempty"`
-	Seed             *int             `json:"seed,omitempty"`
-	Tools            []string         `json:"tools,omitempty"`
-	ToolChoice       interface{}      `json:"tool_choice,omitempty"`
-	ResponseFormat   interface{}      `json:"response_format,omitempty"`
-}
-
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
@@ -49,7 +24,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
 		N:                cfg.DefaultParams.N,
 		StopWords:        cfg.DefaultParams.StopWords,
-		Stream:           false, // unsupported right now
+		Stream:           false,
 		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
 		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
 		LogitBias:        cfg.DefaultParams.LogitBias,
@@ -77,9 +52,10 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessa
 // Chat sends a chat request to the specified OpenAI model.
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	chatRequest := *c.createChatRequestSchema(request)
+	chatRequest.Stream = false
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatResponse, err := c.doChatRequest(ctx, &chatRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -111,13 +87,14 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("unable to create openai chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
-		"openai chat request",
-		zap.String("chat_url", c.chatURL),
+	c.tel.Logger.Debug(
+		"Chat Request",
+		zap.String("provider", c.Provider()),
+		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", payload),
 	)
 
@@ -129,74 +106,94 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
-		}
-
-		c.telemetry.Logger.Error(
-			"openai chat request failed",
-			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
-			zap.Any("headers", resp.Header),
-		)
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			// Read the value of the "Retry-After" header to get the cooldown delay
-			retryAfter := resp.Header.Get("Retry-After")
-
-			// Parse the value to get the duration
-			cooldownDelay, err := time.ParseDuration(retryAfter)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-			}
-
-			return nil, clients.NewRateLimitError(&cooldownDelay)
-		}
-
-		// Server & client errors result in the same error to keep gateway resilient
-		return nil, clients.ErrProviderUnavailable
+		return nil, c.handleChatReqErrs(resp)
 	}
 
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read openai chat response", zap.Error(err))
+		c.tel.Logger.Error(
+			"Failed to read chat response",
+			zap.String("provider", c.Provider()), zap.Error(err),
+			zap.ByteString("rawResponse", bodyBytes),
+		)
+
 		return nil, err
 	}
 
 	// Parse the response JSON
-	var openAICompletion ChatCompletion
+	var chatCompletion ChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
+		c.tel.Logger.Error(
+			"Failed to unmarshal chat response",
+			zap.String("provider", c.Provider()),
+			zap.ByteString("rawResponse", bodyBytes),
+			zap.Error(err),
+		)
+
 		return nil, err
 	}
 
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
-		Provider: providerName,
-		Model:    openAICompletion.Model,
-		Cached:   false,
-		ModelResponse: schemas.ProviderResponse{
+		ID:        chatCompletion.ID,
+		Created:   chatCompletion.Created,
+		Provider:  providerName,
+		ModelName: chatCompletion.ModelName,
+		Cached:    false,
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
+				"system_fingerprint": chatCompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
-				Name:    "",
+				Role:    chatCompletion.Choices[0].Message.Role,
+				Content: chatCompletion.Choices[0].Message.Content,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   chatCompletion.Usage.PromptTokens,
+				ResponseTokens: chatCompletion.Usage.CompletionTokens,
+				TotalTokens:    chatCompletion.Usage.TotalTokens,
 			},
 		},
 	}
 
 	return &response, nil
+}
+
+func (c *Client) handleChatReqErrs(resp *http.Response) error {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.tel.Logger.Error(
+			"Failed to unmarshal chat response error",
+			zap.String("provider", c.Provider()),
+			zap.Error(err),
+			zap.ByteString("rawResponse", bodyBytes),
+		)
+	}
+
+	c.tel.Logger.Error(
+		"Chat request failed",
+		zap.String("provider", c.Provider()),
+		zap.Int("statusCode", resp.StatusCode),
+		zap.String("response", string(bodyBytes)),
+		zap.Any("headers", resp.Header),
+	)
+
+	if resp.StatusCode == http.StatusTooManyRequests {
+		// Read the value of the "Retry-After" header to get the cooldown delay
+		retryAfter := resp.Header.Get("Retry-After")
+
+		// Parse the value to get the duration
+		cooldownDelay, err := time.ParseDuration(retryAfter)
+		if err != nil {
+			return fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
+		}
+
+		return clients.NewRateLimitError(&cooldownDelay)
+	}
+
+	// Server & client errors result in the same error to keep gateway resilient
+	return clients.ErrProviderUnavailable
 }

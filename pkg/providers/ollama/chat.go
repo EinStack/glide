@@ -181,19 +181,18 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       uuid.NewString(),
-		Created:  int(time.Now().Unix()),
-		Provider: providerName,
-		Model:    ollamaCompletion.Model,
-		Cached:   false,
-		ModelResponse: schemas.ProviderResponse{
+		ID:        uuid.NewString(),
+		Created:   int(time.Now().Unix()),
+		Provider:  providerName,
+		ModelName: ollamaCompletion.Model,
+		Cached:    false,
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": "",
 			},
 			Message: schemas.ChatMessage{
 				Role:    ollamaCompletion.Message.Role,
 				Content: ollamaCompletion.Message.Content,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   float64(ollamaCompletion.EvalCount),

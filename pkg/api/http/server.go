@@ -41,7 +41,7 @@ func (srv *Server) Run() error {
 		Title:    "Glide API Docs",
 		BasePath: "/v1/",
 		Path:     "swagger",
-		FilePath: "./docs/swagger.json",
+		FilePath: "./docs/swagger.yaml",
 	}))
 
 	srv.server.Use(fiberzap.New(fiberzap.Config{
@@ -52,6 +52,9 @@ func (srv *Server) Run() error {
 
 	v1.Get("/language/", LangRoutersHandler(srv.routerManager))
 	v1.Post("/language/:router/chat/", LangChatHandler(srv.routerManager))
+
+	v1.Use("/language/:router/chatStream", LangStreamRouterValidator(srv.routerManager))
+	v1.Get("/language/:router/chatStream", LangStreamChatHandler(srv.telemetry, srv.routerManager))
 
 	v1.Get("/health/", HealthHandler)
 
