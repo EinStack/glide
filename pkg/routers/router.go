@@ -20,12 +20,13 @@ var (
 )
 
 type LangRouter struct {
-	routerID  string
-	Config    *LangRouterConfig
-	routing   routing.LangModelRouting
-	retry     *retry.ExpRetry
-	models    []providers.LanguageModel
-	telemetry *telemetry.Telemetry
+	routerID          string
+	Config            *LangRouterConfig
+	chatRouting       routing.LangModelRouting
+	chatStreamRouting routing.LangModelRouting
+	retry             *retry.ExpRetry
+	models            []providers.LanguageModel
+	telemetry         *telemetry.Telemetry
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
@@ -34,18 +35,19 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		return nil, err
 	}
 
-	strategy, err := cfg.BuildRouting(models)
+	chatRouting, chatStreamRouting, err := cfg.BuildRouting(tel, models)
 	if err != nil {
 		return nil, err
 	}
 
 	router := &LangRouter{
-		routerID:  cfg.ID,
-		Config:    cfg,
-		models:    models,
-		retry:     cfg.BuildRetry(),
-		routing:   strategy,
-		telemetry: tel,
+		routerID:          cfg.ID,
+		Config:            cfg,
+		models:            models,
+		retry:             cfg.BuildRetry(),
+		chatRouting:       chatRouting,
+		chatStreamRouting: chatStreamRouting,
+		telemetry:         tel,
 	}
 
 	return router, err
@@ -63,7 +65,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 	retryIterator := r.retry.Iterator()
 
 	for retryIterator.HasNext() {
-		modelIterator := r.routing.Iterator()
+		modelIterator := r.chatRouting.Iterator()
 
 		for {
 			model, err := modelIterator.Next()
@@ -73,7 +75,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 				break
 			}
 
-			langModel := model.(providers.LanguageModel)
+			langModel := model.(providers.LangModel)
 
 			// Check if there is an override in the request
 			if request.Override != nil {
@@ -120,13 +122,14 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 
 func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
 	if len(r.models) == 0 {
+		// TODO: check specifically for stream models
 		return ErrNoModels
 	}
 
 	retryIterator := r.retry.Iterator()
 
 	for retryIterator.HasNext() {
-		modelIterator := r.routing.Iterator()
+		modelIterator := r.chatStreamRouting.Iterator()
 
 		for {
 			model, err := modelIterator.Next()
@@ -136,7 +139,7 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 				break
 			}
 
-			langModel := model.(providers.LanguageModel)
+			langModel := model.(providers.LangModel)
 
 			if !langModel.SupportChatStream() {
 				r.telemetry.Logger.Warn("Lang model doesn't support streaming chat API",

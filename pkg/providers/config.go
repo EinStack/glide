@@ -49,7 +49,7 @@ func DefaultLangModelConfig() *LangModelConfig {
 	}
 }
 
-func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) {
+func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LanguageModel, error) {
 	client, err := c.initClient(tel)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing client: %v", err)
@@ -60,7 +60,7 @@ func (c *LangModelConfig) ToModel(tel *telemetry.Telemetry) (*LangModel, error) 
 
 // initClient initializes the language model client based on the provided configuration.
 // It takes a telemetry object as input and returns a LangModelProvider and an error.
-func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangModelProvider, error) {
+func (c *LangModelConfig) initClient(tel *telemetry.Telemetry) (LangProvider, error) {
 	switch {
 	case c.OpenAI != nil:
 		return openai.NewClient(c.OpenAI, c.Client, tel)

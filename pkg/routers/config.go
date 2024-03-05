@@ -137,24 +137,39 @@ func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 	)
 }
 
-func (c *LangRouterConfig) BuildRouting(models []providers.LanguageModel) (routing.LangModelRouting, error) {
-	m := make([]providers.Model, 0, len(models))
+func (c *LangRouterConfig) BuildRouting(tel *telemetry.Telemetry, models []providers.LanguageModel) (routing.LangModelRouting, routing.LangModelRouting, error) {
+	chatModelPool := make([]providers.Model, 0, len(models))
+	streamChatModelPool := make([]providers.Model, 0, len(models))
+
 	for _, model := range models {
-		m = append(m, model)
+		chatModelPool = append(chatModelPool, model)
+
+		if !model.SupportChatStream() {
+			tel.L().Warn(
+				"Provider doesn't support or have not been yet integrated with streaming chat, it won't serve streaming chat requests",
+				zap.String("routerID", c.ID),
+				zap.String("modelID", model.ID()),
+				zap.String("provider", model.Provider()),
+			)
+
+			continue
+		}
+
+		streamChatModelPool = append(streamChatModelPool, model)
 	}
 
 	switch c.RoutingStrategy {
 	case routing.Priority:
-		return routing.NewPriority(m), nil
+		return routing.NewPriority(chatModelPool), routing.NewPriority(streamChatModelPool), nil
 	case routing.RoundRobin:
-		return routing.NewRoundRobinRouting(m), nil
+		return routing.NewRoundRobinRouting(chatModelPool), routing.NewRoundRobinRouting(streamChatModelPool), nil
 	case routing.WeightedRoundRobin:
-		return routing.NewWeightedRoundRobin(m), nil
+		return routing.NewWeightedRoundRobin(chatModelPool), routing.NewWeightedRoundRobin(streamChatModelPool), nil
 	case routing.LeastLatency:
-		return routing.NewLeastLatencyRouting(m), nil
+		return routing.NewLeastLatencyRouting(chatModelPool), routing.NewLeastLatencyRouting(streamChatModelPool), nil
 	}
 
-	return nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)
+	return nil, nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)
 }
 
 func DefaultLangRouterConfig() LangRouterConfig {
