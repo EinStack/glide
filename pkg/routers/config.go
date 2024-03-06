@@ -63,15 +63,16 @@ type LangRouterConfig struct {
 }
 
 // BuildModels creates LanguageModel slice out of the given config
-func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.LanguageModel, error) {
+func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.LanguageModel, []*providers.LanguageModel, error) {
 	var errs error
 
 	seenIDs := make(map[string]bool, len(c.Models))
-	models := make([]providers.LanguageModel, 0, len(c.Models))
+	chatModels := make([]*providers.LanguageModel, 0, len(c.Models))
+	chatStreamModels := make([]*providers.LanguageModel, 0, len(c.Models))
 
 	for _, modelConfig := range c.Models {
 		if _, ok := seenIDs[modelConfig.ID]; ok {
-			return nil, fmt.Errorf(
+			return nil, nil, fmt.Errorf(
 				"ID \"%v\" is specified for more than one model in router \"%v\", while it should be unique in scope of that pool",
 				modelConfig.ID,
 				c.ID,
@@ -102,18 +103,31 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 			continue
 		}
 
-		models = append(models, model)
+		chatModels = append(chatModels, model)
+
+		if !model.SupportChatStream() {
+			tel.L().Warn(
+				"Provider doesn't support or have not been yet integrated with streaming chat, it won't serve streaming chat requests",
+				zap.String("routerID", c.ID),
+				zap.String("modelID", model.ID()),
+				zap.String("provider", model.Provider()),
+			)
+
+			continue
+		}
+
+		chatStreamModels = append(chatStreamModels, model)
 	}
 
 	if errs != nil {
-		return nil, errs
+		return nil, nil, errs
 	}
 
-	if len(models) == 0 {
-		return nil, fmt.Errorf("router \"%v\" must have at least one active model, zero defined", c.ID)
+	if len(chatModels) == 0 {
+		return nil, nil, fmt.Errorf("router \"%v\" must have at least one active model, zero defined", c.ID)
 	}
 
-	if len(models) == 1 {
+	if len(chatModels) == 1 {
 		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
 			fmt.Sprintf("Router \"%v\" has only one active model defined. "+
 				"This is not recommended for production setups. "+
@@ -123,7 +137,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]providers.La
 		)
 	}
 
-	return models, nil
+	return chatModels, chatStreamModels, nil
 }
 
 func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
@@ -137,36 +151,29 @@ func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 	)
 }
 
-func (c *LangRouterConfig) BuildRouting(tel *telemetry.Telemetry, models []providers.LanguageModel) (routing.LangModelRouting, routing.LangModelRouting, error) {
-	chatModelPool := make([]providers.Model, 0, len(models))
-	streamChatModelPool := make([]providers.Model, 0, len(models))
+func (c *LangRouterConfig) BuildRouting(chatModels []*providers.LanguageModel, chatStreamModels []*providers.LanguageModel) (routing.LangModelRouting, routing.LangModelRouting, error) {
+	chatModelPool := make([]providers.Model, 0, len(chatModels))
+	chatStreamModelPool := make([]providers.Model, 0, len(chatStreamModels))
 
-	for _, model := range models {
+	for _, model := range chatModels {
 		chatModelPool = append(chatModelPool, model)
+	}
 
-		if !model.SupportChatStream() {
-			tel.L().Warn(
-				"Provider doesn't support or have not been yet integrated with streaming chat, it won't serve streaming chat requests",
-				zap.String("routerID", c.ID),
-				zap.String("modelID", model.ID()),
-				zap.String("provider", model.Provider()),
-			)
-
-			continue
-		}
-
-		streamChatModelPool = append(streamChatModelPool, model)
+	for _, model := range chatStreamModels {
+		chatStreamModelPool = append(chatStreamModelPool, model)
 	}
 
 	switch c.RoutingStrategy {
 	case routing.Priority:
-		return routing.NewPriority(chatModelPool), routing.NewPriority(streamChatModelPool), nil
+		return routing.NewPriority(chatModelPool), routing.NewPriority(chatStreamModelPool), nil
 	case routing.RoundRobin:
-		return routing.NewRoundRobinRouting(chatModelPool), routing.NewRoundRobinRouting(streamChatModelPool), nil
+		return routing.NewRoundRobinRouting(chatModelPool), routing.NewRoundRobinRouting(chatStreamModelPool), nil
 	case routing.WeightedRoundRobin:
-		return routing.NewWeightedRoundRobin(chatModelPool), routing.NewWeightedRoundRobin(streamChatModelPool), nil
+		return routing.NewWeightedRoundRobin(chatModelPool), routing.NewWeightedRoundRobin(chatStreamModelPool), nil
 	case routing.LeastLatency:
-		return routing.NewLeastLatencyRouting(chatModelPool), routing.NewLeastLatencyRouting(streamChatModelPool), nil
+		return routing.NewLeastLatencyRouting(providers.ChatLatency, chatModelPool),
+			routing.NewLeastLatencyRouting(providers.ChatStreamLatency, chatStreamModelPool),
+			nil
 	}
 
 	return nil, nil, fmt.Errorf("routing strategy \"%v\" is not supported, please make sure there is no typo", c.RoutingStrategy)

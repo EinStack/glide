@@ -54,23 +54,23 @@ func NewLangModel(modelID string, client LangProvider, budget health.ErrorBudget
 	}
 }
 
-func (m *LanguageModel) ID() string {
+func (m LanguageModel) ID() string {
 	return m.modelID
 }
 
-func (m *LanguageModel) Weight() int {
+func (m LanguageModel) Weight() int {
 	return m.weight
 }
 
-func (m *LanguageModel) LatencyUpdateInterval() *time.Duration {
+func (m LanguageModel) LatencyUpdateInterval() *time.Duration {
 	return m.latencyUpdateInterval
 }
 
-func (m *LanguageModel) ChatLatency() *latency.MovingAverage {
+func (m LanguageModel) ChatLatency() *latency.MovingAverage {
 	return m.chatLatency
 }
 
-func (m *LanguageModel) Healthy() bool {
+func (m LanguageModel) Healthy() bool {
 	return !m.rateLimit.Limited() && m.errBudget.HasTokens()
 }
 
@@ -112,4 +112,12 @@ func (m *LanguageModel) SupportChatStream() bool {
 
 func (m *LanguageModel) Provider() string {
 	return m.client.Provider()
+}
+
+func ChatLatency(model Model) *latency.MovingAverage {
+	return model.(LanguageModel).chatLatency
+}
+
+func ChatStreamLatency(model Model) *latency.MovingAverage {
+	return model.(LanguageModel).chatStreamLatency
 }

@@ -22,20 +22,21 @@ var (
 type LangRouter struct {
 	routerID          string
 	Config            *LangRouterConfig
+	chatModels        []*providers.LanguageModel
+	chatStreamModels  []*providers.LanguageModel
 	chatRouting       routing.LangModelRouting
 	chatStreamRouting routing.LangModelRouting
 	retry             *retry.ExpRetry
-	models            []providers.LanguageModel
 	telemetry         *telemetry.Telemetry
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
-	models, err := cfg.BuildModels(tel)
+	chatModels, chatStreamModels, err := cfg.BuildModels(tel)
 	if err != nil {
 		return nil, err
 	}
 
-	chatRouting, chatStreamRouting, err := cfg.BuildRouting(tel, models)
+	chatRouting, chatStreamRouting, err := cfg.BuildRouting(chatModels, chatStreamModels)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,8 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 	router := &LangRouter{
 		routerID:          cfg.ID,
 		Config:            cfg,
-		models:            models,
+		chatModels:        chatModels,
+		chatStreamModels:  chatStreamModels,
 		retry:             cfg.BuildRetry(),
 		chatRouting:       chatRouting,
 		chatStreamRouting: chatStreamRouting,
@@ -58,7 +60,7 @@ func (r *LangRouter) ID() string {
 }
 
 func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
-	if len(r.models) == 0 {
+	if len(r.chatModels) == 0 {
 		return nil, ErrNoModels
 	}
 
@@ -121,8 +123,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 }
 
 func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
-	if len(r.models) == 0 {
-		// TODO: check specifically for stream models
+	if len(r.chatStreamModels) == 0 {
 		return ErrNoModels
 	}
 

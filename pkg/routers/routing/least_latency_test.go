@@ -36,7 +36,7 @@ func TestLeastLatencyRouting_Warmup(t *testing.T) {
 				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, model.latency, 1))
 			}
 
-			routing := NewLeastLatencyRouting(models)
+			routing := NewLeastLatencyRouting(providers.ChatLatency, models)
 			iterator := routing.Iterator()
 
 			// loop three times over the whole pool to check if we return back to the begging of the list
@@ -146,7 +146,7 @@ func TestLeastLatencyRouting_NoHealthyModels(t *testing.T) {
 				models = append(models, providers.NewLangModelMock(strconv.Itoa(idx), false, latency, 1))
 			}
 
-			routing := NewLeastLatencyRouting(models)
+			routing := NewLeastLatencyRouting(providers.ChatLatency, models)
 			iterator := routing.Iterator()
 
 			_, err := iterator.Next()

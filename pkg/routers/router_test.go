@@ -22,7 +22,7 @@ func TestLangRouter_Chat_PickFistHealthy(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
 	latConfig := latency.DefaultConfig()
 
-	langModels := []providers.LanguageModel{
+	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}, false),
@@ -45,12 +45,13 @@ func TestLangRouter_Chat_PickFistHealthy(t *testing.T) {
 	}
 
 	router := LangRouter{
-		routerID:  "test_router",
-		Config:    &LangRouterConfig{},
-		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
-		routing:   routing.NewPriority(models),
-		models:    langModels,
-		telemetry: telemetry.NewTelemetryMock(),
+		routerID:         "test_router",
+		Config:           &LangRouterConfig{},
+		retry:            retry.NewExpRetry(3, 2, 1*time.Second, nil),
+		chatRouting:      routing.NewPriority(models),
+		chatModels:       langModels,
+		chatStreamModels: langModels,
+		telemetry:        telemetry.NewTelemetryMock(),
 	}
 
 	ctx := context.Background()
@@ -68,7 +69,7 @@ func TestLangRouter_Chat_PickFistHealthy(t *testing.T) {
 func TestLangRouter_Chat_PickThirdHealthy(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.SEC)
 	latConfig := latency.DefaultConfig()
-	langModels := []providers.LanguageModel{
+	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "3"}}, false),
@@ -100,12 +101,14 @@ func TestLangRouter_Chat_PickThirdHealthy(t *testing.T) {
 	expectedModels := []string{"third", "third"}
 
 	router := LangRouter{
-		routerID:  "test_router",
-		Config:    &LangRouterConfig{},
-		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
-		routing:   routing.NewPriority(models),
-		models:    langModels,
-		telemetry: telemetry.NewTelemetryMock(),
+		routerID:          "test_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(3, 2, 1*time.Second, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatStreamRouting: routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamModels:  langModels,
+		telemetry:         telemetry.NewTelemetryMock(),
 	}
 
 	ctx := context.Background()
@@ -123,7 +126,7 @@ func TestLangRouter_Chat_PickThirdHealthy(t *testing.T) {
 func TestLangRouter_Chat_SuccessOnRetry(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.MILLI)
 	latConfig := latency.DefaultConfig()
-	langModels := []providers.LanguageModel{
+	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Msg: "2"}}, false),
@@ -146,12 +149,14 @@ func TestLangRouter_Chat_SuccessOnRetry(t *testing.T) {
 	}
 
 	router := LangRouter{
-		routerID:  "test_router",
-		Config:    &LangRouterConfig{},
-		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
-		routing:   routing.NewPriority(models),
-		models:    langModels,
-		telemetry: telemetry.NewTelemetryMock(),
+		routerID:          "test_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatStreamRouting: routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamModels:  langModels,
+		telemetry:         telemetry.NewTelemetryMock(),
 	}
 
 	resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
@@ -164,7 +169,7 @@ func TestLangRouter_Chat_SuccessOnRetry(t *testing.T) {
 func TestLangRouter_Chat_UnhealthyModelInThePool(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.MIN)
 	latConfig := latency.DefaultConfig()
-	langModels := []providers.LanguageModel{
+	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &clients.ErrProviderUnavailable}, {Msg: "3"}}, false),
@@ -187,12 +192,14 @@ func TestLangRouter_Chat_UnhealthyModelInThePool(t *testing.T) {
 	}
 
 	router := LangRouter{
-		routerID:  "test_router",
-		Config:    &LangRouterConfig{},
-		retry:     retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
-		routing:   routing.NewPriority(models),
-		models:    langModels,
-		telemetry: telemetry.NewTelemetryMock(),
+		routerID:          "test_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(3, 2, 1*time.Millisecond, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamModels:  langModels,
+		chatStreamRouting: routing.NewPriority(models),
+		telemetry:         telemetry.NewTelemetryMock(),
 	}
 
 	for i := 0; i < 2; i++ {
@@ -207,7 +214,7 @@ func TestLangRouter_Chat_UnhealthyModelInThePool(t *testing.T) {
 func TestLangRouter_Chat_AllModelsUnavailable(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.SEC)
 	latConfig := latency.DefaultConfig()
-	langModels := []providers.LanguageModel{
+	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}, false),
@@ -230,12 +237,14 @@ func TestLangRouter_Chat_AllModelsUnavailable(t *testing.T) {
 	}
 
 	router := LangRouter{
-		routerID:  "test_router",
-		Config:    &LangRouterConfig{},
-		retry:     retry.NewExpRetry(1, 2, 1*time.Millisecond, nil),
-		routing:   routing.NewPriority(models),
-		models:    langModels,
-		telemetry: telemetry.NewTelemetryMock(),
+		routerID:          "test_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(1, 2, 1*time.Millisecond, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamModels:  langModels,
+		chatStreamRouting: routing.NewPriority(models),
+		telemetry:         telemetry.NewTelemetryMock(),
 	}
 
 	_, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
@@ -247,7 +256,7 @@ func TestLangRouter_ChatStream(t *testing.T) {
 	budget := health.NewErrorBudget(3, health.SEC)
 	latConfig := latency.DefaultConfig()
 
-	langModels := []providers.LanguageModel{
+	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
 			providers.NewProviderMock([]providers.ResponseMock{{Msg: "1"}, {Msg: "2"}}, true),
@@ -270,12 +279,14 @@ func TestLangRouter_ChatStream(t *testing.T) {
 	}
 
 	router := LangRouter{
-		routerID:  "test_stream_router",
-		Config:    &LangRouterConfig{},
-		retry:     retry.NewExpRetry(3, 2, 1*time.Second, nil),
-		routing:   routing.NewPriority(models),
-		models:    langModels,
-		telemetry: telemetry.NewTelemetryMock(),
+		routerID:          "test_stream_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(3, 2, 1*time.Second, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamRouting: routing.NewPriority(models),
+		chatStreamModels:  langModels,
+		telemetry:         telemetry.NewTelemetryMock(),
 	}
 
 	ctx := context.Background()

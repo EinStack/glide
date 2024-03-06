@@ -14,9 +14,7 @@ const (
 	LeastLatency Strategy = "least_latency"
 )
 
-type LatencyGetter interface {
-	Latency(model providers.Model) *latency.MovingAverage
-}
+type LatencyGetter = func(model providers.Model) *latency.MovingAverage
 
 // ModelSchedule defines latency update schedule for models
 type ModelSchedule struct {
@@ -133,7 +131,7 @@ func (r *LeastLatencyRouting) Next() (providers.Model, error) { //nolint:cyclop
 		}
 
 		if !schedule.Expired() && !nextSchedule.Expired() &&
-			r.latencyGetter.Latency(nextSchedule.model).Value() > r.latencyGetter.Latency(schedule.model).Value() {
+			r.latencyGetter(nextSchedule.model).Value() > r.latencyGetter(schedule.model).Value() {
 			nextSchedule = schedule
 		}
 	}
@@ -151,7 +149,7 @@ func (r *LeastLatencyRouting) getColdModelSchedules() []*ModelSchedule {
 	coldModels := make([]*ModelSchedule, 0, len(r.schedules))
 
 	for _, schedule := range r.schedules {
-		if schedule.model.Healthy() && !r.latencyGetter.Latency(schedule.model).WarmedUp() {
+		if schedule.model.Healthy() && !r.latencyGetter(schedule.model).WarmedUp() {
 			coldModels = append(coldModels, schedule)
 		}
 	}
