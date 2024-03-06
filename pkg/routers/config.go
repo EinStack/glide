@@ -29,11 +29,11 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 		seenIDs[routerConfig.ID] = true
 
 		if !routerConfig.Enabled {
-			tel.Logger.Info(fmt.Sprintf("Router \"%v\" is disabled, skipping", routerConfig.ID))
+			tel.L().Info(fmt.Sprintf("Router \"%v\" is disabled, skipping", routerConfig.ID))
 			continue
 		}
 
-		tel.Logger.Debug("Init router", zap.String("routerID", routerConfig.ID))
+		tel.L().Debug("Init router", zap.String("routerID", routerConfig.ID))
 
 		router, err := NewLangRouter(&c.LanguageRouters[idx], tel)
 		if err != nil {
@@ -82,7 +82,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 		seenIDs[modelConfig.ID] = true
 
 		if !modelConfig.Enabled {
-			tel.Logger.Info(
+			tel.L().Info(
 				"Model is disabled, skipping",
 				zap.String("router", c.ID),
 				zap.String("model", modelConfig.ID),
@@ -91,7 +91,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 			continue
 		}
 
-		tel.Logger.Debug(
+		tel.L().Debug(
 			"Init lang model",
 			zap.String("router", c.ID),
 			zap.String("model", modelConfig.ID),
@@ -128,7 +128,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 	}
 
 	if len(chatModels) == 1 {
-		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
+		tel.L().WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
 			fmt.Sprintf("Router \"%v\" has only one active model defined. "+
 				"This is not recommended for production setups. "+
 				"Define at least a few models to leverage resiliency logic Glide provides",
@@ -138,7 +138,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 	}
 
 	if len(chatStreamModels) == 1 {
-		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
+		tel.L().WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
 			fmt.Sprintf("Router \"%v\" has only one active model defined with streaming chat support. "+
 				"This is not recommended for production setups. "+
 				"Define at least a few models to leverage resiliency logic Glide provides",
@@ -148,7 +148,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 	}
 
 	if len(chatStreamModels) == 0 {
-		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
+		tel.L().WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
 			fmt.Sprintf("Router \"%v\" has only no model with streaming chat support. "+
 				"The streaming chat workflow won't work until you define any",
 				c.ID,
