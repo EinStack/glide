@@ -14,6 +14,7 @@ const (
 	LeastLatency Strategy = "least_latency"
 )
 
+// LatencyGetter defines where to find latency for the specific model action
 type LatencyGetter = func(model providers.Model) *latency.MovingAverage
 
 // ModelSchedule defines latency update schedule for models
