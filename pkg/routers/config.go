@@ -63,7 +63,7 @@ type LangRouterConfig struct {
 }
 
 // BuildModels creates LanguageModel slice out of the given config
-func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.LanguageModel, []*providers.LanguageModel, error) {
+func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.LanguageModel, []*providers.LanguageModel, error) { //nolint: cyclop
 	var errs error
 
 	seenIDs := make(map[string]bool, len(c.Models))
@@ -137,6 +137,25 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 		)
 	}
 
+	if len(chatStreamModels) == 1 {
+		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
+			fmt.Sprintf("Router \"%v\" has only one active model defined with streaming chat support. "+
+				"This is not recommended for production setups. "+
+				"Define at least a few models to leverage resiliency logic Glide provides",
+				c.ID,
+			),
+		)
+	}
+
+	if len(chatStreamModels) == 0 {
+		tel.Logger.WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
+			fmt.Sprintf("Router \"%v\" has only no model with streaming chat support. "+
+				"The streaming chat workflow won't work until you define any",
+				c.ID,
+			),
+		)
+	}
+
 	return chatModels, chatStreamModels, nil
 }
 
@@ -151,7 +170,10 @@ func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 	)
 }
 
-func (c *LangRouterConfig) BuildRouting(chatModels []*providers.LanguageModel, chatStreamModels []*providers.LanguageModel) (routing.LangModelRouting, routing.LangModelRouting, error) {
+func (c *LangRouterConfig) BuildRouting(
+	chatModels []*providers.LanguageModel,
+	chatStreamModels []*providers.LanguageModel,
+) (routing.LangModelRouting, routing.LangModelRouting, error) {
 	chatModelPool := make([]providers.Model, 0, len(chatModels))
 	chatStreamModelPool := make([]providers.Model, 0, len(chatStreamModels))
 
