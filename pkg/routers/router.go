@@ -89,7 +89,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 
 			resp, err := langModel.Chat(ctx, request)
 			if err != nil {
-				r.telemetry.Logger.Warn(
+				r.telemetry.L().Warn(
 					"Lang model failed processing chat request",
 					zap.String("routerID", r.ID()),
 					zap.String("modelID", langModel.ID()),
@@ -107,7 +107,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.telemetry.Logger.Warn("No healthy model found, wait and retry", zap.String("routerID", r.ID()))
+		r.telemetry.L().Warn("No healthy model found to serve chat request, wait and retry", zap.String("routerID", r.ID()))
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
@@ -117,7 +117,7 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 	}
 
 	// if we reach this part, then we are in trouble
-	r.telemetry.Logger.Error("No model was available to handle request", zap.String("routerID", r.ID()))
+	r.telemetry.L().Error("No model was available to handle chat request", zap.String("routerID", r.ID()))
 
 	return nil, ErrNoModelAvailable
 }
@@ -142,20 +142,10 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 
 			langModel := model.(providers.LangModel)
 
-			if !langModel.SupportChatStream() {
-				r.telemetry.Logger.Warn("Lang model doesn't support streaming chat API",
-					zap.String("routerID", r.ID()),
-					zap.String("modelID", langModel.ID()),
-					zap.String("provider", langModel.Provider()),
-				)
-
-				continue
-			}
-
 			err = langModel.ChatStream(ctx, request, responseC)
 			if err != nil {
-				r.telemetry.Logger.Warn(
-					"Lang model failed processing chat request",
+				r.telemetry.L().Warn(
+					"Lang model failed processing streaming chat request",
 					zap.String("routerID", r.ID()),
 					zap.String("modelID", langModel.ID()),
 					zap.String("provider", langModel.Provider()),
@@ -170,7 +160,7 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.telemetry.Logger.Warn("No healthy model found, wait and retry", zap.String("routerID", r.ID()))
+		r.telemetry.L().Warn("No healthy model found to serve streaming chat request, wait and retry", zap.String("routerID", r.ID()))
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
@@ -180,8 +170,8 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 	}
 
 	// if we reach this part, then we are in trouble
-	r.telemetry.Logger.Error(
-		"No model was available to handle request. Try to configure more fallback models to avoid this",
+	r.telemetry.L().Error(
+		"No model was available to handle streaming chat request. Try to configure more fallback models to avoid this",
 		zap.String("routerID", r.ID()),
 	)
 
