@@ -183,7 +183,7 @@ docker pull ghcr.io/einstack/glide:latest-redhat
 Add the EinStack repository:
 
 ```bash
-helm repo add einstack https://einstack.github.io/helm-charts
+helm repo add einstack https://einstack.github.io/charts
 helm repo update
 ```
 
