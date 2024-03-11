@@ -3,6 +3,7 @@ package openai
 import (
 	"context"
 	"encoding/json"
+	"glide/pkg/api/schemas"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"glide/pkg/api/schemas"
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 )
@@ -62,13 +62,15 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	req := schemas.ChatRequest{Message: schemas.ChatMessage{
 		Role:    "user",
 		Content: "What's the capital of the United Kingdom?",
 	}}
 
-	responseC := make(chan schemas.ChatResponse, 20)
+	resultC := client.ChatStream(ctx, &req)
 
-	err = client.ChatStream(ctx, &request, responseC)
-	require.NoError(t, err)
+	for chunkResult := range resultC {
+		require.Nil(t, chunkResult.Error())
+		require.NotNil(t, chunkResult.Chunk().ModelResponse.Message.Content)
+	}
 }
