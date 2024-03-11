@@ -2,26 +2,28 @@ package health
 
 import (
 	"errors"
+
 	"glide/pkg/providers/clients"
 )
 
-type HealthTracker struct {
+// Tracker tracks errors and general health of model provider
+type Tracker struct {
 	errBudget *TokenBucket
 	rateLimit *RateLimitTracker
 }
 
-func NewHealthTracker(budget ErrorBudget) *HealthTracker {
-	return &HealthTracker{
+func NewTracker(budget ErrorBudget) *Tracker {
+	return &Tracker{
 		rateLimit: NewRateLimitTracker(),
 		errBudget: NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
 	}
 }
 
-func (t *HealthTracker) Healthy() bool {
+func (t *Tracker) Healthy() bool {
 	return !t.rateLimit.Limited() && t.errBudget.HasTokens()
 }
 
-func (t *HealthTracker) TrackErr(err error) {
+func (t *Tracker) TrackErr(err error) {
 	var rateLimitErr *clients.RateLimitError
 
 	if errors.As(err, &rateLimitErr) {

@@ -115,7 +115,8 @@ func TestLeastLatencyRouting_Routing(t *testing.T) {
 			}
 
 			routing := LeastLatencyRouting{
-				schedules: schedules,
+				latencyGetter: providers.ChatMockLatency,
+				schedules:     schedules,
 			}
 
 			iterator := routing.Iterator()

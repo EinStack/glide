@@ -104,14 +104,14 @@ type LangModelMock struct {
 	weight      int
 }
 
-func NewLangModelMock(ID string, healthy bool, avgLatency float64, weight int) *LangModelMock {
+func NewLangModelMock(ID string, healthy bool, avgLatency float64, weight int) LangModelMock {
 	chatLatency := latency.NewMovingAverage(0.06, 3)
 
 	if avgLatency > 0.0 {
 		chatLatency.Set(avgLatency)
 	}
 
-	return &LangModelMock{
+	return LangModelMock{
 		modelID:     ID,
 		healthy:     healthy,
 		chatLatency: chatLatency,
