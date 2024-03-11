@@ -51,7 +51,7 @@ func TestLangRouter_Chat_PickFistHealthy(t *testing.T) {
 		chatRouting:      routing.NewPriority(models),
 		chatModels:       langModels,
 		chatStreamModels: langModels,
-		telemetry:        telemetry.NewTelemetryMock(),
+		tel:              telemetry.NewTelemetryMock(),
 	}
 
 	ctx := context.Background()
@@ -108,7 +108,7 @@ func TestLangRouter_Chat_PickThirdHealthy(t *testing.T) {
 		chatStreamRouting: routing.NewPriority(models),
 		chatModels:        langModels,
 		chatStreamModels:  langModels,
-		telemetry:         telemetry.NewTelemetryMock(),
+		tel:               telemetry.NewTelemetryMock(),
 	}
 
 	ctx := context.Background()
@@ -156,7 +156,7 @@ func TestLangRouter_Chat_SuccessOnRetry(t *testing.T) {
 		chatStreamRouting: routing.NewPriority(models),
 		chatModels:        langModels,
 		chatStreamModels:  langModels,
-		telemetry:         telemetry.NewTelemetryMock(),
+		tel:               telemetry.NewTelemetryMock(),
 	}
 
 	resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
@@ -199,7 +199,7 @@ func TestLangRouter_Chat_UnhealthyModelInThePool(t *testing.T) {
 		chatModels:        langModels,
 		chatStreamModels:  langModels,
 		chatStreamRouting: routing.NewPriority(models),
-		telemetry:         telemetry.NewTelemetryMock(),
+		tel:               telemetry.NewTelemetryMock(),
 	}
 
 	for i := 0; i < 2; i++ {
@@ -244,7 +244,7 @@ func TestLangRouter_Chat_AllModelsUnavailable(t *testing.T) {
 		chatModels:        langModels,
 		chatStreamModels:  langModels,
 		chatStreamRouting: routing.NewPriority(models),
-		telemetry:         telemetry.NewTelemetryMock(),
+		tel:               telemetry.NewTelemetryMock(),
 	}
 
 	_, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
@@ -286,16 +286,22 @@ func TestLangRouter_ChatStream(t *testing.T) {
 		chatModels:        langModels,
 		chatStreamRouting: routing.NewPriority(models),
 		chatStreamModels:  langModels,
-		telemetry:         telemetry.NewTelemetryMock(),
+		tel:               telemetry.NewTelemetryMock(),
 	}
 
 	ctx := context.Background()
 	req := schemas.NewChatFromStr("tell me a dad joke")
-	respC := make(chan schemas.ChatResponse)
+	respC := make(chan *schemas.ChatStreamResult)
 
-	for i := 0; i < 2; i++ {
-		err := router.ChatStream(ctx, req, respC)
+	defer close(respC)
 
-		require.NoError(t, err)
+	go router.ChatStream(ctx, req, respC)
+
+	select {
+	case chunkResult := <-respC:
+		require.Nil(t, chunkResult.Error())
+		require.NotNil(t, chunkResult.Chunk().ModelResponse.Message.Content)
+	case <-time.Tick(5 * time.Second):
+		t.Error("Timeout while waiting for stream chat chunk")
 	}
 }

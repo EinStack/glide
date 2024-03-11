@@ -146,9 +146,9 @@ func (m *LanguageModel) Provider() string {
 }
 
 func ChatLatency(model Model) *latency.MovingAverage {
-	return model.(LanguageModel).chatLatency
+	return model.(LanguageModel).ChatLatency()
 }
 
 func ChatStreamLatency(model Model) *latency.MovingAverage {
-	return model.(LanguageModel).chatStreamLatency
+	return model.(LanguageModel).ChatStreamLatency()
 }

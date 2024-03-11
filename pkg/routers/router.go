@@ -27,7 +27,7 @@ type LangRouter struct {
 	chatRouting       routing.LangModelRouting
 	chatStreamRouting routing.LangModelRouting
 	retry             *retry.ExpRetry
-	telemetry         *telemetry.Telemetry
+	tel               *telemetry.Telemetry
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
@@ -49,7 +49,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		retry:             cfg.BuildRetry(),
 		chatRouting:       chatRouting,
 		chatStreamRouting: chatStreamRouting,
-		telemetry:         tel,
+		tel:               tel,
 	}
 
 	return router, err
@@ -89,7 +89,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 			resp, err := langModel.Chat(ctx, req)
 			if err != nil {
-				r.telemetry.L().Warn(
+				r.tel.L().Warn(
 					"Lang model failed processing chat request",
 					zap.String("routerID", r.ID()),
 					zap.String("modelID", langModel.ID()),
@@ -107,7 +107,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.telemetry.L().Warn("No healthy model found to serve chat request, wait and retry", zap.String("routerID", r.ID()))
+		r.tel.L().Warn("No healthy model found to serve chat request, wait and retry", zap.String("routerID", r.ID()))
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
@@ -117,7 +117,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 	}
 
 	// if we reach this part, then we are in trouble
-	r.telemetry.L().Error("No model was available to handle chat request", zap.String("routerID", r.ID()))
+	r.tel.L().Error("No model was available to handle chat request", zap.String("routerID", r.ID()))
 
 	return nil, ErrNoModelAvailable
 }
@@ -154,8 +154,9 @@ func (r *LangRouter) ChatStream(
 			modelRespC := langModel.ChatStream(ctx, req)
 
 			for chunkResult := range modelRespC {
-				if chunkResult.Error() != nil {
-					r.telemetry.L().Warn(
+				err = chunkResult.Error()
+				if err != nil {
+					r.tel.L().Warn(
 						"Lang model failed processing streaming chat request",
 						zap.String("routerID", r.ID()),
 						zap.String("modelID", langModel.ID()),
@@ -182,7 +183,7 @@ func (r *LangRouter) ChatStream(
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.telemetry.L().Warn("No healthy model found to serve streaming chat request, wait and retry", zap.String("routerID", r.ID()))
+		r.tel.L().Warn("No healthy model found to serve streaming chat request, wait and retry", zap.String("routerID", r.ID()))
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
@@ -197,13 +198,13 @@ func (r *LangRouter) ChatStream(
 	}
 
 	// if we reach this part, then we are in trouble
-	r.telemetry.L().Error(
+	r.tel.L().Error(
 		"No model was available to handle streaming chat request. Try to configure more fallback models to avoid this",
 		zap.String("routerID", r.ID()),
 	)
 
 	respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-		Reason:  "noModelAvailable",
+		Reason:  "allModelsUnavailable",
 		Message: ErrNoModelAvailable.Error(),
 	})
 }

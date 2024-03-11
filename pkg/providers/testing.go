@@ -30,6 +30,20 @@ func (m *ResponseMock) Resp() *schemas.ChatResponse {
 	}
 }
 
+func (m *ResponseMock) RespChunk() *schemas.ChatStreamChunk {
+	return &schemas.ChatStreamChunk{
+		ID: "rsp0001",
+		ModelResponse: schemas.ModelResponse{
+			SystemID: map[string]string{
+				"ID": "0001",
+			},
+			Message: schemas.ChatMessage{
+				Content: m.Msg,
+			},
+		},
+	}
+}
+
 type ProviderMock struct {
 	idx              int
 	responses        []ResponseMock
@@ -60,8 +74,23 @@ func (c *ProviderMock) SupportChatStream() bool {
 }
 
 func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
-	// TODO: implement
-	return nil
+	streamResultC := make(chan *clients.ChatStreamResult)
+
+	response := c.responses[c.idx]
+	c.idx++
+
+	go func() {
+		defer close(streamResultC)
+
+		if response.Err != nil {
+			streamResultC <- clients.NewChatStreamResult(nil, *response.Err)
+			return
+		}
+
+		streamResultC <- clients.NewChatStreamResult(response.RespChunk(), nil)
+	}()
+
+	return streamResultC
 }
 
 func (c *ProviderMock) Provider() string {
@@ -98,7 +127,7 @@ func (m *LangModelMock) Healthy() bool {
 	return m.healthy
 }
 
-func (m *LangModelMock) Latency() *latency.MovingAverage {
+func (m *LangModelMock) ChatLatency() *latency.MovingAverage {
 	return m.latency
 }
 
