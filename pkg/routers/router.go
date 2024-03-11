@@ -59,7 +59,7 @@ func (r *LangRouter) ID() string {
 	return r.routerID
 }
 
-func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	if len(r.chatModels) == 0 {
 		return nil, ErrNoModels
 	}
@@ -80,14 +80,14 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 			langModel := model.(providers.LangModel)
 
 			// Check if there is an override in the request
-			if request.Override != nil {
+			if req.Override != nil {
 				// Override the message if the language model ID matches the override model ID
-				if langModel.ID() == request.Override.Model {
-					request.Message = request.Override.Message
+				if langModel.ID() == req.Override.Model {
+					req.Message = req.Override.Message
 				}
 			}
 
-			resp, err := langModel.Chat(ctx, request)
+			resp, err := langModel.Chat(ctx, req)
 			if err != nil {
 				r.telemetry.L().Warn(
 					"Lang model failed processing chat request",
@@ -122,9 +122,18 @@ func (r *LangRouter) Chat(ctx context.Context, request *schemas.ChatRequest) (*s
 	return nil, ErrNoModelAvailable
 }
 
-func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
+func (r *LangRouter) ChatStream(
+	ctx context.Context,
+	req *schemas.ChatRequest,
+	respC chan<- *schemas.ChatStreamResult,
+) {
 	if len(r.chatStreamModels) == 0 {
-		return ErrNoModels
+		respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
+			Reason:  "noModels",
+			Message: ErrNoModels.Error(),
+		})
+
+		return
 	}
 
 	retryIterator := r.retry.Iterator()
@@ -132,6 +141,7 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 	for retryIterator.HasNext() {
 		modelIterator := r.chatStreamRouting.Iterator()
 
+	NextModel:
 		for {
 			model, err := modelIterator.Next()
 
@@ -141,21 +151,33 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 			}
 
 			langModel := model.(providers.LangModel)
+			modelRespC := langModel.ChatStream(ctx, req)
 
-			err = langModel.ChatStream(ctx, request, responseC)
-			if err != nil {
-				r.telemetry.L().Warn(
-					"Lang model failed processing streaming chat request",
-					zap.String("routerID", r.ID()),
-					zap.String("modelID", langModel.ID()),
-					zap.String("provider", langModel.Provider()),
-					zap.Error(err),
-				)
+			for chunkResult := range modelRespC {
+				if chunkResult.Error() != nil {
+					r.telemetry.L().Warn(
+						"Lang model failed processing streaming chat request",
+						zap.String("routerID", r.ID()),
+						zap.String("modelID", langModel.ID()),
+						zap.String("provider", langModel.Provider()),
+						zap.Error(err),
+					)
 
-				continue
+					// It's challenging to hide an error in case of streaming chat as consumer apps
+					//  may have already used all chunks we streamed this far (e.g. showed them to their users like OpenAI UI does),
+					//  so we cannot easily restart that process from scratch
+					respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
+						Reason:  "modelUnavailable",
+						Message: err.Error(),
+					})
+
+					continue NextModel
+				}
+
+				respC <- schemas.NewChatStreamResult(chunkResult.Chunk())
 			}
 
-			return nil
+			return
 		}
 
 		// no providers were available to handle the request,
@@ -165,7 +187,12 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
 			// something has cancelled the context
-			return err
+			respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
+				Reason:  "other",
+				Message: err.Error(),
+			})
+
+			return
 		}
 	}
 
@@ -175,5 +202,8 @@ func (r *LangRouter) ChatStream(ctx context.Context, request *schemas.ChatReques
 		zap.String("routerID", r.ID()),
 	)
 
-	return ErrNoModelAvailable
+	respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
+		Reason:  "noModelAvailable",
+		Message: ErrNoModelAvailable.Error(),
+	})
 }

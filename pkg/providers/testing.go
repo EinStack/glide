@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"glide/pkg/providers/clients"
+
 	"glide/pkg/routers/latency"
 
 	"glide/pkg/api/schemas"
@@ -57,7 +59,7 @@ func (c *ProviderMock) SupportChatStream() bool {
 	return c.supportStreaming
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest, _ chan<- schemas.ChatResponse) error {
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
 	// TODO: implement
 	return nil
 }

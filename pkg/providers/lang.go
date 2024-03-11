@@ -17,8 +17,8 @@ type LangProvider interface {
 
 	SupportChatStream() bool
 
-	Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error)
-	ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error
+	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
+	ChatStream(ctx context.Context, req *schemas.ChatRequest) <-chan *clients.ChatStreamResult
 }
 
 type LangModel interface {
@@ -105,24 +105,36 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 	return resp, err
 }
 
-func (m *LanguageModel) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
-	err := m.client.ChatStream(ctx, request, responseC)
+func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
+	streamResultC := make(chan *clients.ChatStreamResult)
+	resultC := m.client.ChatStream(ctx, req)
 
-	if err == nil {
-		return err
-	}
+	go func() {
+		defer close(streamResultC)
 
-	var rateLimitErr *clients.RateLimitError
+		for chunkResult := range resultC {
+			if chunkResult.Error() == nil {
+				streamResultC <- chunkResult
+				// TODO: calculate latency
+				continue
+			}
 
-	if errors.As(err, &rateLimitErr) {
-		m.rateLimit.SetLimited(rateLimitErr.UntilReset())
+			var rateLimitErr *clients.RateLimitError
 
-		return err
-	}
+			if errors.As(chunkResult.Error(), &rateLimitErr) {
+				m.rateLimit.SetLimited(rateLimitErr.UntilReset())
 
-	_ = m.errBudget.Take(1)
+				streamResultC <- chunkResult
 
-	return err
+				continue
+			}
+
+			_ = m.errBudget.Take(1)
+			streamResultC <- chunkResult
+		}
+	}()
+
+	return streamResultC
 }
 
 func (m *LanguageModel) SupportChatStream() bool {

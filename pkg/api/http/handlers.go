@@ -123,7 +123,8 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 			wg          sync.WaitGroup
 		)
 
-		chatResponseC := make(chan schemas.ChatResponse)
+		chunkResultC := make(chan *schemas.ChatStreamResult)
+
 		router, _ := routerManager.GetLangRouter(routerID)
 
 		defer c.Conn.Close()
@@ -133,8 +134,16 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 		go func() {
 			defer wg.Done()
 
-			for response := range chatResponseC {
-				if err = c.WriteJSON(response); err != nil {
+			for chunkResult := range chunkResultC {
+				if chunkResult.Error() != nil {
+					if err = c.WriteJSON(chunkResult.Error()); err != nil {
+						break
+					}
+
+					continue
+				}
+
+				if err = c.WriteJSON(chunkResult.Chunk()); err != nil {
 					break
 				}
 			}
@@ -157,13 +166,12 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 			go func(chatRequest schemas.ChatRequest) {
 				defer wg.Done()
 
-				if err = router.ChatStream(context.Background(), &chatRequest, chatResponseC); err != nil {
-					tel.L().Error("Failed to process streaming chat request", zap.Error(err), zap.String("routerID", routerID))
-				}
+				router.ChatStream(context.Background(), &chatRequest, chunkResultC)
 			}(chatRequest)
 		}
 
-		close(chatResponseC)
+		close(chunkResultC)
+
 		wg.Wait()
 	})
 }

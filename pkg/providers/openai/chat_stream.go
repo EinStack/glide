@@ -10,6 +10,7 @@ import (
 
 	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
+
 	"go.uber.org/zap"
 
 	"glide/pkg/api/schemas"
@@ -21,17 +22,30 @@ func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
+func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
+	streamResultC := make(chan *clients.ChatStreamResult)
+
+	go c.streamChat(ctx, req, streamResultC)
+
+	return streamResultC
+}
+
+func (c *Client) streamChat(ctx context.Context, request *schemas.ChatRequest, resultC chan *clients.ChatStreamResult) {
 	// Create a new chat request
 	resp, err := c.initChatStream(ctx, request)
+
+	defer close(resultC)
+
 	if err != nil {
-		return err
+		resultC <- clients.NewChatStreamResult(nil, err)
+
+		return
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return c.handleChatReqErrs(resp)
+		resultC <- clients.NewChatStreamResult(nil, c.handleChatReqErrs(resp))
 	}
 
 	reader := sse.NewEventStreamReader(resp.Body, 4096) // TODO: should we expose maxBufferSize?
@@ -44,7 +58,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 			if err == io.EOF {
 				c.tel.L().Debug("Chat stream is over", zap.String("provider", c.Provider()))
 
-				return nil
+				return
 			}
 
 			c.tel.L().Warn(
@@ -52,7 +66,9 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 				zap.String("provider", c.Provider()),
 			)
 
-			return clients.ErrProviderUnavailable
+			resultC <- clients.NewChatStreamResult(nil, clients.ErrProviderUnavailable)
+
+			return
 		}
 
 		c.tel.L().Debug(
@@ -64,15 +80,16 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 		event, err := clients.ParseSSEvent(rawEvent)
 
 		if bytes.Equal(event.Data, streamDoneMarker) {
-			return nil
+			return
 		}
 
 		if err != nil {
-			return fmt.Errorf("failed to parse chat stream message: %v", err)
+			resultC <- clients.NewChatStreamResult(nil, fmt.Errorf("failed to parse chat stream message: %v", err))
+			return
 		}
 
 		if !event.HasContent() {
-			c.tel.Logger.Debug(
+			c.tel.L().Debug(
 				"Received an empty message in chat stream, skipping it",
 				zap.String("provider", c.Provider()),
 				zap.Any("msg", event),
@@ -83,7 +100,8 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 		err = json.Unmarshal(event.Data, &completionChunk)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal chat stream message: %v", err)
+			resultC <- clients.NewChatStreamResult(nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err))
+			return
 		}
 
 		c.tel.L().Debug(
@@ -93,7 +111,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 		)
 
 		// TODO: use objectpool here
-		chatResponse := schemas.ChatResponse{
+		chatRespChunk := schemas.ChatStreamChunk{
 			ID:        completionChunk.ID,
 			Created:   completionChunk.Created,
 			Provider:  providerName,
@@ -111,7 +129,7 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 			// TODO: Pass info if this is the final message
 		}
 
-		responseC <- chatResponse
+		resultC <- clients.NewChatStreamResult(&chatRespChunk, nil)
 	}
 }
 
@@ -137,7 +155,7 @@ func (c *Client) initChatStream(ctx context.Context, request *schemas.ChatReques
 	req.Header.Set("Connection", "keep-alive")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.tel.Logger.Debug(
+	c.tel.L().Debug(
 		"Stream chat request",
 		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", chatRequest),
