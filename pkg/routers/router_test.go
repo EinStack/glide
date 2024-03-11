@@ -305,3 +305,60 @@ func TestLangRouter_ChatStream(t *testing.T) {
 		t.Error("Timeout while waiting for stream chat chunk")
 	}
 }
+
+func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
+	budget := health.NewErrorBudget(1, health.SEC)
+	latConfig := latency.DefaultConfig()
+	langModels := []*providers.LanguageModel{
+		providers.NewLangModel(
+			"first",
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}, true),
+			budget,
+			*latConfig,
+			1,
+		),
+		providers.NewLangModel(
+			"second",
+			providers.NewProviderMock([]providers.ResponseMock{{Err: &ErrNoModelAvailable}, {Err: &ErrNoModelAvailable}}, true),
+			budget,
+			*latConfig,
+			1,
+		),
+	}
+
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
+	router := LangRouter{
+		routerID:          "test_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(1, 2, 1*time.Millisecond, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamModels:  langModels,
+		chatStreamRouting: routing.NewPriority(models),
+		tel:               telemetry.NewTelemetryMock(),
+	}
+
+	respC := make(chan *schemas.ChatStreamResult)
+	defer close(respC)
+
+	actualErrReasons := make([]string, 0, 3)
+
+	go router.ChatStream(context.Background(), schemas.NewChatFromStr("tell me a dad joke"), respC)
+
+	for range 3 {
+		result := <-respC
+		require.Nil(t, result.Chunk())
+
+		print(result.Error().Reason)
+
+		actualErrReasons = append(actualErrReasons, result.Error().Reason)
+	}
+
+	// TODO: We should not send the error message if the model was unavailable at the very begging,
+	//  so we have not started any streaming yet using it
+	require.Equal(t, actualErrReasons, []string{"modelUnavailable", "modelUnavailable", "allModelsUnavailable"})
+}
