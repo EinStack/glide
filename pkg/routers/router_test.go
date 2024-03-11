@@ -360,5 +360,5 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 
 	// TODO: We should not send the error message if the model was unavailable at the very begging,
 	//  so we have not started any streaming yet using it
-	require.Equal(t, actualErrReasons, []string{"modelUnavailable", "modelUnavailable", "allModelsUnavailable"})
+	require.Equal(t, []string{"modelUnavailable", "modelUnavailable", "allModelsUnavailable"}, actualErrReasons)
 }
