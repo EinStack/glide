@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
@@ -53,7 +54,10 @@ func (c *Client) streamChat(ctx context.Context, request *schemas.ChatRequest, r
 	var completionChunk ChatCompletionChunk
 
 	for {
+		started_at := time.Now()
 		rawEvent, err := reader.ReadEvent()
+		chunkLatency := time.Since(started_at)
+
 		if err != nil {
 			if err == io.EOF {
 				c.tel.L().Debug("Chat stream is over", zap.String("provider", c.Provider()))
@@ -126,10 +130,14 @@ func (c *Client) streamChat(ctx context.Context, request *schemas.ChatRequest, r
 					Content: completionChunk.Choices[0].Delta.Content,
 				},
 			},
+			Latency: &chunkLatency,
 			// TODO: Pass info if this is the final message
 		}
 
-		resultC <- clients.NewChatStreamResult(&chatRespChunk, nil)
+		resultC <- clients.NewChatStreamResult(
+			&chatRespChunk,
+			nil,
+		)
 	}
 }
 

@@ -1,6 +1,8 @@
 package clients
 
-import "glide/pkg/api/schemas"
+import (
+	"glide/pkg/api/schemas"
+)
 
 type ChatStreamResult struct {
 	chunk *schemas.ChatStreamChunk

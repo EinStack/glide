@@ -106,10 +106,18 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest
 	go func() {
 		defer close(streamResultC)
 
+		var chunkLatency *time.Duration
+
 		for chunkResult := range resultC {
 			if chunkResult.Error() == nil {
 				streamResultC <- chunkResult
-				// TODO: calculate latency
+
+				chunkLatency = chunkResult.Chunk().Latency
+
+				if chunkLatency != nil {
+					m.chatStreamLatency.Add(float64(*chunkLatency))
+				}
+
 				continue
 			}
 

@@ -127,6 +127,7 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 
 		router, _ := routerManager.GetLangRouter(routerID)
 
+		defer close(chunkResultC)
 		defer c.Conn.Close()
 
 		wg.Add(1)
@@ -169,8 +170,6 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 				router.ChatStream(context.Background(), &chatRequest, chunkResultC)
 			}(chatRequest)
 		}
-
-		close(chunkResultC)
 
 		wg.Wait()
 	})
