@@ -40,7 +40,7 @@ type LanguageModel struct {
 	latencyUpdateInterval *time.Duration
 }
 
-func NewLangModel(modelID string, client LangProvider, budget health.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
+func NewLangModel(modelID string, client LangProvider, budget *health.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
 	return &LanguageModel{
 		modelID:               modelID,
 		client:                client,

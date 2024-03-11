@@ -12,7 +12,7 @@ type Tracker struct {
 	rateLimit *RateLimitTracker
 }
 
-func NewTracker(budget ErrorBudget) *Tracker {
+func NewTracker(budget *ErrorBudget) *Tracker {
 	return &Tracker{
 		rateLimit: NewRateLimitTracker(),
 		errBudget: NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
