@@ -1,6 +1,6 @@
 module glide
 
-go 1.21.5
+go 1.22.1
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.24.1
@@ -11,7 +11,7 @@ require (
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.2
 	github.com/gofiber/contrib/swagger v1.1.1
 	github.com/gofiber/contrib/websocket v1.3.0
-	github.com/gofiber/fiber/v2 v2.52.0
+	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/r3labs/sse/v2 v2.10.0
@@ -73,9 +73,9 @@ require (
 	github.com/valyala/fasthttp v1.52.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.16.1 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
