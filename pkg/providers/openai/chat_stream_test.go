@@ -31,6 +31,7 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 	tests := map[string]string{
 		"success stream": "./testdata/chat_stream.success.txt",
 		"success stream, but no last done message": "./testdata/chat_stream.nodone.txt",
+		"success stream, but with empty event":     "./testdata/chat_stream.empty.txt",
 	}
 
 	for name, streamFile := range tests {
