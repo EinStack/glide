@@ -33,7 +33,7 @@ lint: install-checkers ## Lint the source code
 
 vuln: install-checkers ## Check for vulnerabilities
 	@echo "🔍 Checking for vulnerabilities"
-	@$(CHECKER_BIN)/govulncheck -test ./...
+	@#$(CHECKER_BIN)/govulncheck -test ./... enable in https://github.com/EinStack/glide/issues/169
 	@$(CHECKER_BIN)/gosec -quiet -exclude=G104 ./...
 
 run: ## Run Glide

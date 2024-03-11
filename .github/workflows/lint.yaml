@@ -23,7 +23,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           check-latest: true
 
       - name: Install
@@ -56,7 +56,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           check-latest: true
       - name: Build
         run: go build -v ./...
@@ -70,7 +70,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           check-latest: true
 
       - name: Install staticcheck
@@ -87,6 +87,7 @@ jobs:
 
       - name: Staticcheck
         run: staticcheck ./...
+        
 # TODO: Ignore the issue in https://github.com/modelgateway/Glide/issues/32
 #      - name: Nilaway
 #        run: nilaway ./...
@@ -100,7 +101,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           check-latest: true
 
       - name: Test
@@ -126,7 +127,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           check-latest: true
 
       - name: Generate OpenAPI Schema
