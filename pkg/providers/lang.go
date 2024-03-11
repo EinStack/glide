@@ -2,12 +2,11 @@ package providers
 
 import (
 	"context"
-	"errors"
+	"glide/pkg/routers/health"
 	"time"
 
 	"glide/pkg/api/schemas"
 	"glide/pkg/providers/clients"
-	"glide/pkg/routers/health"
 	"glide/pkg/routers/latency"
 )
 
@@ -34,8 +33,7 @@ type LanguageModel struct {
 	modelID               string
 	weight                int
 	client                LangProvider
-	rateLimit             *health.RateLimitTracker
-	errBudget             *health.TokenBucket
+	healthTracker         *health.HealthTracker
 	chatLatency           *latency.MovingAverage
 	chatStreamLatency     *latency.MovingAverage
 	latencyUpdateInterval *time.Duration
@@ -45,8 +43,7 @@ func NewLangModel(modelID string, client LangProvider, budget health.ErrorBudget
 	return &LanguageModel{
 		modelID:               modelID,
 		client:                client,
-		rateLimit:             health.NewRateLimitTracker(),
-		errBudget:             health.NewTokenBucket(budget.TimePerTokenMicro(), budget.Budget()),
+		healthTracker:         health.NewHealthTracker(budget),
 		chatLatency:           latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
 		chatStreamLatency:     latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
 		latencyUpdateInterval: latencyConfig.UpdateInterval,
@@ -58,6 +55,10 @@ func (m LanguageModel) ID() string {
 	return m.modelID
 }
 
+func (m LanguageModel) Healthy() bool {
+	return m.healthTracker.Healthy()
+}
+
 func (m LanguageModel) Weight() int {
 	return m.weight
 }
@@ -66,16 +67,16 @@ func (m LanguageModel) LatencyUpdateInterval() *time.Duration {
 	return m.latencyUpdateInterval
 }
 
+func (m *LanguageModel) SupportChatStream() bool {
+	return m.client.SupportChatStream()
+}
+
 func (m LanguageModel) ChatLatency() *latency.MovingAverage {
 	return m.chatLatency
 }
 
 func (m LanguageModel) ChatStreamLatency() *latency.MovingAverage {
 	return m.chatStreamLatency
-}
-
-func (m LanguageModel) Healthy() bool {
-	return !m.rateLimit.Limited() && m.errBudget.HasTokens()
 }
 
 func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
@@ -92,15 +93,7 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 		return resp, err
 	}
 
-	var rateLimitErr *clients.RateLimitError
-
-	if errors.As(err, &rateLimitErr) {
-		m.rateLimit.SetLimited(rateLimitErr.UntilReset())
-
-		return resp, err
-	}
-
-	_ = m.errBudget.Take(1)
+	m.healthTracker.TrackErr(err)
 
 	return resp, err
 }
@@ -119,26 +112,13 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest
 				continue
 			}
 
-			var rateLimitErr *clients.RateLimitError
+			m.healthTracker.TrackErr(chunkResult.Error())
 
-			if errors.As(chunkResult.Error(), &rateLimitErr) {
-				m.rateLimit.SetLimited(rateLimitErr.UntilReset())
-
-				streamResultC <- chunkResult
-
-				continue
-			}
-
-			_ = m.errBudget.Take(1)
 			streamResultC <- chunkResult
 		}
 	}()
 
 	return streamResultC
-}
-
-func (m *LanguageModel) SupportChatStream() bool {
-	return m.client.SupportChatStream()
 }
 
 func (m *LanguageModel) Provider() string {

@@ -98,45 +98,49 @@ func (c *ProviderMock) Provider() string {
 }
 
 type LangModelMock struct {
-	modelID string
-	healthy bool
-	latency *latency.MovingAverage
-	weight  int
+	modelID     string
+	healthy     bool
+	chatLatency *latency.MovingAverage
+	weight      int
 }
 
 func NewLangModelMock(ID string, healthy bool, avgLatency float64, weight int) *LangModelMock {
-	movingAverage := latency.NewMovingAverage(0.06, 3)
+	chatLatency := latency.NewMovingAverage(0.06, 3)
 
 	if avgLatency > 0.0 {
-		movingAverage.Set(avgLatency)
+		chatLatency.Set(avgLatency)
 	}
 
 	return &LangModelMock{
-		modelID: ID,
-		healthy: healthy,
-		latency: movingAverage,
-		weight:  weight,
+		modelID:     ID,
+		healthy:     healthy,
+		chatLatency: chatLatency,
+		weight:      weight,
 	}
 }
 
-func (m *LangModelMock) ID() string {
+func (m LangModelMock) ID() string {
 	return m.modelID
 }
 
-func (m *LangModelMock) Healthy() bool {
+func (m LangModelMock) Healthy() bool {
 	return m.healthy
 }
 
 func (m *LangModelMock) ChatLatency() *latency.MovingAverage {
-	return m.latency
+	return m.chatLatency
 }
 
-func (m *LangModelMock) LatencyUpdateInterval() *time.Duration {
+func (m LangModelMock) LatencyUpdateInterval() *time.Duration {
 	updateInterval := 30 * time.Second
 
 	return &updateInterval
 }
 
-func (m *LangModelMock) Weight() int {
+func (m LangModelMock) Weight() int {
 	return m.weight
+}
+
+func ChatMockLatency(model Model) *latency.MovingAverage {
+	return model.(LangModelMock).chatLatency
 }
