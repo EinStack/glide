@@ -3,13 +3,14 @@ package openai
 import (
 	"context"
 	"encoding/json"
-	"glide/pkg/api/schemas"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"glide/pkg/api/schemas"
 
 	"github.com/stretchr/testify/require"
 	"glide/pkg/providers/clients"
@@ -70,7 +71,7 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 	resultC := client.ChatStream(ctx, &req)
 
 	for chunkResult := range resultC {
-		require.Nil(t, chunkResult.Error())
+		require.NoError(t, chunkResult.Error())
 		require.NotNil(t, chunkResult.Chunk().ModelResponse.Message.Content)
 	}
 }
