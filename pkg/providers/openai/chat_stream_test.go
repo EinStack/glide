@@ -76,11 +76,17 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 				Content: "What's the capital of the United Kingdom?",
 			}}
 
-			resultC := client.ChatStream(ctx, &req)
+			stream, err := client.ChatStream(ctx, &req)
+			require.NoError(t, err)
 
-			for chunkResult := range resultC {
-				require.NoError(t, chunkResult.Error())
-				require.NotNil(t, chunkResult.Chunk().ModelResponse.Message.Content)
+			err = stream.Open()
+			require.NoError(t, err)
+
+			for {
+				chunk, err := stream.Recv()
+
+				require.NoError(t, err)
+				require.NotNil(t, chunk)
 			}
 		})
 	}

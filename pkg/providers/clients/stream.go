@@ -4,6 +4,12 @@ import (
 	"glide/pkg/api/schemas"
 )
 
+type ChatStream interface {
+	Open() error
+	Recv() (*schemas.ChatStreamChunk, error)
+	Close() error
+}
+
 type ChatStreamResult struct {
 	chunk *schemas.ChatStreamChunk
 	err   error

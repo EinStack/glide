@@ -11,11 +11,6 @@ func (c *Client) SupportChatStream() bool {
 	return false
 }
 
-func (c *Client) ChatStream(_ context.Context, _ *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
-	streamResultC := make(chan *clients.ChatStreamResult)
-
-	streamResultC <- clients.NewChatStreamResult(nil, clients.ErrChatStreamNotImplemented)
-	close(streamResultC)
-
-	return streamResultC
+func (c *Client) ChatStream(_ context.Context, _ *schemas.ChatRequest) (clients.ChatStream, error) {
+	return nil, clients.ErrChatStreamNotImplemented
 }

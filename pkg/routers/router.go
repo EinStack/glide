@@ -151,7 +151,18 @@ func (r *LangRouter) ChatStream(
 			}
 
 			langModel := model.(providers.LangModel)
-			modelRespC := langModel.ChatStream(ctx, req)
+			modelRespC, err := langModel.ChatStream(ctx, req)
+			if err != nil {
+				r.tel.L().Error(
+					"Lang model failed to create streaming chat request",
+					zap.String("routerID", r.ID()),
+					zap.String("modelID", langModel.ID()),
+					zap.String("provider", langModel.Provider()),
+					zap.Error(err),
+				)
+
+				continue
+			}
 
 			for chunkResult := range modelRespC {
 				err = chunkResult.Error()

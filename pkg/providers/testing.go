@@ -73,24 +73,9 @@ func (c *ProviderMock) SupportChatStream() bool {
 	return c.supportStreaming
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
-	streamResultC := make(chan *clients.ChatStreamResult)
-
-	response := c.responses[c.idx]
-	c.idx++
-
-	go func() {
-		defer close(streamResultC)
-
-		if response.Err != nil {
-			streamResultC <- clients.NewChatStreamResult(nil, *response.Err)
-			return
-		}
-
-		streamResultC <- clients.NewChatStreamResult(response.RespChunk(), nil)
-	}()
-
-	return streamResultC
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest) (clients.ChatStream, error) {
+	// TODO: implement
+	return nil, nil
 }
 
 func (c *ProviderMock) Provider() string {

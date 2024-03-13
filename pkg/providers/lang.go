@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"glide/pkg/routers/health"
@@ -18,12 +19,14 @@ type LangProvider interface {
 	SupportChatStream() bool
 
 	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
-	ChatStream(ctx context.Context, req *schemas.ChatRequest) <-chan *clients.ChatStreamResult
+	ChatStream(ctx context.Context, req *schemas.ChatRequest) (clients.ChatStream, error)
 }
 
 type LangModel interface {
-	LangProvider
 	Model
+	Provider() string
+	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
+	ChatStream(ctx context.Context, req *schemas.ChatRequest) (<-chan *clients.ChatStreamResult, error)
 }
 
 // LanguageModel wraps provider client and expend it with health & latency tracking
@@ -99,35 +102,65 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 	return resp, err
 }
 
-func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest) <-chan *clients.ChatStreamResult {
+func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest) (<-chan *clients.ChatStreamResult, error) {
+	stream, err := m.client.ChatStream(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
 	streamResultC := make(chan *clients.ChatStreamResult)
-	resultC := m.client.ChatStream(ctx, req)
 
 	go func() {
 		defer close(streamResultC)
 
-		var chunkLatency *time.Duration
+		startedAt := time.Now()
+		err = stream.Open()
+		chunkLatency := time.Since(startedAt)
 
-		for chunkResult := range resultC {
-			if chunkResult.Error() == nil {
-				streamResultC <- chunkResult
+		// the first chunk latency
+		m.chatStreamLatency.Add(float64(chunkLatency))
 
-				chunkLatency = chunkResult.Chunk().Latency
+		if err != nil {
+			streamResultC <- clients.NewChatStreamResult(nil, err)
 
-				if chunkLatency != nil {
-					m.chatStreamLatency.Add(float64(*chunkLatency))
+			m.healthTracker.TrackErr(err)
+
+			return
+		}
+
+		defer stream.Close()
+
+		for {
+			startedAt = time.Now()
+			chunk, err := stream.Recv()
+			chunkLatency = time.Since(startedAt)
+
+			if err != nil {
+				if err == io.EOF {
+					// end of the stream
+					return
 				}
 
-				continue
+				streamResultC <- clients.NewChatStreamResult(nil, err)
+
+				m.healthTracker.TrackErr(err)
+
+				return
 			}
 
-			m.healthTracker.TrackErr(chunkResult.Error())
+			streamResultC <- clients.NewChatStreamResult(chunk, nil)
 
-			streamResultC <- chunkResult
+			if chunkLatency > 1*time.Millisecond {
+				// All events are read in a bigger chunks of bytes, so one chunk may contain more than one event.
+				//  Each byte chunk is then parsed, so there is no easy way to precisely guess latency per chunk,
+				//  So we assume that if we spent more than 1ms waiting for a chunk it's likely
+				//  we were trying to read from the connection (otherwise, it would take nanoseconds)
+				m.chatStreamLatency.Add(float64(chunkLatency))
+			}
 		}
 	}()
 
-	return streamResultC
+	return streamResultC, nil
 }
 
 func (m *LanguageModel) Provider() string {
