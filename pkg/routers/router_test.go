@@ -353,8 +353,6 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		result := <-respC
 		require.Nil(t, result.Chunk())
 
-		print(result.Error().Reason)
-
 		actualErrReasons = append(actualErrReasons, result.Error().Reason)
 	}
 
