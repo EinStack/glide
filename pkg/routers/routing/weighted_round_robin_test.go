@@ -3,6 +3,8 @@ package routing
 import (
 	"testing"
 
+	ptesting "glide/pkg/providers/testing"
+
 	"github.com/stretchr/testify/require"
 	"glide/pkg/providers"
 )
@@ -116,7 +118,7 @@ func TestWRoundRobinRouting_RoutingDistribution(t *testing.T) {
 			models := make([]providers.Model, 0, len(tc.models))
 
 			for _, model := range tc.models {
-				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, 0, model.weight))
+				models = append(models, ptesting.NewLangModelMock(model.modelID, model.healthy, 0, model.weight))
 			}
 
 			routing := NewWeightedRoundRobin(models)
@@ -140,9 +142,9 @@ func TestWRoundRobinRouting_RoutingDistribution(t *testing.T) {
 
 func TestWRoundRobinRouting_NoHealthyModels(t *testing.T) {
 	models := []providers.Model{
-		providers.NewLangModelMock("first", false, 0, 1),
-		providers.NewLangModelMock("second", false, 0, 2),
-		providers.NewLangModelMock("third", false, 0, 3),
+		ptesting.NewLangModelMock("first", false, 0, 1),
+		ptesting.NewLangModelMock("second", false, 0, 2),
+		ptesting.NewLangModelMock("third", false, 0, 3),
 	}
 
 	routing := NewWeightedRoundRobin(models)
