@@ -142,6 +142,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			return nil, clients.NewRateLimitError(&cooldownDelay)
 		}
 
+		if resp.StatusCode == http.StatusUnauthorized {
+			return nil, clients.ErrUnauthorized
+		}
+
 		// Server & client errors result in the same error to keep gateway resilient
 		return nil, clients.ErrProviderUnavailable
 	}
