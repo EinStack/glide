@@ -44,27 +44,43 @@ func (m *RespMock) RespChunk() *schemas.ChatStreamChunk {
 
 // RespStreamMock mocks a chat stream
 type RespStreamMock struct {
-	idx    int
-	Chunks []RespMock
+	idx     int
+	OpenErr error
+	Chunks  *[]RespMock
 }
 
-func NewRespStreamMock(chunk []RespMock) RespStreamMock {
+func NewRespStreamMock(chunk *[]RespMock) RespStreamMock {
 	return RespStreamMock{
-		idx:    0,
-		Chunks: chunk,
+		idx:     0,
+		OpenErr: nil,
+		Chunks:  chunk,
+	}
+}
+
+func NewRespStreamWithOpenErr(openErr error) RespStreamMock {
+	return RespStreamMock{
+		idx:     0,
+		OpenErr: openErr,
+		Chunks:  nil,
 	}
 }
 
 func (m *RespStreamMock) Open() error {
+	if m.OpenErr != nil {
+		return m.OpenErr
+	}
+
 	return nil
 }
 
 func (m *RespStreamMock) Recv() (*schemas.ChatStreamChunk, error) {
-	if m.idx >= len(m.Chunks) {
+	if m.Chunks != nil && m.idx >= len(*m.Chunks) {
 		return nil, io.EOF
 	}
 
-	chunk := m.Chunks[m.idx]
+	chunks := *m.Chunks
+
+	chunk := chunks[m.idx]
 	m.idx++
 
 	if chunk.Err != nil {

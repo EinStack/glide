@@ -261,7 +261,7 @@ func TestLangRouter_ChatStream(t *testing.T) {
 		providers.NewLangModel(
 			"first",
 			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
-				ptesting.NewRespStreamMock([]ptesting.RespMock{
+				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Msg: "Bill"},
 					{Msg: "Gates"},
 					{Msg: "entered"},
@@ -276,7 +276,7 @@ func TestLangRouter_ChatStream(t *testing.T) {
 		providers.NewLangModel(
 			"second",
 			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
-				ptesting.NewRespStreamMock([]ptesting.RespMock{
+				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Msg: "Knock"},
 					{Msg: "Knock"},
 					{Msg: "joke"},
@@ -327,6 +327,74 @@ func TestLangRouter_ChatStream(t *testing.T) {
 	require.Equal(t, []string{"Bill", "Gates", "entered", "the", "bar"}, chunks)
 }
 
+func TestLangRouter_ChatStream_FailOnFirst(t *testing.T) {
+	budget := health.NewErrorBudget(3, health.SEC)
+	latConfig := latency.DefaultConfig()
+
+	langModels := []*providers.LanguageModel{
+		providers.NewLangModel(
+			"first",
+			ptesting.NewStreamProviderMock(nil),
+			budget,
+			*latConfig,
+			1,
+		),
+		providers.NewLangModel(
+			"second",
+			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
+				ptesting.NewRespStreamMock(
+					&[]ptesting.RespMock{
+						{Msg: "Knock"},
+						{Msg: "knock"},
+						{Msg: "joke"},
+					},
+				),
+			}),
+			budget,
+			*latConfig,
+			1,
+		),
+	}
+
+	models := make([]providers.Model, 0, len(langModels))
+	for _, model := range langModels {
+		models = append(models, model)
+	}
+
+	router := LangRouter{
+		routerID:          "test_stream_router",
+		Config:            &LangRouterConfig{},
+		retry:             retry.NewExpRetry(3, 2, 1*time.Second, nil),
+		chatRouting:       routing.NewPriority(models),
+		chatModels:        langModels,
+		chatStreamRouting: routing.NewPriority(models),
+		chatStreamModels:  langModels,
+		tel:               telemetry.NewTelemetryMock(),
+	}
+
+	ctx := context.Background()
+	req := schemas.NewChatFromStr("tell me a dad joke")
+	respC := make(chan *schemas.ChatStreamResult)
+
+	defer close(respC)
+
+	go router.ChatStream(ctx, req, respC)
+
+	chunks := make([]string, 0, 3)
+
+	for range 3 {
+		select { //nolint:gosimple
+		case chunk := <-respC:
+			require.Nil(t, chunk.Error())
+			require.NotNil(t, chunk.Chunk().ModelResponse.Message.Content)
+
+			chunks = append(chunks, chunk.Chunk().ModelResponse.Message.Content)
+		}
+	}
+
+	require.Equal(t, []string{"Knock", "knock", "joke"}, chunks)
+}
+
 func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 	budget := health.NewErrorBudget(1, health.SEC)
 	latConfig := latency.DefaultConfig()
@@ -335,7 +403,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		providers.NewLangModel(
 			"first",
 			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
-				ptesting.NewRespStreamMock([]ptesting.RespMock{
+				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Err: &clients.ErrProviderUnavailable},
 				}),
 			}),
@@ -346,7 +414,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		providers.NewLangModel(
 			"second",
 			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
-				ptesting.NewRespStreamMock([]ptesting.RespMock{
+				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Err: &clients.ErrProviderUnavailable},
 				}),
 			}),
