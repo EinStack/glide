@@ -55,6 +55,10 @@ func (m *ErrorMapper) Map(resp *http.Response) error {
 		return clients.NewRateLimitError(&cooldownDelay)
 	}
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		return clients.ErrUnauthorized
+	}
+
 	// Server & client errors result in the same error to keep gateway resilient
 	return clients.ErrProviderUnavailable
 }
