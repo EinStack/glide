@@ -60,7 +60,7 @@ func (m *RespStreamMock) Open() error {
 }
 
 func (m *RespStreamMock) Recv() (*schemas.ChatStreamChunk, error) {
-	if m.idx < len(m.Chunks) {
+	if m.idx >= len(m.Chunks) {
 		return nil, io.EOF
 	}
 
@@ -124,7 +124,7 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 }
 
 func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest) (clients.ChatStream, error) {
-	if c.chatStreams == nil || c.idx < len(*c.chatStreams) {
+	if c.chatStreams == nil || c.idx >= len(*c.chatStreams) {
 		return nil, clients.ErrProviderUnavailable
 	}
 

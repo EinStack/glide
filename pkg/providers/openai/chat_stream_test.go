@@ -85,6 +85,10 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 			for {
 				chunk, err := stream.Recv()
 
+				if err == io.EOF {
+					return
+				}
+
 				require.NoError(t, err)
 				require.NotNil(t, chunk)
 			}
