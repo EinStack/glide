@@ -123,9 +123,9 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest
 		m.chatStreamLatency.Add(float64(chunkLatency))
 
 		if err != nil {
-			streamResultC <- clients.NewChatStreamResult(nil, err)
-
 			m.healthTracker.TrackErr(err)
+
+			// if connection was not even open, we should not send our clients any messages about this failure
 
 			return
 		}
