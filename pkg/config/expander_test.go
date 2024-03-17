@@ -73,3 +73,13 @@ func TestExpander_FileContentExpanded(t *testing.T) {
 	require.NotContains(t, updatedContent, "${file:")
 	require.Contains(t, updatedContent, "sk-fakeapi-token")
 }
+
+func TestExpander_FileDoesntExist(t *testing.T) {
+	content, err := os.ReadFile(filepath.Clean(filepath.Join(".", "testdata", "expander.file.notfound.yaml")))
+	require.NoError(t, err)
+
+	expander := Expander{}
+	updatedContent := string(expander.Expand(content))
+
+	require.NotContains(t, updatedContent, "${file:")
+}
