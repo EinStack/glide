@@ -17,7 +17,10 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-var streamDoneMarker = []byte("[DONE]")
+var (
+	StopReason       = "stop"
+	streamDoneMarker = []byte("[DONE]")
+)
 
 // ChatStream represents OpenAI chat stream for a specific request
 type ChatStream struct {
@@ -103,23 +106,32 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
 
+		responseChunk := completionChunk.Choices[0]
+
+		var finishReason *schemas.FinishReason
+
+		if responseChunk.FinishReason == StopReason {
+			finishReason = &schemas.Complete
+		}
+
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
 			ID:        completionChunk.ID,
-			Created:   completionChunk.Created,
 			Provider:  providerName,
 			Cached:    false,
 			ModelName: completionChunk.ModelName,
-			ModelResponse: schemas.ModelResponse{
-				SystemID: map[string]string{
+			// TODO: set request metadata
+			ModelResponse: schemas.ModelChunkResponse{
+				Metadata: &schemas.Metadata{
+					"response_id":        completionChunk.ID,
 					"system_fingerprint": completionChunk.SystemFingerprint,
 				},
 				Message: schemas.ChatMessage{
-					Role:    completionChunk.Choices[0].Delta.Role,
-					Content: completionChunk.Choices[0].Delta.Content,
+					Role:    responseChunk.Delta.Role,
+					Content: responseChunk.Delta.Content,
 				},
+				FinishReason: finishReason,
 			},
-			// TODO: Pass info if this is the final message
 		}, nil
 	}
 }
@@ -136,9 +148,9 @@ func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatRequest) (clients.ChatStream, error) {
+func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (clients.ChatStream, error) {
 	// Create a new chat request
-	request, err := c.makeStreamReq(ctx, req)
+	httpRequest, err := c.makeStreamReq(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -146,13 +158,14 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatRequest) (clie
 	return NewChatStream(
 		c.tel,
 		c.httpClient,
-		request,
+		httpRequest,
 		c.errMapper,
 	), nil
 }
 
-func (c *Client) makeStreamReq(ctx context.Context, request *schemas.ChatRequest) (*http.Request, error) {
-	chatRequest := *c.createChatRequestSchema(request)
+func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamRequest) (*http.Request, error) {
+	chatRequest := *c.createChatRequestSchema(req)
+
 	chatRequest.Stream = true
 
 	rawPayload, err := json.Marshal(chatRequest)
@@ -160,16 +173,16 @@ func (c *Client) makeStreamReq(ctx context.Context, request *schemas.ChatRequest
 		return nil, fmt.Errorf("unable to marshal openAI chat stream request payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create OpenAI stream chat request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Accept", "text/event-stream")
-	req.Header.Set("Connection", "keep-alive")
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
+	request.Header.Set("Cache-Control", "no-cache")
+	request.Header.Set("Accept", "text/event-stream")
+	request.Header.Set("Connection", "keep-alive")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
 	c.tel.L().Debug(
@@ -178,5 +191,5 @@ func (c *Client) makeStreamReq(ctx context.Context, request *schemas.ChatRequest
 		zap.Any("payload", chatRequest),
 	)
 
-	return req, nil
+	return request, nil
 }

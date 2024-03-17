@@ -19,14 +19,14 @@ type LangProvider interface {
 	SupportChatStream() bool
 
 	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
-	ChatStream(ctx context.Context, req *schemas.ChatRequest) (clients.ChatStream, error)
+	ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (clients.ChatStream, error)
 }
 
 type LangModel interface {
 	Model
 	Provider() string
 	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
-	ChatStream(ctx context.Context, req *schemas.ChatRequest) (<-chan *clients.ChatStreamResult, error)
+	ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (<-chan *clients.ChatStreamResult, error)
 }
 
 // LanguageModel wraps provider client and expend it with health & latency tracking
@@ -102,7 +102,7 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 	return resp, err
 }
 
-func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest) (<-chan *clients.ChatStreamResult, error) {
+func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (<-chan *clients.ChatStreamResult, error) {
 	stream, err := m.client.ChatStream(ctx, req)
 	if err != nil {
 		m.healthTracker.TrackErr(err)

@@ -124,7 +124,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 func (r *LangRouter) ChatStream(
 	ctx context.Context,
-	req *schemas.ChatRequest,
+	req *schemas.ChatStreamRequest,
 	respC chan<- *schemas.ChatStreamResult,
 ) {
 	if len(r.chatStreamModels) == 0 {

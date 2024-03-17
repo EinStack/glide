@@ -118,9 +118,8 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 
 		var (
-			err         error
-			chatRequest schemas.ChatRequest
-			wg          sync.WaitGroup
+			err error
+			wg  sync.WaitGroup
 		)
 
 		chunkResultC := make(chan *schemas.ChatStreamResult)
@@ -151,6 +150,8 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 		}()
 
 		for {
+			var chatRequest schemas.ChatStreamRequest
+
 			if err = c.ReadJSON(&chatRequest); err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 					tel.L().Warn("Streaming Chat connection is closed", zap.Error(err), zap.String("routerID", routerID))
@@ -164,7 +165,7 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 			// TODO: handle termination gracefully
 			wg.Add(1)
 
-			go func(chatRequest schemas.ChatRequest) {
+			go func(chatRequest schemas.ChatStreamRequest) {
 				defer wg.Done()
 
 				router.ChatStream(context.Background(), &chatRequest, chunkResultC)

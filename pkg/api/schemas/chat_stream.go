@@ -1,29 +1,39 @@
 package schemas
 
-import "time"
+type (
+	Metadata     = map[string]any
+	FinishReason = string
+)
+
+var Complete FinishReason = "complete"
 
 // ChatStreamRequest defines a message that requests a new streaming chat
 type ChatStreamRequest struct {
-	// TODO: implement
+	Message        ChatMessage          `json:"message" validate:"required"`
+	MessageHistory []ChatMessage        `json:"messageHistory" validate:"required"`
+	Override       *OverrideChatRequest `json:"overrideMessage,omitempty"`
+	Metadata       *Metadata            `json:"metadata,omitempty"`
+}
+
+type ModelChunkResponse struct {
+	Metadata     *Metadata     `json:"metadata,omitempty"`
+	Message      ChatMessage   `json:"message"`
+	FinishReason *FinishReason `json:"finishReason,omitempty"`
 }
 
 // ChatStreamChunk defines a message for a chunk of streaming chat response
 type ChatStreamChunk struct {
-	// TODO: modify according to the streaming chat needs
-	ID            string         `json:"id,omitempty"`
-	Created       int            `json:"created,omitempty"`
-	Provider      string         `json:"provider,omitempty"`
-	RouterID      string         `json:"router,omitempty"`
-	ModelID       string         `json:"model_id,omitempty"`
-	ModelName     string         `json:"model,omitempty"`
-	Cached        bool           `json:"cached,omitempty"`
-	ModelResponse ModelResponse  `json:"modelResponse,omitempty"`
-	Latency       *time.Duration `json:"-"`
-	// TODO: add chat request-specific context
+	ID            string             `json:"id,omitempty"`
+	CreatedAt     int                `json:"createdAt,omitempty"`
+	Provider      string             `json:"providerId,omitempty"`
+	RouterID      string             `json:"routerId,omitempty"`
+	ModelID       string             `json:"modelId,omitempty"`
+	Cached        bool               `json:"cached,omitempty"`
+	ModelName     string             `json:"modelName,omitempty"`
+	ModelResponse ModelChunkResponse `json:"modelResponse,omitempty"`
 }
 
 type ChatStreamError struct {
-	// TODO: add chat request-specific context
 	Reason  string `json:"reason"`
 	Message string `json:"message"`
 }
