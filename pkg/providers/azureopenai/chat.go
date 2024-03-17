@@ -7,12 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"glide/pkg/api/schemas"
 	"glide/pkg/providers/openai"
-
-	"glide/pkg/providers/clients"
 
 	"go.uber.org/zap"
 )
@@ -129,37 +126,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.telemetry.Logger.Error("failed to read azure openai chat response", zap.Error(err))
-		}
-
-		c.telemetry.Logger.Error(
-			"azure openai chat request failed",
-			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
-			zap.Any("headers", resp.Header),
-		)
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			// Read the value of the "Retry-After" header to get the cooldown delay
-			retryAfter := resp.Header.Get("Retry-After")
-
-			// Parse the value to get the duration
-			cooldownDelay, err := time.ParseDuration(retryAfter)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-			}
-
-			return nil, clients.NewRateLimitError(&cooldownDelay)
-		}
-
-		if resp.StatusCode == http.StatusUnauthorized {
-			return nil, clients.ErrUnauthorized
-		}
-
-		// Server & client errors result in the same error to keep gateway resilient
-		return nil, clients.ErrProviderUnavailable
+		return nil, c.errMapper.Map(resp)
 	}
 
 	// Read the response body into a byte slice
