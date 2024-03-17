@@ -194,7 +194,10 @@ func (r *LangRouter) ChatStream(
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.tel.L().Warn("No healthy model found to serve streaming chat request, wait and retry", zap.String("routerID", r.ID()))
+		r.tel.L().Warn(
+			"No healthy model found to serve streaming chat request, wait and retry",
+			zap.String("routerID", r.ID()),
+		)
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
