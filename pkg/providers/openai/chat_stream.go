@@ -163,8 +163,24 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 	), nil
 }
 
+func (c *Client) createRequestFromStream(request *schemas.ChatStreamRequest) *ChatRequest {
+	// TODO: consider using objectpool to optimize memory allocation
+	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
+
+	chatRequest.Messages = make([]ChatMessage, 0, len(request.MessageHistory)+1)
+
+	// Add items from messageHistory first and the new chat message last
+	for _, message := range request.MessageHistory {
+		chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: message.Role, Content: message.Content})
+	}
+
+	chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
+
+	return &chatRequest
+}
+
 func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamRequest) (*http.Request, error) {
-	chatRequest := *c.createChatRequestSchema(req)
+	chatRequest := c.createRequestFromStream(req)
 
 	chatRequest.Stream = true
 

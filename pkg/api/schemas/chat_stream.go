@@ -15,6 +15,16 @@ type ChatStreamRequest struct {
 	Metadata       *Metadata            `json:"metadata,omitempty"`
 }
 
+func NewChatStreamFromStr(message string) *ChatStreamRequest {
+	return &ChatStreamRequest{
+		Message: ChatMessage{
+			"human",
+			message,
+			"glide",
+		},
+	}
+}
+
 type ModelChunkResponse struct {
 	Metadata     *Metadata     `json:"metadata,omitempty"`
 	Message      ChatMessage   `json:"message"`

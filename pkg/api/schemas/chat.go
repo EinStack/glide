@@ -17,7 +17,7 @@ func NewChatFromStr(message string) *ChatRequest {
 		Message: ChatMessage{
 			"human",
 			message,
-			"roma",
+			"glide",
 		},
 	}
 }
