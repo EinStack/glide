@@ -10,8 +10,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"glide/pkg/api/schemas"
+
+	"github.com/stretchr/testify/require"
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 )
@@ -27,48 +28,136 @@ func TestOpenAIClient_ChatStreamSupported(t *testing.T) {
 }
 
 func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
-	openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rawPayload, _ := io.ReadAll(r.Body)
+	tests := map[string]string{
+		"success stream": "./testdata/chat_stream.success.txt",
+	}
 
-		var data interface{}
-		// Parse the JSON body
-		err := json.Unmarshal(rawPayload, &data)
-		if err != nil {
-			t.Errorf("error decoding payload (%q): %v", string(rawPayload), err)
-		}
+	for name, streamFile := range tests {
+		t.Run(name, func(t *testing.T) {
+			openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rawPayload, _ := io.ReadAll(r.Body)
 
-		chatResponse, err := os.ReadFile(filepath.Clean("./testdata/chat_stream.success.txt"))
-		if err != nil {
-			t.Errorf("error reading openai chat mock response: %v", err)
-		}
+				var data interface{}
+				// Parse the JSON body
+				err := json.Unmarshal(rawPayload, &data)
+				if err != nil {
+					t.Errorf("error decoding payload (%q): %v", string(rawPayload), err)
+				}
 
-		w.Header().Set("Content-Type", "text/event-stream")
+				chatResponse, err := os.ReadFile(filepath.Clean(streamFile))
+				if err != nil {
+					t.Errorf("error reading openai chat mock response: %v", err)
+				}
 
-		_, err = w.Write(chatResponse)
-		if err != nil {
-			t.Errorf("error on sending chat response: %v", err)
-		}
-	})
+				w.Header().Set("Content-Type", "text/event-stream")
 
-	openAIServer := httptest.NewServer(openAIMock)
-	defer openAIServer.Close()
+				_, err = w.Write(chatResponse)
+				if err != nil {
+					t.Errorf("error on sending chat response: %v", err)
+				}
+			})
 
-	ctx := context.Background()
-	providerCfg := DefaultConfig()
-	clientCfg := clients.DefaultClientConfig()
+			openAIServer := httptest.NewServer(openAIMock)
+			defer openAIServer.Close()
 
-	providerCfg.BaseURL = openAIServer.URL
+			ctx := context.Background()
+			providerCfg := DefaultConfig()
+			clientCfg := clients.DefaultClientConfig()
 
-	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
-	require.NoError(t, err)
+			providerCfg.BaseURL = openAIServer.URL
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
-		Role:    "user",
-		Content: "What's the capital of the United Kingdom?",
-	}}
+			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+			require.NoError(t, err)
 
-	responseC := make(chan schemas.ChatResponse, 20)
+			req := schemas.ChatRequest{Message: schemas.ChatMessage{
+				Role:    "user",
+				Content: "What's the capital of the United Kingdom?",
+			}}
 
-	err = client.ChatStream(ctx, &request, responseC)
-	require.NoError(t, err)
+			stream, err := client.ChatStream(ctx, &req)
+			require.NoError(t, err)
+
+			err = stream.Open()
+			require.NoError(t, err)
+
+			for {
+				chunk, err := stream.Recv()
+
+				if err == io.EOF {
+					return
+				}
+
+				require.NoError(t, err)
+				require.NotNil(t, chunk)
+			}
+		})
+	}
+}
+
+func TestOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
+	tests := map[string]string{
+		"success stream, but no last done message": "./testdata/chat_stream.nodone.txt",
+		"success stream, but with empty event":     "./testdata/chat_stream.empty.txt",
+	}
+
+	for name, streamFile := range tests {
+		t.Run(name, func(t *testing.T) {
+			openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rawPayload, _ := io.ReadAll(r.Body)
+
+				var data interface{}
+				// Parse the JSON body
+				err := json.Unmarshal(rawPayload, &data)
+				if err != nil {
+					t.Errorf("error decoding payload (%q): %v", string(rawPayload), err)
+				}
+
+				chatResponse, err := os.ReadFile(filepath.Clean(streamFile))
+				if err != nil {
+					t.Errorf("error reading openai chat mock response: %v", err)
+				}
+
+				w.Header().Set("Content-Type", "text/event-stream")
+
+				_, err = w.Write(chatResponse)
+				if err != nil {
+					t.Errorf("error on sending chat response: %v", err)
+				}
+			})
+
+			openAIServer := httptest.NewServer(openAIMock)
+			defer openAIServer.Close()
+
+			ctx := context.Background()
+			providerCfg := DefaultConfig()
+			clientCfg := clients.DefaultClientConfig()
+
+			providerCfg.BaseURL = openAIServer.URL
+
+			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+			require.NoError(t, err)
+
+			req := schemas.ChatRequest{Message: schemas.ChatMessage{
+				Role:    "user",
+				Content: "What's the capital of the United Kingdom?",
+			}}
+
+			stream, err := client.ChatStream(ctx, &req)
+			require.NoError(t, err)
+
+			err = stream.Open()
+			require.NoError(t, err)
+
+			for {
+				chunk, err := stream.Recv()
+				if err != nil {
+					require.ErrorIs(t, err, clients.ErrProviderUnavailable)
+					return
+				}
+
+				require.NoError(t, err)
+				require.NotNil(t, chunk)
+			}
+		})
+	}
 }

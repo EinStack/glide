@@ -10,7 +10,7 @@ var ErrRouterNotFound = errors.New("no router found with given ID")
 
 type RouterManager struct {
 	Config        *Config
-	telemetry     *telemetry.Telemetry
+	tel           *telemetry.Telemetry
 	langRouterMap *map[string]*LangRouter
 	langRouters   []*LangRouter
 }
@@ -30,7 +30,7 @@ func NewManager(cfg *Config, tel *telemetry.Telemetry) (*RouterManager, error) {
 
 	manager := RouterManager{
 		Config:        cfg,
-		telemetry:     tel,
+		tel:           tel,
 		langRouters:   langRouters,
 		langRouterMap: &langRouterMap,
 	}

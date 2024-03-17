@@ -49,7 +49,7 @@ func NewCLI() *cobra.Command {
 			if err != nil {
 				log.Println("⚠️failed to load dotenv file: ", err) // don't have an inited logger at this moment
 			} else {
-				log.Printf("🔧dot env file loaded (%v)", dotEnvFile)
+				log.Printf("🔧dot env file is loaded (%v)", dotEnvFile)
 			}
 
 			_, err = configProvider.Load(cfgFile)

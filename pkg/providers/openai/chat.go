@@ -7,9 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
-
-	"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -106,7 +103,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, c.handleChatReqErrs(resp)
+		return nil, c.errMapper.Map(resp)
 	}
 
 	// Read the response body into a byte slice
@@ -160,40 +157,4 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	return &response, nil
-}
-
-func (c *Client) handleChatReqErrs(resp *http.Response) error {
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c.tel.Logger.Error(
-			"Failed to unmarshal chat response error",
-			zap.String("provider", c.Provider()),
-			zap.Error(err),
-			zap.ByteString("rawResponse", bodyBytes),
-		)
-	}
-
-	c.tel.Logger.Error(
-		"Chat request failed",
-		zap.String("provider", c.Provider()),
-		zap.Int("statusCode", resp.StatusCode),
-		zap.String("response", string(bodyBytes)),
-		zap.Any("headers", resp.Header),
-	)
-
-	if resp.StatusCode == http.StatusTooManyRequests {
-		// Read the value of the "Retry-After" header to get the cooldown delay
-		retryAfter := resp.Header.Get("Retry-After")
-
-		// Parse the value to get the duration
-		cooldownDelay, err := time.ParseDuration(retryAfter)
-		if err != nil {
-			return fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-		}
-
-		return clients.NewRateLimitError(&cooldownDelay)
-	}
-
-	// Server & client errors result in the same error to keep gateway resilient
-	return clients.ErrProviderUnavailable
 }

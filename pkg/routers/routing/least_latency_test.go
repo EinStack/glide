@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	ptesting "glide/pkg/providers/testing"
+
 	"github.com/stretchr/testify/require"
 	"glide/pkg/providers"
 )
@@ -33,10 +35,10 @@ func TestLeastLatencyRouting_Warmup(t *testing.T) {
 			models := make([]providers.Model, 0, len(tc.models))
 
 			for _, model := range tc.models {
-				models = append(models, providers.NewLangModelMock(model.modelID, model.healthy, model.latency, 1))
+				models = append(models, ptesting.NewLangModelMock(model.modelID, model.healthy, model.latency, 1))
 			}
 
-			routing := NewLeastLatencyRouting(models)
+			routing := NewLeastLatencyRouting(ptesting.ChatMockLatency, models)
 			iterator := routing.Iterator()
 
 			// loop three times over the whole pool to check if we return back to the begging of the list
@@ -104,7 +106,7 @@ func TestLeastLatencyRouting_Routing(t *testing.T) {
 
 			for _, model := range tc.models {
 				schedules = append(schedules, &ModelSchedule{
-					model: providers.NewLangModelMock(
+					model: ptesting.NewLangModelMock(
 						model.modelID,
 						model.healthy,
 						model.latency,
@@ -115,7 +117,8 @@ func TestLeastLatencyRouting_Routing(t *testing.T) {
 			}
 
 			routing := LeastLatencyRouting{
-				schedules: schedules,
+				latencyGetter: ptesting.ChatMockLatency,
+				schedules:     schedules,
 			}
 
 			iterator := routing.Iterator()
@@ -143,10 +146,10 @@ func TestLeastLatencyRouting_NoHealthyModels(t *testing.T) {
 			models := make([]providers.Model, 0, len(latencies))
 
 			for idx, latency := range latencies {
-				models = append(models, providers.NewLangModelMock(strconv.Itoa(idx), false, latency, 1))
+				models = append(models, ptesting.NewLangModelMock(strconv.Itoa(idx), false, latency, 1))
 			}
 
-			routing := NewLeastLatencyRouting(models)
+			routing := NewLeastLatencyRouting(providers.ChatLatency, models)
 			iterator := routing.Iterator()
 
 			_, err := iterator.Next()

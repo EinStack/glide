@@ -5,12 +5,17 @@ import (
 	"sync/atomic"
 	"time"
 
+	"glide/pkg/routers/latency"
+
 	"glide/pkg/providers"
 )
 
 const (
 	LeastLatency Strategy = "least_latency"
 )
+
+// LatencyGetter defines where to find latency for the specific model action
+type LatencyGetter = func(model providers.Model) *latency.MovingAverage
 
 // ModelSchedule defines latency update schedule for models
 type ModelSchedule struct {
@@ -57,11 +62,12 @@ func (s *ModelSchedule) Update() {
 // other model latency may improve over time overperform the best one),
 // so we need to send some traffic to other models from time to time to update their latency stats
 type LeastLatencyRouting struct {
-	warmupIdx atomic.Uint32
-	schedules []*ModelSchedule
+	latencyGetter LatencyGetter
+	warmupIdx     atomic.Uint32
+	schedules     []*ModelSchedule
 }
 
-func NewLeastLatencyRouting(models []providers.Model) *LeastLatencyRouting {
+func NewLeastLatencyRouting(latencyGetter LatencyGetter, models []providers.Model) *LeastLatencyRouting {
 	schedules := make([]*ModelSchedule, 0, len(models))
 
 	for _, model := range models {
@@ -69,7 +75,8 @@ func NewLeastLatencyRouting(models []providers.Model) *LeastLatencyRouting {
 	}
 
 	return &LeastLatencyRouting{
-		schedules: schedules,
+		latencyGetter: latencyGetter,
+		schedules:     schedules,
 	}
 }
 
@@ -125,7 +132,7 @@ func (r *LeastLatencyRouting) Next() (providers.Model, error) { //nolint:cyclop
 		}
 
 		if !schedule.Expired() && !nextSchedule.Expired() &&
-			nextSchedule.model.Latency().Value() > schedule.model.Latency().Value() {
+			r.latencyGetter(nextSchedule.model).Value() > r.latencyGetter(schedule.model).Value() {
 			nextSchedule = schedule
 		}
 	}
@@ -143,7 +150,7 @@ func (r *LeastLatencyRouting) getColdModelSchedules() []*ModelSchedule {
 	coldModels := make([]*ModelSchedule, 0, len(r.schedules))
 
 	for _, schedule := range r.schedules {
-		if schedule.model.Healthy() && !schedule.model.Latency().WarmedUp() {
+		if schedule.model.Healthy() && !r.latencyGetter(schedule.model).WarmedUp() {
 			coldModels = append(coldModels, schedule)
 		}
 	}

@@ -10,6 +10,8 @@ import (
 
 	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
+	"glide/pkg/telemetry"
+
 	"go.uber.org/zap"
 
 	"glide/pkg/api/schemas"
@@ -17,64 +19,79 @@ import (
 
 var streamDoneMarker = []byte("[DONE]")
 
-func (c *Client) SupportChatStream() bool {
-	return true
+// ChatStream represents OpenAI chat stream for a specific request
+type ChatStream struct {
+	tel       *telemetry.Telemetry
+	client    *http.Client
+	req       *http.Request
+	resp      *http.Response
+	reader    *sse.EventStreamReader
+	errMapper *ErrorMapper
 }
 
-func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, responseC chan<- schemas.ChatResponse) error {
-	// Create a new chat request
-	resp, err := c.initChatStream(ctx, request)
+func NewChatStream(tel *telemetry.Telemetry, client *http.Client, req *http.Request, errMapper *ErrorMapper) *ChatStream {
+	return &ChatStream{
+		tel:       tel,
+		client:    client,
+		req:       req,
+		errMapper: errMapper,
+	}
+}
+
+func (s *ChatStream) Open() error {
+	resp, err := s.client.Do(s.req) //nolint:bodyclose
 	if err != nil {
 		return err
 	}
 
-	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
-		return c.handleChatReqErrs(resp)
+		return s.errMapper.Map(resp)
 	}
 
-	reader := sse.NewEventStreamReader(resp.Body, 4096) // TODO: should we expose maxBufferSize?
+	s.resp = resp
+	s.reader = sse.NewEventStreamReader(resp.Body, 4096) // TODO: should we expose maxBufferSize?
 
+	return nil
+}
+
+func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 	var completionChunk ChatCompletionChunk
 
 	for {
-		rawEvent, err := reader.ReadEvent()
+		rawEvent, err := s.reader.ReadEvent()
 		if err != nil {
-			if err == io.EOF {
-				c.tel.L().Debug("Chat stream is over", zap.String("provider", c.Provider()))
-
-				return nil
-			}
-
-			c.tel.L().Warn(
+			s.tel.L().Warn(
 				"Chat stream is unexpectedly disconnected",
-				zap.String("provider", c.Provider()),
+				zap.String("provider", providerName),
+				zap.Error(err),
 			)
 
-			return clients.ErrProviderUnavailable
+			// if err is io.EOF, this still means that the stream is interrupted unexpectedly
+			//  because the normal stream termination is done via finding out streamDoneMarker
+
+			return nil, clients.ErrProviderUnavailable
 		}
 
-		c.tel.L().Debug(
+		s.tel.L().Debug(
 			"Raw chat stream chunk",
-			zap.String("provider", c.Provider()),
+			zap.String("provider", providerName),
 			zap.ByteString("rawChunk", rawEvent),
 		)
 
 		event, err := clients.ParseSSEvent(rawEvent)
 
 		if bytes.Equal(event.Data, streamDoneMarker) {
-			return nil
+			return nil, io.EOF
 		}
 
 		if err != nil {
-			return fmt.Errorf("failed to parse chat stream message: %v", err)
+			return nil, fmt.Errorf("failed to parse chat stream message: %v", err)
 		}
 
 		if !event.HasContent() {
-			c.tel.Logger.Debug(
+			s.tel.L().Debug(
 				"Received an empty message in chat stream, skipping it",
-				zap.String("provider", c.Provider()),
+				zap.String("provider", providerName),
 				zap.Any("msg", event),
 			)
 
@@ -83,17 +100,11 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 
 		err = json.Unmarshal(event.Data, &completionChunk)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal chat stream message: %v", err)
+			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
 
-		c.tel.L().Debug(
-			"Chat response chunk",
-			zap.String("provider", c.Provider()),
-			zap.Any("chunk", completionChunk),
-		)
-
 		// TODO: use objectpool here
-		chatResponse := schemas.ChatResponse{
+		return &schemas.ChatStreamChunk{
 			ID:        completionChunk.ID,
 			Created:   completionChunk.Created,
 			Provider:  providerName,
@@ -109,14 +120,38 @@ func (c *Client) ChatStream(ctx context.Context, request *schemas.ChatRequest, r
 				},
 			},
 			// TODO: Pass info if this is the final message
-		}
-
-		responseC <- chatResponse
+		}, nil
 	}
 }
 
-// initChatStream establishes a new chat stream
-func (c *Client) initChatStream(ctx context.Context, request *schemas.ChatRequest) (*http.Response, error) {
+func (s *ChatStream) Close() error {
+	if s.resp != nil {
+		return s.resp.Body.Close()
+	}
+
+	return nil
+}
+
+func (c *Client) SupportChatStream() bool {
+	return true
+}
+
+func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatRequest) (clients.ChatStream, error) {
+	// Create a new chat request
+	request, err := c.makeStreamReq(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewChatStream(
+		c.tel,
+		c.httpClient,
+		request,
+		c.errMapper,
+	), nil
+}
+
+func (c *Client) makeStreamReq(ctx context.Context, request *schemas.ChatRequest) (*http.Request, error) {
 	chatRequest := *c.createChatRequestSchema(request)
 	chatRequest.Stream = true
 
@@ -137,16 +172,11 @@ func (c *Client) initChatStream(ctx context.Context, request *schemas.ChatReques
 	req.Header.Set("Connection", "keep-alive")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.tel.Logger.Debug(
+	c.tel.L().Debug(
 		"Stream chat request",
 		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", chatRequest),
 	)
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send OpenAI stream chat request: %w", err)
-	}
-
-	return resp, nil
+	return req, nil
 }
