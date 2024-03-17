@@ -60,19 +60,14 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 	for {
 		rawEvent, err := s.reader.ReadEvent()
 		if err != nil {
-			if err == io.EOF {
-				s.tel.L().Debug("Chat stream is over", zap.String("provider", providerName))
-
-				// TODO: This should be treated as an error probably (unexpected stream end)
-
-				return nil, io.EOF
-			}
-
 			s.tel.L().Warn(
 				"Chat stream is unexpectedly disconnected",
 				zap.String("provider", providerName),
 				zap.Error(err),
 			)
+
+			// if err is io.EOF, this still means that the stream is interrupted unexpectedly
+			//  because the normal stream termination is done via finding out streamDoneMarker
 
 			return nil, clients.ErrProviderUnavailable
 		}
