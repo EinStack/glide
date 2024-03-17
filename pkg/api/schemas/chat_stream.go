@@ -40,6 +40,7 @@ type ChatStreamChunk struct {
 	ModelID       string             `json:"modelId,omitempty"`
 	Cached        bool               `json:"cached,omitempty"`
 	ModelName     string             `json:"modelName,omitempty"`
+	Metadata      *Metadata          `json:"metadata,omitempty"`
 	ModelResponse ModelChunkResponse `json:"modelResponse,omitempty"`
 }
 

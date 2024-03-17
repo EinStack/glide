@@ -24,20 +24,22 @@ var (
 
 // ChatStream represents OpenAI chat stream for a specific request
 type ChatStream struct {
-	tel       *telemetry.Telemetry
-	client    *http.Client
-	req       *http.Request
-	resp      *http.Response
-	reader    *sse.EventStreamReader
-	errMapper *ErrorMapper
+	tel         *telemetry.Telemetry
+	client      *http.Client
+	req         *http.Request
+	reqMetadata *schemas.Metadata
+	resp        *http.Response
+	reader      *sse.EventStreamReader
+	errMapper   *ErrorMapper
 }
 
-func NewChatStream(tel *telemetry.Telemetry, client *http.Client, req *http.Request, errMapper *ErrorMapper) *ChatStream {
+func NewChatStream(tel *telemetry.Telemetry, client *http.Client, req *http.Request, reqMetadata *schemas.Metadata, errMapper *ErrorMapper) *ChatStream {
 	return &ChatStream{
-		tel:       tel,
-		client:    client,
-		req:       req,
-		errMapper: errMapper,
+		tel:         tel,
+		client:      client,
+		req:         req,
+		reqMetadata: reqMetadata,
+		errMapper:   errMapper,
 	}
 }
 
@@ -120,7 +122,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			Provider:  providerName,
 			Cached:    false,
 			ModelName: completionChunk.ModelName,
-			// TODO: set request metadata
+			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
 					"response_id":        completionChunk.ID,
@@ -159,6 +161,7 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
+		req.Metadata,
 		c.errMapper,
 	), nil
 }
