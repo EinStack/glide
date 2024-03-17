@@ -451,7 +451,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		result := <-respC
 		require.Nil(t, result.Chunk())
 
-		errs = append(errs, result.Error().Reason)
+		errs = append(errs, result.Error().ErrCode)
 	}
 
 	require.Equal(t, []string{"modelUnavailable", "modelUnavailable", "allModelsUnavailable"}, errs)

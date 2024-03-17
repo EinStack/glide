@@ -27,17 +27,26 @@ type ChatStream struct {
 	tel         *telemetry.Telemetry
 	client      *http.Client
 	req         *http.Request
+	reqID       string
 	reqMetadata *schemas.Metadata
 	resp        *http.Response
 	reader      *sse.EventStreamReader
 	errMapper   *ErrorMapper
 }
 
-func NewChatStream(tel *telemetry.Telemetry, client *http.Client, req *http.Request, reqMetadata *schemas.Metadata, errMapper *ErrorMapper) *ChatStream {
+func NewChatStream(
+	tel *telemetry.Telemetry,
+	client *http.Client,
+	req *http.Request,
+	reqID string,
+	reqMetadata *schemas.Metadata,
+	errMapper *ErrorMapper,
+) *ChatStream {
 	return &ChatStream{
 		tel:         tel,
 		client:      client,
 		req:         req,
+		reqID:       reqID,
 		reqMetadata: reqMetadata,
 		errMapper:   errMapper,
 	}
@@ -118,7 +127,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        completionChunk.ID,
+			ID:        s.reqID,
 			Provider:  providerName,
 			Cached:    false,
 			ModelName: completionChunk.ModelName,
@@ -161,6 +170,7 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
+		req.ID,
 		req.Metadata,
 		c.errMapper,
 	), nil

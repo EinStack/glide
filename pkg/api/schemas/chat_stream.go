@@ -9,6 +9,7 @@ var Complete FinishReason = "complete"
 
 // ChatStreamRequest defines a message that requests a new streaming chat
 type ChatStreamRequest struct {
+	ID             string               `json:"id" validate:"required"`
 	Message        ChatMessage          `json:"message" validate:"required"`
 	MessageHistory []ChatMessage        `json:"messageHistory" validate:"required"`
 	Override       *OverrideChatRequest `json:"overrideMessage,omitempty"`
@@ -33,20 +34,22 @@ type ModelChunkResponse struct {
 
 // ChatStreamChunk defines a message for a chunk of streaming chat response
 type ChatStreamChunk struct {
-	ID            string             `json:"id,omitempty"`
-	CreatedAt     int                `json:"createdAt,omitempty"`
-	Provider      string             `json:"providerId,omitempty"`
-	RouterID      string             `json:"routerId,omitempty"`
-	ModelID       string             `json:"modelId,omitempty"`
-	Cached        bool               `json:"cached,omitempty"`
-	ModelName     string             `json:"modelName,omitempty"`
+	ID            string             `json:"id"`
+	CreatedAt     int                `json:"createdAt"`
+	Provider      string             `json:"providerId"`
+	RouterID      string             `json:"routerId"`
+	ModelID       string             `json:"modelId"`
+	Cached        bool               `json:"cached"`
+	ModelName     string             `json:"modelName"`
 	Metadata      *Metadata          `json:"metadata,omitempty"`
-	ModelResponse ModelChunkResponse `json:"modelResponse,omitempty"`
+	ModelResponse ModelChunkResponse `json:"modelResponse"`
 }
 
 type ChatStreamError struct {
-	Reason  string `json:"reason"`
-	Message string `json:"message"`
+	ID       string    `json:"id"`
+	ErrCode  string    `json:"errCode"`
+	Message  string    `json:"message"`
+	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
 type ChatStreamResult struct {
