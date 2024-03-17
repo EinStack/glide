@@ -62,3 +62,14 @@ func TestExpander_EnvVarExpanded(t *testing.T) {
 	assert.Equal(t, topP, cfg.Params[0].Value)
 	assert.Equal(t, fmt.Sprintf("$%v", budget), cfg.Params[1].Value)
 }
+
+func TestExpander_FileContentExpanded(t *testing.T) {
+	content, err := os.ReadFile(filepath.Clean(filepath.Join(".", "testdata", "expander.file.yaml")))
+	require.NoError(t, err)
+
+	expander := Expander{}
+	updatedContent := string(expander.Expand(content))
+
+	require.NotContains(t, updatedContent, "${file:")
+	require.Contains(t, updatedContent, "sk-fakeapi-token")
+}
