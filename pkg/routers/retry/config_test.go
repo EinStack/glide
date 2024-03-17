@@ -1,7 +1,13 @@
 package retry
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestRetryConfig_DefaultConfig(t *testing.T) {
-	DefaultExpRetryConfig()
+	config := DefaultExpRetryConfig()
+
+	require.NotNil(t, config)
 }
