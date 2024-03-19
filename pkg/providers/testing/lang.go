@@ -31,10 +31,7 @@ func (m *RespMock) Resp() *schemas.ChatResponse {
 func (m *RespMock) RespChunk() *schemas.ChatStreamChunk {
 	return &schemas.ChatStreamChunk{
 		ID: "rsp0001",
-		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
-				"ID": "0001",
-			},
+		ModelResponse: schemas.ModelChunkResponse{
 			Message: schemas.ChatMessage{
 				Content: m.Msg,
 			},
@@ -139,7 +136,7 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 	return response.Resp(), nil
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatRequest) (clients.ChatStream, error) {
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatStreamRequest) (clients.ChatStream, error) {
 	if c.chatStreams == nil || c.idx >= len(*c.chatStreams) {
 		return nil, clients.ErrProviderUnavailable
 	}

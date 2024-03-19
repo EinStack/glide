@@ -305,7 +305,7 @@ func TestLangRouter_ChatStream(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	req := schemas.NewChatFromStr("tell me a dad joke")
+	req := schemas.NewChatStreamFromStr("tell me a dad joke")
 	respC := make(chan *schemas.ChatStreamResult)
 
 	defer close(respC)
@@ -373,7 +373,7 @@ func TestLangRouter_ChatStream_FailOnFirst(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	req := schemas.NewChatFromStr("tell me a dad joke")
+	req := schemas.NewChatStreamFromStr("tell me a dad joke")
 	respC := make(chan *schemas.ChatStreamResult)
 
 	defer close(respC)
@@ -443,7 +443,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 	respC := make(chan *schemas.ChatStreamResult)
 	defer close(respC)
 
-	go router.ChatStream(context.Background(), schemas.NewChatFromStr("tell me a dad joke"), respC)
+	go router.ChatStream(context.Background(), schemas.NewChatStreamFromStr("tell me a dad joke"), respC)
 
 	errs := make([]string, 0, 3)
 
@@ -451,7 +451,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		result := <-respC
 		require.Nil(t, result.Chunk())
 
-		errs = append(errs, result.Error().Reason)
+		errs = append(errs, result.Error().ErrCode)
 	}
 
 	require.Equal(t, []string{"modelUnavailable", "modelUnavailable", "allModelsUnavailable"}, errs)

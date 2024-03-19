@@ -124,13 +124,15 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 func (r *LangRouter) ChatStream(
 	ctx context.Context,
-	req *schemas.ChatRequest,
+	req *schemas.ChatStreamRequest,
 	respC chan<- *schemas.ChatStreamResult,
 ) {
 	if len(r.chatStreamModels) == 0 {
 		respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-			Reason:  "noModels",
-			Message: ErrNoModels.Error(),
+			ID:       req.ID,
+			ErrCode:  "noModels",
+			Message:  ErrNoModels.Error(),
+			Metadata: req.Metadata,
 		})
 
 		return
@@ -179,8 +181,10 @@ func (r *LangRouter) ChatStream(
 					//  may have already used all chunks we streamed this far (e.g. showed them to their users like OpenAI UI does),
 					//  so we cannot easily restart that process from scratch
 					respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-						Reason:  "modelUnavailable",
-						Message: err.Error(),
+						ID:       req.ID,
+						ErrCode:  "modelUnavailable",
+						Message:  err.Error(),
+						Metadata: req.Metadata,
 					})
 
 					continue NextModel
@@ -203,8 +207,10 @@ func (r *LangRouter) ChatStream(
 		if err != nil {
 			// something has cancelled the context
 			respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-				Reason:  "other",
-				Message: err.Error(),
+				ID:       req.ID,
+				ErrCode:  "other",
+				Message:  err.Error(),
+				Metadata: req.Metadata,
 			})
 
 			return
@@ -218,7 +224,9 @@ func (r *LangRouter) ChatStream(
 	)
 
 	respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-		Reason:  "allModelsUnavailable",
-		Message: ErrNoModelAvailable.Error(),
+		ID:       req.ID,
+		ErrCode:  "allModelsUnavailable",
+		Message:  ErrNoModelAvailable.Error(),
+		Metadata: req.Metadata,
 	})
 }

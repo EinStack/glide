@@ -33,26 +33,13 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessage {
-	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return messages
-}
-
 // Chat sends a chat request to the specified OpenAI model.
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := *c.createChatRequestSchema(request)
+	chatRequest := c.createRequestSchema(request)
 	chatRequest.Stream = false
 
-	chatResponse, err := c.doChatRequest(ctx, &chatRequest)
+	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +51,20 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
+func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
+	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
 
-	return chatRequest
+	chatRequest.Messages = make([]ChatMessage, 0, len(request.MessageHistory)+1)
+
+	// Add items from messageHistory first and the new chat message last
+	for _, message := range request.MessageHistory {
+		chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: message.Role, Content: message.Content})
+	}
+
+	chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
+
+	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
