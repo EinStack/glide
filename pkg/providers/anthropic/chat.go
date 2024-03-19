@@ -68,7 +68,6 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	chatRequest := c.createChatRequestSchema(request)
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
-
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +96,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	req.Header.Set("x-api-key", string(c.config.APIKey)) // must be in lower case
-	req.Header.Set("anthropic-version")
+	req.Header.Set("anthropic-version", c.apiVersion)
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
