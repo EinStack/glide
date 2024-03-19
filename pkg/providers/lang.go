@@ -110,26 +110,25 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatStreamR
 		return nil, err
 	}
 
+	startedAt := time.Now()
+	err = stream.Open()
+	chunkLatency := time.Since(startedAt)
+
+	// the first chunk latency
+	m.chatStreamLatency.Add(float64(chunkLatency))
+
+	if err != nil {
+		m.healthTracker.TrackErr(err)
+
+		// if connection was not even open, we should not send our clients any messages about this failure
+
+		return nil, err
+	}
+
 	streamResultC := make(chan *clients.ChatStreamResult)
 
 	go func() {
 		defer close(streamResultC)
-
-		startedAt := time.Now()
-		err = stream.Open()
-		chunkLatency := time.Since(startedAt)
-
-		// the first chunk latency
-		m.chatStreamLatency.Add(float64(chunkLatency))
-
-		if err != nil {
-			m.healthTracker.TrackErr(err)
-
-			// if connection was not even open, we should not send our clients any messages about this failure
-
-			return
-		}
-
 		defer stream.Close()
 
 		for {

@@ -229,6 +229,10 @@ func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse
 		return nil, clients.NewRateLimitError(&cooldownDelay)
 	}
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, clients.ErrUnauthorized
+	}
+
 	return nil, clients.ErrProviderUnavailable
 }
 

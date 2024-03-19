@@ -106,21 +106,19 @@ func TestDoChatRequest_ErrorResponse(t *testing.T) {
 
 	defer mockServer.Close()
 
-	// Create a new client with the mock server URL
-	client := &Client{
-		httpClient: http.DefaultClient,
-		chatURL:    mockServer.URL,
-		config:     &Config{APIKey: "dummy_key"},
-		telemetry:  telemetry.NewTelemetryMock(),
-	}
+	ctx := context.Background()
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+
+	providerCfg.BaseURL = mockServer.URL
+
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
 
 	// Create a chat request payload
-	payload := &ChatRequest{
-		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
-	}
+	payload := schemas.NewChatFromStr("What's the dealio?")
 
-	// Call the doChatRequest function
-	_, err := client.doChatRequest(context.Background(), payload)
+	_, err = client.Chat(ctx, payload)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "provider is not available")

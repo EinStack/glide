@@ -23,6 +23,7 @@ type Client struct {
 	baseURL             string // The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)
 	chatURL             string
 	chatRequestTemplate *ChatRequest
+	errMapper           *ErrorMapper
 	config              *Config
 	httpClient          *http.Client
 	telemetry           *telemetry.Telemetry
@@ -42,6 +43,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		chatURL:             chatURL,
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
+		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
 			// TODO: use values from the config
 			Timeout: *clientConfig.Timeout,

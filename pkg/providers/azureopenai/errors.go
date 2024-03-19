@@ -1,4 +1,4 @@
-package openai
+package azureopenai
 
 import (
 	"fmt"
@@ -24,20 +24,12 @@ func NewErrorMapper(tel *telemetry.Telemetry) *ErrorMapper {
 func (m *ErrorMapper) Map(resp *http.Response) error {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		m.tel.Logger.Error(
-			"Failed to unmarshal chat response error",
-			zap.String("provider", providerName),
-			zap.Error(err),
-			zap.ByteString("rawResponse", bodyBytes),
-		)
-
-		return clients.ErrProviderUnavailable
+		m.tel.L().Error("failed to read azure openai chat response", zap.Error(err))
 	}
 
-	m.tel.Logger.Error(
-		"Chat request failed",
-		zap.String("provider", providerName),
-		zap.Int("statusCode", resp.StatusCode),
+	m.tel.L().Error(
+		"azure openai chat request failed",
+		zap.Int("status_code", resp.StatusCode),
 		zap.String("response", string(bodyBytes)),
 		zap.Any("headers", resp.Header),
 	)
