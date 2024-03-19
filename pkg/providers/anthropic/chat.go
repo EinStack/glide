@@ -139,6 +139,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
+	completion := anthropicResponse.Content[0]
 	usage := anthropicResponse.Usage
 
 	// Map response to ChatResponse schema
@@ -151,11 +152,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{},
 			Message: schemas.ChatMessage{
-				Role:    anthropicResponse.Content[0].Type,
-				Content: anthropicResponse.Content[0].Text,
+				Role:    completion.Type,
+				Content: completion.Text,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   usage.InputTokens, // Anthropic doesn't send prompt tokens
+				PromptTokens:   usage.InputTokens,
 				ResponseTokens: usage.OutputTokens,
 				TotalTokens:    usage.InputTokens + usage.OutputTokens,
 			},
