@@ -47,9 +47,9 @@ type Choice struct {
 }
 
 type Usage struct {
-	PromptTokens     float64 `json:"prompt_tokens"`
-	CompletionTokens float64 `json:"completion_tokens"`
-	TotalTokens      float64 `json:"total_tokens"`
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
 }
 
 // ChatCompletionChunk represents SSEvent a chat response is broken down on chat streaming

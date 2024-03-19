@@ -89,7 +89,7 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 
 	if err == nil {
 		// record latency per token to normalize measurements
-		m.chatLatency.Add(float64(time.Since(startedAt)) / resp.ModelResponse.TokenUsage.ResponseTokens)
+		m.chatLatency.Add(float64(time.Since(startedAt)) / float64(resp.ModelResponse.TokenUsage.ResponseTokens))
 
 		// successful response
 		resp.ModelID = m.modelID

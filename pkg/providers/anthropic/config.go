@@ -14,7 +14,6 @@ type Params struct {
 	MaxTokens     int      `yaml:"max_tokens,omitempty" json:"max_tokens"`
 	StopSequences []string `yaml:"stop,omitempty" json:"stop"`
 	Metadata      *string  `yaml:"metadata,omitempty" json:"metadata"`
-	// Stream           bool             `json:"stream,omitempty"` // TODO: we are not supporting this at the moment
 }
 
 func DefaultParams() Params {

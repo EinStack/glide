@@ -99,6 +99,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	err = json.Unmarshal(result.Body, &bedrockCompletion)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse bedrock chat response", zap.Error(err))
+
 		return nil, err
 	}
 
@@ -118,9 +119,9 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   float64(bedrockCompletion.Results[0].TokenCount),
+				PromptTokens:   bedrockCompletion.Results[0].TokenCount,
 				ResponseTokens: -1,
-				TotalTokens:    float64(bedrockCompletion.Results[0].TokenCount),
+				TotalTokens:    bedrockCompletion.Results[0].TokenCount,
 			},
 		},
 	}
