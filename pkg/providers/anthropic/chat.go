@@ -68,12 +68,9 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	chatRequest := c.createChatRequestSchema(request)
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+
 	if err != nil {
 		return nil, err
-	}
-
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
 	}
 
 	return chatResponse, nil
@@ -100,11 +97,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	req.Header.Set("x-api-key", string(c.config.APIKey)) // must be in lower case
-	req.Header.Set("anthropic-version", "2023-06-01")
+	req.Header.Set("anthropic-version")
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
+	c.tel.L().Debug(
 		"Anthropic chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
@@ -124,19 +121,21 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("Failed to read anthropic chat response", zap.Error(err))
+		c.tel.L().Error("Failed to read anthropic chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Parse the response JSON
 	var anthropicResponse ChatCompletion
 
-	c.telemetry.L().Debug("Anthropic Raw Response", zap.String("resp", string(bodyBytes)))
-
 	err = json.Unmarshal(bodyBytes, &anthropicResponse)
 	if err != nil {
-		c.telemetry.Logger.Error("Failed to parse anthropic chat response", zap.Error(err))
+		c.tel.L().Error("Failed to parse anthropic chat response", zap.Error(err))
 		return nil, err
+	}
+
+	if len(anthropicResponse.Content) == 0 {
+		return nil, ErrEmptyResponse
 	}
 
 	completion := anthropicResponse.Content[0]
