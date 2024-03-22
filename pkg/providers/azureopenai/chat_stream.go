@@ -101,6 +101,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 				"EOF: [DONE] marker found in chat stream",
 				zap.String("provider", providerName),
 			)
+
 			return nil, io.EOF
 		}
 
