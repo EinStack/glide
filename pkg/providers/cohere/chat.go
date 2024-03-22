@@ -38,8 +38,7 @@ type ChatRequest struct {
 	Connectors        []string      `json:"connectors,omitempty"`
 	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
 	CitiationQuality  string        `json:"citiation_quality,omitempty"`
-
-	// Stream            bool                `json:"stream,omitempty"`
+	Stream            bool                `json:"stream,omitempty"`
 }
 
 type Connectors struct {
@@ -61,6 +60,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
 		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
+		Stream:            false,
 	}
 }
 
@@ -119,7 +119,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
+	c.tel.Logger.Debug(
 		"cohere chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
@@ -135,10 +135,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+			c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		}
 
-		c.telemetry.Logger.Error(
+		c.tel.Logger.Error(
 			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
@@ -156,7 +156,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -165,7 +165,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &responseJSON)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -174,7 +174,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &cohereCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -191,7 +191,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    "model", // TODO: Does this need to change?
+				Role:    "model",
 				Content: cohereCompletion.Text,
 				Name:    "",
 			},
@@ -209,11 +209,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse, error) {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
-	c.telemetry.Logger.Error(
+	c.tel.Logger.Error(
 		"cohere chat request failed",
 		zap.Int("status_code", resp.StatusCode),
 		zap.String("response", string(bodyBytes)),

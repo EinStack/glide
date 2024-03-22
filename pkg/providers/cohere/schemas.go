@@ -65,3 +65,21 @@ type ConnectorsResponse struct {
 	ContOnFail      string            `json:"continue_on_failure"`
 	Options         map[string]string `json:"options"`
 }
+
+// ChatCompletionChunk represents SSEvent a chat response is broken down on chat streaming
+// Ref: https://docs.cohere.com/reference/about
+type ChatCompletionChunk struct {
+	IsFinished bool                 `json:"is_finished"`
+	EventType  string               `json:"event_type"`
+	Text       string               `json:"text"`
+	Response   FinalResponse `json:"response,omitempty"`
+}
+
+type FinalResponse struct {
+	ResponseID string `json:"response_id"`
+	Text       string `json:"text"`
+	GenerationID string `json:"generation_id"`
+	TokenCount TokenCount `json:"token_count"`
+	Meta Meta `json:"meta"`
+	FinishReason string `json:"finish_reason"`
+}
