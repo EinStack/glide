@@ -22,7 +22,7 @@ var (
 	streamDoneMarker = []byte("[DONE]")
 )
 
-// ChatStream represents OpenAI chat stream for a specific request
+// ChatStream represents chat stream for a specific request
 type ChatStream struct {
 	tel         *telemetry.Telemetry
 	client      *http.Client
@@ -116,7 +116,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		err = json.Unmarshal(event.Data, &completionChunk)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
+			return nil, fmt.Errorf("failed to unmarshal AzureOpenAI chat stream chunk: %v", err)
 		}
 
 		responseChunk := completionChunk.Choices[0]
@@ -201,16 +201,16 @@ func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamReque
 
 	rawPayload, err := json.Marshal(chatRequest)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal openAI chat stream request payload: %w", err)
+		return nil, fmt.Errorf("unable to marshal AzureOpenAI chat stream request payload: %w", err)
 	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.chatURL, bytes.NewBuffer(rawPayload))
 	if err != nil {
-		return nil, fmt.Errorf("unable to create OpenAI stream chat request: %w", err)
+		return nil, fmt.Errorf("unable to create AzureOpenAI stream chat request: %w", err)
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
+	request.Header.Set("api-key", string(c.config.APIKey))
 	request.Header.Set("Cache-Control", "no-cache")
 	request.Header.Set("Accept", "text/event-stream")
 	request.Header.Set("Connection", "keep-alive")
