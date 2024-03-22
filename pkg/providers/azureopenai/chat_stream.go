@@ -97,6 +97,10 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		event, err := clients.ParseSSEvent(rawEvent)
 
 		if bytes.Equal(event.Data, streamDoneMarker) {
+			s.tel.L().Info(
+				"EOF: [DONE] marker found in chat stream",
+				zap.String("provider", providerName),
+			)
 			return nil, io.EOF
 		}
 

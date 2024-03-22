@@ -35,7 +35,7 @@ func TestAzureOpenAIClient_ChatStreamRequest(t *testing.T) {
 
 	for name, streamFile := range tests {
 		t.Run(name, func(t *testing.T) {
-			openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			AzureOpenAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				rawPayload, _ := io.ReadAll(r.Body)
 
 				var data interface{}
@@ -47,7 +47,7 @@ func TestAzureOpenAIClient_ChatStreamRequest(t *testing.T) {
 
 				chatResponse, err := os.ReadFile(filepath.Clean(streamFile))
 				if err != nil {
-					t.Errorf("error reading openai chat mock response: %v", err)
+					t.Errorf("error reading azureopenai chat mock response: %v", err)
 				}
 
 				w.Header().Set("Content-Type", "text/event-stream")
@@ -58,14 +58,14 @@ func TestAzureOpenAIClient_ChatStreamRequest(t *testing.T) {
 				}
 			})
 
-			openAIServer := httptest.NewServer(openAIMock)
-			defer openAIServer.Close()
+			AzureopenAIServer := httptest.NewServer(AzureOpenAIMock)
+			defer AzureopenAIServer.Close()
 
 			ctx := context.Background()
 			providerCfg := DefaultConfig()
 			clientCfg := clients.DefaultClientConfig()
 
-			providerCfg.BaseURL = openAIServer.URL
+			providerCfg.BaseURL = AzureopenAIServer.URL
 
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
@@ -135,6 +135,7 @@ func TestAzureOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
 			require.NoError(t, err)
 
 			req := schemas.NewChatStreamFromStr("What's the capital of the United Kingdom?")
+
 			stream, err := client.ChatStream(ctx, req)
 			require.NoError(t, err)
 
