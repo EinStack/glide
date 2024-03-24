@@ -2,6 +2,8 @@ basePath: /
 definitions:
   anthropic.Config:
     properties:
+      apiVersion:
+        type: string
       baseUrl:
         type: string
       chatEndpoint:
@@ -11,6 +13,7 @@ definitions:
       model:
         type: string
     required:
+    - apiVersion
     - baseUrl
     - chatEndpoint
     - model
@@ -488,11 +491,11 @@ definitions:
   schemas.TokenUsage:
     properties:
       promptTokens:
-        type: number
+        type: integer
       responseTokens:
-        type: number
+        type: integer
       totalTokens:
-        type: number
+        type: integer
     type: object
 externalDocs:
   description: Documentation

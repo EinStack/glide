@@ -61,6 +61,8 @@ func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessa
 }
 
 // Chat sends a chat request to the specified anthropic model.
+//
+//	Ref: https://docs.anthropic.com/claude/reference/messages_post
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
 	chatRequest := c.createChatRequestSchema(request)
@@ -68,10 +70,6 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
 		return nil, err
-	}
-
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
 	}
 
 	return chatResponse, nil
@@ -97,12 +95,13 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, fmt.Errorf("unable to create anthropic chat request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+string(c.config.APIKey))
+	req.Header.Set("x-api-key", string(c.config.APIKey)) // must be in lower case
+	req.Header.Set("anthropic-version", c.apiVersion)
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
-		"anthropic chat request",
+	c.tel.L().Debug(
+		"Anthropic chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
 	)
@@ -121,38 +120,43 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read anthropic chat response", zap.Error(err))
+		c.tel.L().Error("Failed to read anthropic chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Parse the response JSON
-	var anthropicCompletion ChatCompletion
+	var anthropicResponse ChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &anthropicCompletion)
+	err = json.Unmarshal(bodyBytes, &anthropicResponse)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse anthropic chat response", zap.Error(err))
+		c.tel.L().Error("Failed to parse anthropic chat response", zap.Error(err))
 		return nil, err
 	}
 
+	if len(anthropicResponse.Content) == 0 {
+		return nil, ErrEmptyResponse
+	}
+
+	completion := anthropicResponse.Content[0]
+	usage := anthropicResponse.Usage
+
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
-		ID:        anthropicCompletion.ID,
+		ID:        anthropicResponse.ID,
 		Created:   int(time.Now().UTC().Unix()), // not provided by anthropic
 		Provider:  providerName,
-		ModelName: anthropicCompletion.Model,
+		ModelName: anthropicResponse.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
-				"system_fingerprint": anthropicCompletion.ID,
-			},
+			SystemID: map[string]string{},
 			Message: schemas.ChatMessage{
-				Role:    anthropicCompletion.Content[0].Type,
-				Content: anthropicCompletion.Content[0].Text,
+				Role:    completion.Type,
+				Content: completion.Text,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   0, // Anthropic doesn't send prompt tokens
-				ResponseTokens: 0,
-				TotalTokens:    0,
+				PromptTokens:   usage.InputTokens,
+				ResponseTokens: usage.OutputTokens,
+				TotalTokens:    usage.InputTokens + usage.OutputTokens,
 			},
 		},
 	}

@@ -15,10 +15,10 @@ type ChatCompletion struct {
 }
 
 type TokenCount struct {
-	PromptTokens   float64 `json:"prompt_tokens"`
-	ResponseTokens float64 `json:"response_tokens"`
-	TotalTokens    float64 `json:"total_tokens"`
-	BilledTokens   float64 `json:"billed_tokens"`
+	PromptTokens   int `json:"prompt_tokens"`
+	ResponseTokens int `json:"response_tokens"`
+	TotalTokens    int `json:"total_tokens"`
+	BilledTokens   int `json:"billed_tokens"`
 }
 
 type Meta struct {

@@ -43,9 +43,9 @@ type ModelResponse struct {
 }
 
 type TokenUsage struct {
-	PromptTokens   float64 `json:"promptTokens"`
-	ResponseTokens float64 `json:"responseTokens"`
-	TotalTokens    float64 `json:"totalTokens"`
+	PromptTokens   int `json:"promptTokens"`
+	ResponseTokens int `json:"responseTokens"`
+	TotalTokens    int `json:"totalTokens"`
 }
 
 // ChatMessage is a message in a chat request.
