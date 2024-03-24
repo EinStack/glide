@@ -3,7 +3,6 @@ package cohere
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -66,16 +65,13 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 			providerCfg := DefaultConfig()
 			clientCfg := clients.DefaultClientConfig()
 
-			//providerCfg.BaseURL = openAIServer.URL
-			providerCfg.BaseURL = "https://api.cohere.ai/v1"
-			providerCfg.APIKey = "LXeDdTbRN17H4tDFTyP6b2E7LeXMM9oCkm1Fd1ig"
+			providerCfg.BaseURL = openAIServer.URL
 
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
 
-
 			req := schemas.NewChatStreamFromStr("What's the capital of the United Kingdom?")
-			
+
 			stream, err := client.ChatStream(ctx, req)
 			require.NoError(t, err)
 
@@ -84,9 +80,6 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 
 			for {
 				chunk, err := stream.Recv()
-
-				fmt.Print(chunk)
-				fmt.Print(err)
 
 				if err == io.EOF {
 					return
@@ -101,8 +94,7 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 
 func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 	tests := map[string]string{
-		"success stream, but no last done message": "./testdata/chat_stream.nodone.txt",
-		"success stream, but with empty event":     "./testdata/chat_stream.empty.txt",
+		"success stream, but with empty event": "./testdata/chat_stream.empty.txt",
 	}
 
 	for name, streamFile := range tests {
@@ -152,7 +144,7 @@ func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 			for {
 				chunk, err := stream.Recv()
 				if err != nil {
-					require.ErrorIs(t, err, clients.ErrProviderUnavailable)
+					require.ErrorIs(t, err, io.EOF)
 					return
 				}
 

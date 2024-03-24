@@ -38,7 +38,7 @@ type ChatRequest struct {
 	Connectors        []string      `json:"connectors,omitempty"`
 	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
 	CitiationQuality  string        `json:"citiation_quality,omitempty"`
-	Stream            bool                `json:"stream,omitempty"`
+	Stream            bool          `json:"stream,omitempty"`
 }
 
 type Connectors struct {

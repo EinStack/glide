@@ -441,7 +441,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "stream": {
-                    "description": "unsupported right now",
                     "type": "boolean"
                 },
                 "temperature": {

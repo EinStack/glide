@@ -26,7 +26,7 @@ type Client struct {
 	errMapper           *ErrorMapper
 	config              *Config
 	httpClient          *http.Client
-	tel          *telemetry.Telemetry
+	tel                 *telemetry.Telemetry
 }
 
 // NewClient creates a new Cohere client for the Cohere API.

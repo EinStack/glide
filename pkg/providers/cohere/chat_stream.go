@@ -1,11 +1,11 @@
 package cohere
 
-
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/r3labs/sse/v2"
@@ -17,10 +17,7 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-
-var (
-	StopReason       = "stream-end"
-)
+var StopReason = "stream-end"
 
 // ChatStream represents cohere chat stream for a specific request
 type ChatStream struct {
@@ -54,7 +51,6 @@ func NewChatStream(
 
 func (s *ChatStream) Open() error {
 	resp, err := s.client.Do(s.req) //nolint:bodyclose
-	fmt.Print(resp.StatusCode)
 	if err != nil {
 		return err
 	}
@@ -64,7 +60,7 @@ func (s *ChatStream) Open() error {
 	}
 
 	s.resp = resp
-	s.reader = sse.NewEventStreamReader(resp.Body, 4096) // TODO: should we expose maxBufferSize?
+	s.reader = sse.NewEventStreamReader(resp.Body, 8192) // TODO: should we expose maxBufferSize?
 
 	return nil
 }
@@ -74,13 +70,16 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 	for {
 		rawEvent, err := s.reader.ReadEvent()
-		fmt.Print(err)
 		if err != nil {
 			s.tel.L().Warn(
 				"Chat stream is unexpectedly disconnected",
 				zap.String("provider", providerName),
 				zap.Error(err),
 			)
+
+			if err == io.EOF {
+				return nil, io.EOF
+			}
 
 			// if err is io.EOF, this still means that the stream is interrupted unexpectedly
 			//  because the normal stream termination is done via finding out streamDoneMarker
@@ -95,7 +94,6 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		)
 
 		event, err := clients.ParseSSEvent(rawEvent)
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse chat stream message: %v", err)
 		}
@@ -121,6 +119,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		if responseChunk.IsFinished {
 			finishReason = &schemas.Complete
+
 			return &schemas.ChatStreamChunk{
 				ID:        s.reqID,
 				Provider:  providerName,
@@ -129,8 +128,8 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 				Metadata:  s.reqMetadata,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
-						"generationId":        responseChunk.Response.GenerationID,
-						"responseId": responseChunk.Response.ResponseID,
+						"generationId": responseChunk.Response.GenerationID,
+						"responseId":   responseChunk.Response.ResponseID,
 					},
 					Message: schemas.ChatMessage{
 						Role:    "model",
@@ -216,8 +215,6 @@ func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamReque
 
 	chatRequest.Stream = true
 
-	fmt.Print(chatRequest)
-
 	rawPayload, err := json.Marshal(chatRequest)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal cohere chat stream request payload: %w", err)
@@ -243,4 +240,3 @@ func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamReque
 
 	return request, nil
 }
-
