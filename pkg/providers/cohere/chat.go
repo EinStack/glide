@@ -15,7 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
