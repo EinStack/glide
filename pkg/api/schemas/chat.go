@@ -15,7 +15,7 @@ type OverrideChatRequest struct {
 func NewChatFromStr(message string) *ChatRequest {
 	return &ChatRequest{
 		Message: ChatMessage{
-			"human",
+			"user",
 			message,
 			"glide",
 		},

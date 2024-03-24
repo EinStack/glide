@@ -26,7 +26,7 @@ type Client struct {
 	errMapper           *ErrorMapper
 	config              *Config
 	httpClient          *http.Client
-	telemetry           *telemetry.Telemetry
+	tel                 *telemetry.Telemetry
 }
 
 // NewClient creates a new Azure OpenAI client for the OpenAI API.
@@ -52,7 +52,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 				MaxIdleConnsPerHost: 2,
 			},
 		},
-		telemetry: tel,
+		tel: tel,
 	}
 
 	return c, nil

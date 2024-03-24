@@ -51,6 +51,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	return chatResponse, nil
 }
 
+// createRequestSchema creates a new ChatRequest object based on the given request.
 func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
