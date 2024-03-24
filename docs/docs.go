@@ -193,11 +193,15 @@ const docTemplate = `{
         "anthropic.Config": {
             "type": "object",
             "required": [
+                "apiVersion",
                 "baseUrl",
                 "chatEndpoint",
                 "model"
             ],
             "properties": {
+                "apiVersion": {
+                    "type": "string"
+                },
                 "baseUrl": {
                     "type": "string"
                 },
@@ -910,13 +914,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "promptTokens": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "responseTokens": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "totalTokens": {
-                    "type": "number"
+                    "type": "integer"
                 }
             }
         }
