@@ -35,7 +35,7 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 
 	for name, streamFile := range tests {
 		t.Run(name, func(t *testing.T) {
-			openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			cohereMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				rawPayload, _ := io.ReadAll(r.Body)
 
 				var data interface{}
@@ -47,7 +47,7 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 
 				chatResponse, err := os.ReadFile(filepath.Clean(streamFile))
 				if err != nil {
-					t.Errorf("error reading openai chat mock response: %v", err)
+					t.Errorf("error reading cohere chat mock response: %v", err)
 				}
 
 				w.Header().Set("Content-Type", "text/event-stream")
@@ -58,14 +58,14 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 				}
 			})
 
-			openAIServer := httptest.NewServer(openAIMock)
-			defer openAIServer.Close()
+			cohereServer := httptest.NewServer(cohereMock)
+			defer cohereServer.Close()
 
 			ctx := context.Background()
 			providerCfg := DefaultConfig()
 			clientCfg := clients.DefaultClientConfig()
 
-			providerCfg.BaseURL = openAIServer.URL
+			providerCfg.BaseURL = cohereServer.URL
 
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 
 	for name, streamFile := range tests {
 		t.Run(name, func(t *testing.T) {
-			openAIMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			cohereMock := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				rawPayload, _ := io.ReadAll(r.Body)
 
 				var data interface{}
@@ -111,7 +111,7 @@ func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 
 				chatResponse, err := os.ReadFile(filepath.Clean(streamFile))
 				if err != nil {
-					t.Errorf("error reading openai chat mock response: %v", err)
+					t.Errorf("error reading cohere chat mock response: %v", err)
 				}
 
 				w.Header().Set("Content-Type", "text/event-stream")
@@ -122,14 +122,14 @@ func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 				}
 			})
 
-			openAIServer := httptest.NewServer(openAIMock)
-			defer openAIServer.Close()
+			cohereServer := httptest.NewServer(cohereMock)
+			defer cohereServer.Close()
 
 			ctx := context.Background()
 			providerCfg := DefaultConfig()
 			clientCfg := clients.DefaultClientConfig()
 
-			providerCfg.BaseURL = openAIServer.URL
+			providerCfg.BaseURL = cohereServer.URL
 
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)

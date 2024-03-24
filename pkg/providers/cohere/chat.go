@@ -15,38 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type ChatHistory struct {
-	Role    string `json:"role"`
-	Message string `json:"message"`
-	User    string `json:"user,omitempty"`
-}
-
-// ChatRequest is a request to complete a chat completion..
-type ChatRequest struct {
-	Model             string        `json:"model"`
-	Message           string        `json:"message"`
-	Temperature       float64       `json:"temperature,omitempty"`
-	PreambleOverride  string        `json:"preamble_override,omitempty"`
-	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
-	ConversationID    string        `json:"conversation_id,omitempty"`
-	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
-	Connectors        []string      `json:"connectors,omitempty"`
-	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
-	CitiationQuality  string        `json:"citiation_quality,omitempty"`
-	Stream            bool          `json:"stream,omitempty"`
-}
-
-type Connectors struct {
-	ID              string            `json:"id"`
-	UserAccessToken string            `json:"user_access_token"`
-	ContOnFail      string            `json:"continue_on_failure"`
-	Options         map[string]string `json:"options"`
-}
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
@@ -67,7 +35,7 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 // Chat sends a chat request to the specified cohere model.
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	chatRequest := c.createRequestSchema(request)
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
@@ -81,9 +49,9 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
+func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
+	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
 	chatRequest.Message = request.Message.Content
 
 	// Build the Cohere specific ChatHistory
@@ -100,7 +68,7 @@ func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequ
 		}
 	}
 
-	return chatRequest
+	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
