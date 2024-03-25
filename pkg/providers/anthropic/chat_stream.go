@@ -1,103 +1,85 @@
 package anthropic
 
 import (
-	"context"
-	"bytes"
-	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
+    "context"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
 
-	"glide/pkg/api/schemas"
-	"glide/pkg/providers/clients"
+    "glide/pkg/api/schemas"
+    "glide/pkg/providers/clients"
+    "glide/pkg/telemetry"
+    "go.uber.org/zap"
 )
-
-type Client struct {
-	APIKey string
-}
 
 func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, chatReq *schemas.ChatRequest) (clients.ChatStream, error) {
-	apiURL := "https://api.anthropic.com/v1/complete"
-	requestBody := map[string]interface{}{
-		"model":                "claude-2",
-		"prompt":               chatReq.Message, // Assuming chatReq.Message contains the user's message
-		"max_tokens_to_sample": 256,
-		"stream":               true,
-	}
-	requestJSON, err := json.Marshal(requestBody)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(requestJSON))
-	if err != nil {
-		return nil, err
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("anthropic-version", "2023-06-01")
-	httpReq.Header.Set("x-api-key", c.APIKey)
-
-	resp, err := http.DefaultClient.Do(httpReq)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	chatStream := &AnthropicChatStream{
-		responseBody: resp.Body,
-	}
-
-	return chatStream, nil
-}
-
 type AnthropicChatStream struct {
-	responseBody io.ReadCloser
+    tel         *telemetry.Telemetry
+    client      *http.client
+    request     *http.Request
+    response    *http.Response
+    errMapper   *ErrorMapper 
 }
 
-func (s *AnthropicChatStream) Receive() (string, error) {
-	decoder := json.NewDecoder(s.responseBody)
-	for {
-		var event map[string]interface{}
-		if err := decoder.Decode(&event); err != nil {
-			if err == io.EOF {
-				return "", nil // No more events, return nil error
-			}
-			return "", err
-		}
-
-		eventType, ok := event["type"].(string)
-		if !ok {
-			return "", fmt.Errorf("missing event type")
-		}
-
-		switch eventType {
-		case "completion":
-			completionData, ok := event["completion"].(string)
-			if !ok {
-				return "", fmt.Errorf("missing completion data")
-			}
-			return completionData, nil
-		case "error":
-			errorData, ok := event["error"].(map[string]interface{})
-			if !ok {
-				return "", fmt.Errorf("missing error data")
-			}
-			errorType, _ := errorData["type"].(string)
-			errorMessage, _ := errorData["message"].(string)
-			return "", fmt.Errorf("error from Anthropic API: %s - %s", errorType, errorMessage)
-		}
-	}
+func NewAnthropicChatStream(tel *telemetry.Telemetry, *http.client, request *http.Request, errMapper *ErrorMapper) *AnthropicChatStream {
+    return &AnthropicChatStream{
+        tel:       tel,
+        client:    client,
+        request:   request,
+        errMapper: errMapper,
+    }
 }
 
+// Open makes the HTTP request using the provided http.Client to initiate the chat stream.
+func (s *AnthropicChatStream) Open(ctx context.Context) error {
+    resp, err := s.client.Do(s.request)
+    if err != nil {
+        s.tel.L().Error("Failed to open chat stream", zap.Error(err))
+        // Map and return the error using errMapper, if errMapper is defined.
+        return s.errMapper.Map(err)
+    }
+
+    if resp.StatusCode != http.StatusOK {
+        resp.Body.Close()
+        s.tel.L().Warn("Unexpected status code", zap.Int("status", resp.StatusCode))
+        return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+    }
+
+    s.response = resp
+    s.tel.L().Info("Chat stream opened successfully")
+    return nil
+}
+
+// Recv listens for and decodes incoming messages from the chat stream into ChatStreamChunk objects.
+func (s *AnthropicChatStream) Recv() (*schemas.ChatStreamChunk, error) {
+    if s.response == nil {
+        s.tel.L().Error("Attempted to receive from an unopened stream")
+        return nil, fmt.Errorf("stream not opened")
+    }
+
+    decoder := json.NewDecoder(s.response.Body)
+    var chunk schemas.ChatStreamChunk
+    if err := decoder.Decode(&chunk); err != nil {
+        if err == io.EOF {
+            s.tel.L().Info("Chat stream ended")
+            return nil, nil // Stream ended normally.
+        }
+        s.tel.L().Error("Error during stream processing", zap.Error(err))
+        return nil, err // An error occurred during stream processing.
+    }
+
+    return &chunk, nil
+}
+
+// Close ensures the chat stream is properly terminated by closing the response body.
 func (s *AnthropicChatStream) Close() error {
-	return s.responseBody.Close()
+    if s.response != nil {
+        s.tel.L().Info("Closing chat stream")
+        return s.response.Body.Close()
+    }
+    return nil
 }
