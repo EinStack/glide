@@ -82,6 +82,40 @@ redhat: ## Make an Red Hat-based image
 	--label=org.opencontainers.image.licenses=$(LICENSE) \
 	--label=org.opencontainers.image.description=$(DESCRIPTION)
 
+nanoserver: ## Make an Windows NanoServer-based image
+	@echo "🛠️ Build a Windows nanoserver image ($(VERSION)).."
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
+	@docker build .. -t $(REPOSITORY):$(VERSION)-nanoserver -f nanoserver.Dockerfile \
+	--build-arg VERSION="$(VERSION)" \
+	--build-arg COMMIT="$(COMMIT)" \
+	--build-arg BUILD_DATE="$(BUILD_DATE)" \
+	--label=org.opencontainers.image.vendor=$(VENDOR) \
+	--label=org.opencontainers.image.title=$(PROJECT) \
+	--label=org.opencontainers.image.revision="$(COMMIT)" \
+	--label=org.opencontainers.image.version="$(VERSION)" \
+	--label=org.opencontainers.image.created="$(BUILD_DATE)" \
+	--label=org.opencontainers.image.source=$(SOURCE) \
+	--label=org.opencontainers.image.licenses=$(LICENSE) \
+	--label=org.opencontainers.image.description=$(DESCRIPTION)
+
+windows-server: ## Make an Windows Server-based image
+	@echo "🛠️ Build a Windows Server image ($(VERSION)).."
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
+	@docker build .. -t $(REPOSITORY):$(VERSION)-nanoserver -f windowserver.Dockerfile \
+	--build-arg VERSION="$(VERSION)" \
+	--build-arg COMMIT="$(COMMIT)" \
+	--build-arg BUILD_DATE="$(BUILD_DATE)" \
+	--label=org.opencontainers.image.vendor=$(VENDOR) \
+	--label=org.opencontainers.image.title=$(PROJECT) \
+	--label=org.opencontainers.image.revision="$(COMMIT)" \
+	--label=org.opencontainers.image.version="$(VERSION)" \
+	--label=org.opencontainers.image.created="$(BUILD_DATE)" \
+	--label=org.opencontainers.image.source=$(SOURCE) \
+	--label=org.opencontainers.image.licenses=$(LICENSE) \
+	--label=org.opencontainers.image.description=$(DESCRIPTION)
+
 all: alpine ubuntu distroless redhat
 
 publish-ghcr-%: ## Push images to Github Registry
