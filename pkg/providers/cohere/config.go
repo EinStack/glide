@@ -8,7 +8,7 @@ import (
 // TODO: Add validations
 type Params struct {
 	Temperature       float64       `json:"temperature,omitempty"`
-	Stream            bool          `json:"stream,omitempty"` // unsupported right now
+	Stream            bool          `json:"stream,omitempty"`
 	PreambleOverride  string        `json:"preamble_override,omitempty"`
 	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
 	ConversationID    string        `json:"conversation_id,omitempty"`

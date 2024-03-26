@@ -65,3 +65,54 @@ type ConnectorsResponse struct {
 	ContOnFail      string            `json:"continue_on_failure"`
 	Options         map[string]string `json:"options"`
 }
+
+// ChatCompletionChunk represents SSEvent a chat response is broken down on chat streaming
+// Ref: https://docs.cohere.com/reference/about
+type ChatCompletionChunk struct {
+	IsFinished bool          `json:"is_finished"`
+	EventType  string        `json:"event_type"`
+	Text       string        `json:"text"`
+	Response   FinalResponse `json:"response,omitempty"`
+}
+
+type FinalResponse struct {
+	ResponseID   string     `json:"response_id"`
+	Text         string     `json:"text"`
+	GenerationID string     `json:"generation_id"`
+	TokenCount   TokenCount `json:"token_count"`
+	Meta         Meta       `json:"meta"`
+	FinishReason string     `json:"finish_reason"`
+}
+
+type ChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type ChatHistory struct {
+	Role    string `json:"role"`
+	Message string `json:"message"`
+	User    string `json:"user,omitempty"`
+}
+
+// ChatRequest is a request to complete a chat completion..
+type ChatRequest struct {
+	Model             string        `json:"model"`
+	Message           string        `json:"message"`
+	Temperature       float64       `json:"temperature,omitempty"`
+	PreambleOverride  string        `json:"preamble_override,omitempty"`
+	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
+	ConversationID    string        `json:"conversation_id,omitempty"`
+	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
+	Connectors        []string      `json:"connectors,omitempty"`
+	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
+	CitiationQuality  string        `json:"citiation_quality,omitempty"`
+	Stream            bool          `json:"stream,omitempty"`
+}
+
+type Connectors struct {
+	ID              string            `json:"id"`
+	UserAccessToken string            `json:"user_access_token"`
+	ContOnFail      string            `json:"continue_on_failure"`
+	Options         map[string]string `json:"options"`
+}

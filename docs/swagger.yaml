@@ -174,7 +174,6 @@ definitions:
       search_queries_only:
         type: boolean
       stream:
-        description: unsupported right now
         type: boolean
       temperature:
         type: number
