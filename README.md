@@ -213,8 +213,6 @@ To let you work with Glide's API with ease, we are going to provide you with SDK
 
 - Python (coming soon)
 - NodeJS (coming soon)
-- Golang (coming soon)
-- Rust (coming soon)
 
 ## Core Concepts
 
