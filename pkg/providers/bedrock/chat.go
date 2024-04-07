@@ -99,16 +99,17 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	err = json.Unmarshal(result.Body, &bedrockCompletion)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse bedrock chat response", zap.Error(err))
+
 		return nil, err
 	}
 
 	response := schemas.ChatResponse{
-		ID:       uuid.NewString(),
-		Created:  int(time.Now().Unix()),
-		Provider: "aws-bedrock",
-		Model:    c.config.Model,
-		Cached:   false,
-		ModelResponse: schemas.ProviderResponse{
+		ID:        uuid.NewString(),
+		Created:   int(time.Now().Unix()),
+		Provider:  "aws-bedrock",
+		ModelName: c.config.Model,
+		Cached:    false,
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": "none",
 			},
@@ -118,9 +119,9 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   float64(bedrockCompletion.Results[0].TokenCount),
+				PromptTokens:   bedrockCompletion.Results[0].TokenCount,
 				ResponseTokens: -1,
-				TotalTokens:    float64(bedrockCompletion.Results[0].TokenCount),
+				TotalTokens:    bedrockCompletion.Results[0].TokenCount,
 			},
 		},
 	}

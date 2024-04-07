@@ -6,7 +6,11 @@ import (
 	"time"
 )
 
-var ErrProviderUnavailable = errors.New("provider is not available")
+var (
+	ErrProviderUnavailable      = errors.New("provider is not available")
+	ErrUnauthorized             = errors.New("API key is wrong or not set")
+	ErrChatStreamNotImplemented = errors.New("streaming chat API is not implemented for provider")
+)
 
 type RateLimitError struct {
 	untilReset time.Duration

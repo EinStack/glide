@@ -1,0 +1,6 @@
+name: "OpenAI"
+api_key: "${file:./testdata/openai_key}"
+
+params:
+  - name: budget
+    value: "$$${file:./testdata/openai_key}"

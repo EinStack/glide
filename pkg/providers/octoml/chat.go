@@ -7,11 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"glide/pkg/providers/openai"
-
-	"glide/pkg/providers/clients"
 
 	"glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -117,33 +114,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.telemetry.Logger.Error("failed to read octoml chat response", zap.Error(err))
-		}
-
-		c.telemetry.Logger.Error(
-			"octoml chat request failed",
-			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
-			zap.Any("headers", resp.Header),
-		)
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			// Read the value of the "Retry-After" header to get the cooldown delay
-			retryAfter := resp.Header.Get("Retry-After")
-
-			// Parse the value to get the duration
-			cooldownDelay, err := time.ParseDuration(retryAfter)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-			}
-
-			return nil, clients.NewRateLimitError(&cooldownDelay)
-		}
-
-		// Server & client errors result in the same error to keep gateway resilient
-		return nil, clients.ErrProviderUnavailable
+		return nil, c.errMapper.Map(resp)
 	}
 
 	// Read the response body into a byte slice
@@ -164,19 +135,18 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       openAICompletion.ID,
-		Created:  openAICompletion.Created,
-		Provider: providerName,
-		Model:    openAICompletion.Model,
-		Cached:   false,
-		ModelResponse: schemas.ProviderResponse{
+		ID:        openAICompletion.ID,
+		Created:   openAICompletion.Created,
+		Provider:  providerName,
+		ModelName: openAICompletion.ModelName,
+		Cached:    false,
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"system_fingerprint": openAICompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
 				Role:    openAICompletion.Choices[0].Message.Role,
 				Content: openAICompletion.Choices[0].Message.Content,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   openAICompletion.Usage.PromptTokens,

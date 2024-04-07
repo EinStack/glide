@@ -41,7 +41,7 @@ func (cfg *ServerConfig) ToServer() *fiber.App {
 	// More configs are listed on https://docs.gofiber.io/api/fiber
 	// TODO: Consider alternative JSON marshallers that provides better performance over the standard marshaller
 	serverConfig := fiber.Config{
-		AppName:                      "glide",
+		AppName:                      "Glide",
 		DisableDefaultDate:           true,
 		ServerHeader:                 fmt.Sprintf("glide/%v", version.Version),
 		StreamRequestBody:            true,

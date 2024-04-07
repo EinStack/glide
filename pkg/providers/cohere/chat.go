@@ -15,40 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type ChatHistory struct {
-	Role    string `json:"role"`
-	Message string `json:"message"`
-	User    string `json:"user,omitempty"`
-}
-
-// ChatRequest is a request to complete a chat completion..
-type ChatRequest struct {
-	Model             string        `json:"model"`
-	Message           string        `json:"message"`
-	Temperature       float64       `json:"temperature,omitempty"`
-	PreambleOverride  string        `json:"preamble_override,omitempty"`
-	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
-	ConversationID    string        `json:"conversation_id,omitempty"`
-	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
-	Connectors        []string      `json:"connectors,omitempty"`
-	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
-	CitiationQuality  string        `json:"citiation_quality,omitempty"`
-
-	// Stream            bool                `json:"stream,omitempty"`
-}
-
-type Connectors struct {
-	ID              string            `json:"id"`
-	UserAccessToken string            `json:"user_access_token"`
-	ContOnFail      string            `json:"continue_on_failure"`
-	Options         map[string]string `json:"options"`
-}
-
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
@@ -61,13 +27,14 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
 		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
+		Stream:            false,
 	}
 }
 
 // Chat sends a chat request to the specified cohere model.
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	chatRequest := c.createRequestSchema(request)
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
@@ -81,9 +48,9 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
+func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
+	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
 	chatRequest.Message = request.Message.Content
 
 	// Build the Cohere specific ChatHistory
@@ -100,7 +67,7 @@ func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequ
 		}
 	}
 
-	return chatRequest
+	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -119,7 +86,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
+	c.tel.Logger.Debug(
 		"cohere chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
@@ -135,10 +102,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+			c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		}
 
-		c.telemetry.Logger.Error(
+		c.tel.Logger.Error(
 			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
 			zap.String("response", string(bodyBytes)),
@@ -156,7 +123,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -165,7 +132,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &responseJSON)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -174,24 +141,24 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &cohereCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
-		ID:       cohereCompletion.ResponseID,
-		Created:  int(time.Now().UTC().Unix()), // Cohere doesn't provide this
-		Provider: providerName,
-		Model:    c.config.Model,
-		Cached:   false,
-		ModelResponse: schemas.ProviderResponse{
+		ID:        cohereCompletion.ResponseID,
+		Created:   int(time.Now().UTC().Unix()), // Cohere doesn't provide this
+		Provider:  providerName,
+		ModelName: c.config.Model,
+		Cached:    false,
+		ModelResponse: schemas.ModelResponse{
 			SystemID: map[string]string{
 				"generationId": cohereCompletion.GenerationID,
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    "model", // TODO: Does this need to change?
+				Role:    "model",
 				Content: cohereCompletion.Text,
 				Name:    "",
 			},
@@ -209,11 +176,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse, error) {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
-	c.telemetry.Logger.Error(
+	c.tel.Logger.Error(
 		"cohere chat request failed",
 		zap.Int("status_code", resp.StatusCode),
 		zap.String("response", string(bodyBytes)),
@@ -227,6 +194,10 @@ func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse
 		}
 
 		return nil, clients.NewRateLimitError(&cooldownDelay)
+	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, clients.ErrUnauthorized
 	}
 
 	return nil, clients.ErrProviderUnavailable

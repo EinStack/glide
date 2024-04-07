@@ -23,9 +23,10 @@ type Client struct {
 	baseURL             string
 	chatURL             string
 	chatRequestTemplate *ChatRequest
+	errMapper           *ErrorMapper
 	config              *Config
 	httpClient          *http.Client
-	telemetry           *telemetry.Telemetry
+	tel                 *telemetry.Telemetry
 }
 
 // NewClient creates a new OpenAI client for the OpenAI API.
@@ -40,6 +41,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		chatURL:             chatURL,
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
+		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
 			Timeout: *clientConfig.Timeout,
 			// TODO: use values from the config
@@ -48,7 +50,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 				MaxIdleConnsPerHost: 2,
 			},
 		},
-		telemetry: tel,
+		tel: tel,
 	}
 
 	return c, nil
