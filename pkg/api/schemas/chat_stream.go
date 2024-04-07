@@ -6,6 +6,7 @@ type (
 )
 
 var Complete FinishReason = "complete"
+var Length FinishReason = "length"
 
 // ChatStreamRequest defines a message that requests a new streaming chat
 type ChatStreamRequest struct {

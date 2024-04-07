@@ -19,6 +19,7 @@ import (
 
 var (
 	StopReason       = "stop"
+	LengthReason     = "length"
 	streamDoneMarker = []byte("[DONE]")
 )
 
@@ -121,8 +122,11 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		var finishReason *schemas.FinishReason
 
-		if responseChunk.FinishReason == StopReason {
+		switch responseChunk.FinishReason {
+		case StopReason:
 			finishReason = &schemas.Complete
+		case LengthReason:
+			finishReason = &schemas.Length
 		}
 
 		// TODO: use objectpool here
