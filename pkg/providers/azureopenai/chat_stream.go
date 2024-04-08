@@ -10,6 +10,7 @@ import (
 
 	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
+	"glide/pkg/providers/openai"
 	"glide/pkg/telemetry"
 
 	"go.uber.org/zap"
@@ -17,10 +18,7 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-var (
-	StopReason       = "stop"
-	streamDoneMarker = []byte("[DONE]")
-)
+// TODO: Think about reducing the number of copy-pasted code btw OpenAI and Azure providers
 
 // ChatStream represents chat stream for a specific request
 type ChatStream struct {
@@ -96,7 +94,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		event, err := clients.ParseSSEvent(rawEvent)
 
-		if bytes.Equal(event.Data, streamDoneMarker) {
+		if bytes.Equal(event.Data, openai.StreamDoneMarker) {
 			s.tel.L().Info(
 				"EOF: [DONE] marker found in chat stream",
 				zap.String("provider", providerName),
@@ -128,8 +126,11 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		var finishReason *schemas.FinishReason
 
-		if responseChunk.FinishReason == StopReason {
+		switch responseChunk.FinishReason {
+		case openai.StopReason:
 			finishReason = &schemas.Complete
+		case openai.LengthReason:
+			finishReason = &schemas.Length
 		}
 
 		// TODO: use objectpool here

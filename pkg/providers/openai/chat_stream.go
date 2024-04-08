@@ -20,7 +20,7 @@ import (
 var (
 	StopReason       = "stop"
 	LengthReason     = "length"
-	streamDoneMarker = []byte("[DONE]")
+	StreamDoneMarker = []byte("[DONE]")
 )
 
 // ChatStream represents OpenAI chat stream for a specific request
@@ -95,7 +95,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		event, err := clients.ParseSSEvent(rawEvent)
 
-		if bytes.Equal(event.Data, streamDoneMarker) {
+		if bytes.Equal(event.Data, StreamDoneMarker) {
 			return nil, io.EOF
 		}
 
@@ -132,6 +132,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
 			ID:        s.reqID,
+			CreatedAt: completionChunk.Created,
 			Provider:  providerName,
 			Cached:    false,
 			ModelName: completionChunk.ModelName,
