@@ -20,13 +20,12 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
 		Model:             cfg.Model,
 		Temperature:       cfg.DefaultParams.Temperature,
-		PreambleOverride:  cfg.DefaultParams.PreambleOverride,
+		Preamble:          cfg.DefaultParams.Preamble,
 		ChatHistory:       cfg.DefaultParams.ChatHistory,
 		ConversationID:    cfg.DefaultParams.ConversationID,
 		PromptTruncation:  cfg.DefaultParams.PromptTruncation,
 		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
-		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
 		Stream:            false,
 	}
 }

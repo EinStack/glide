@@ -8,27 +8,23 @@ import (
 // TODO: Add validations
 type Params struct {
 	Temperature       float64       `json:"temperature,omitempty"`
-	Stream            bool          `json:"stream,omitempty"`
-	PreambleOverride  string        `json:"preamble_override,omitempty"`
+	Preamble          string        `json:"preamble,omitempty"`
 	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
 	ConversationID    string        `json:"conversation_id,omitempty"`
 	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
 	Connectors        []string      `json:"connectors,omitempty"`
 	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
-	CitiationQuality  string        `json:"citiation_quality,omitempty"`
 }
 
 func DefaultParams() Params {
 	return Params{
 		Temperature:       0.3,
-		Stream:            false,
-		PreambleOverride:  "",
+		Preamble:          "",
 		ChatHistory:       nil,
 		ConversationID:    "",
 		PromptTruncation:  "",
 		Connectors:        []string{},
 		SearchQueriesOnly: false,
-		CitiationQuality:  "",
 	}
 }
 
