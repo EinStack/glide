@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	// Reference: https://platform.openai.com/docs/api-reference/chat/object
+
 	CompleteReason  = "stop"
 	MaxTokensReason = "length"
 	FilteredReason  = "content_filter"
