@@ -17,22 +17,19 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-var (
-	StopReason       = "stop"
-	LengthReason     = "length"
-	StreamDoneMarker = []byte("[DONE]")
-)
+var StreamDoneMarker = []byte("[DONE]")
 
 // ChatStream represents OpenAI chat stream for a specific request
 type ChatStream struct {
-	tel         *telemetry.Telemetry
-	client      *http.Client
-	req         *http.Request
-	reqID       string
-	reqMetadata *schemas.Metadata
-	resp        *http.Response
-	reader      *sse.EventStreamReader
-	errMapper   *ErrorMapper
+	tel                *telemetry.Telemetry
+	client             *http.Client
+	req                *http.Request
+	reqID              string
+	reqMetadata        *schemas.Metadata
+	resp               *http.Response
+	reader             *sse.EventStreamReader
+	finishReasonMapper *FinishReasonMapper
+	errMapper          *ErrorMapper
 }
 
 func NewChatStream(
@@ -41,15 +38,17 @@ func NewChatStream(
 	req *http.Request,
 	reqID string,
 	reqMetadata *schemas.Metadata,
+	finishReasonMapper *FinishReasonMapper,
 	errMapper *ErrorMapper,
 ) *ChatStream {
 	return &ChatStream{
-		tel:         tel,
-		client:      client,
-		req:         req,
-		reqID:       reqID,
-		reqMetadata: reqMetadata,
-		errMapper:   errMapper,
+		tel:                tel,
+		client:             client,
+		req:                req,
+		reqID:              reqID,
+		reqMetadata:        reqMetadata,
+		finishReasonMapper: finishReasonMapper,
+		errMapper:          errMapper,
 	}
 }
 
@@ -120,15 +119,6 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		responseChunk := completionChunk.Choices[0]
 
-		var finishReason *schemas.FinishReason
-
-		switch responseChunk.FinishReason {
-		case StopReason:
-			finishReason = &schemas.Complete
-		case LengthReason:
-			finishReason = &schemas.Length
-		}
-
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
 			ID:        s.reqID,
@@ -146,7 +136,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 					Role:    responseChunk.Delta.Role,
 					Content: responseChunk.Delta.Content,
 				},
-				FinishReason: finishReason,
+				FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 			},
 		}, nil
 	}
@@ -177,6 +167,7 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		httpRequest,
 		req.ID,
 		req.Metadata,
+		c.finishReasonMapper,
 		c.errMapper,
 	), nil
 }

@@ -6,8 +6,10 @@ type (
 )
 
 var (
-	Complete FinishReason = "complete"
-	Length   FinishReason = "length"
+	Complete        FinishReason = "complete"
+	MaxTokens       FinishReason = "max_tokens"
+	ContentFiltered FinishReason = "content_filtered"
+	Other           FinishReason = "other"
 )
 
 // ChatStreamRequest defines a message that requests a new streaming chat
