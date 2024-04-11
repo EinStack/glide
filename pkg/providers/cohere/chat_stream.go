@@ -86,7 +86,6 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 	for {
 		rawChunk, err := s.reader.ReadEvent()
-
 		if err != nil {
 			s.tel.L().Warn(
 				"Chat stream is unexpectedly disconnected",
@@ -106,7 +105,6 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		)
 
 		err = json.Unmarshal(rawChunk, &responseChunk)
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
