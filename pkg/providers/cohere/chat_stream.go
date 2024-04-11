@@ -17,18 +17,25 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-var StopReason = "stream-end"
+type SupportedEventType = string
+
+var (
+	TextGenEvent   SupportedEventType = "text-generation"
+	StreamEndEvent SupportedEventType = "stream-end"
+)
 
 // ChatStream represents cohere chat stream for a specific request
 type ChatStream struct {
-	tel         *telemetry.Telemetry
-	client      *http.Client
-	req         *http.Request
-	reqID       string
-	reqMetadata *schemas.Metadata
-	resp        *http.Response
-	reader      *sse.EventStreamReader
-	errMapper   *ErrorMapper
+	tel                *telemetry.Telemetry
+	client             *http.Client
+	req                *http.Request
+	reqID              string
+	modelName          string
+	reqMetadata        *schemas.Metadata
+	resp               *http.Response
+	reader             *sse.EventStreamReader
+	errMapper          *ErrorMapper
+	finishReasonMapper *FinishReasonMapper
 }
 
 func NewChatStream(
@@ -36,16 +43,20 @@ func NewChatStream(
 	client *http.Client,
 	req *http.Request,
 	reqID string,
+	modelName string,
 	reqMetadata *schemas.Metadata,
 	errMapper *ErrorMapper,
+	finishReasonMapper *FinishReasonMapper,
 ) *ChatStream {
 	return &ChatStream{
-		tel:         tel,
-		client:      client,
-		req:         req,
-		reqID:       reqID,
-		reqMetadata: reqMetadata,
-		errMapper:   errMapper,
+		tel:                tel,
+		client:             client,
+		req:                req,
+		reqID:              reqID,
+		modelName:          modelName,
+		reqMetadata:        reqMetadata,
+		errMapper:          errMapper,
+		finishReasonMapper: finishReasonMapper,
 	}
 }
 
@@ -66,7 +77,7 @@ func (s *ChatStream) Open() error {
 }
 
 func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
-	var completionChunk ChatCompletionChunk
+	var responseChunk ChatCompletionChunk
 
 	for {
 		rawEvent, err := s.reader.ReadEvent()
@@ -108,23 +119,30 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			continue
 		}
 
-		err = json.Unmarshal(event.Data, &completionChunk)
+		rawChunk := event.Data
+
+		err = json.Unmarshal(rawChunk, &responseChunk)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
 
-		responseChunk := completionChunk
+		if responseChunk.EventType != TextGenEvent && responseChunk.EventType != StreamEndEvent {
+			s.tel.L().Debug(
+				"Unsupported stream chunk type, skipping it",
+				zap.String("provider", providerName),
+				zap.Any("chunk", string(rawChunk)),
+			)
 
-		var finishReason *schemas.FinishReason
+			continue
+		}
 
 		if responseChunk.IsFinished {
-			finishReason = &schemas.Complete
-
+			// TODO: use objectpool here
 			return &schemas.ChatStreamChunk{
 				ID:        s.reqID,
 				Provider:  providerName,
 				Cached:    false,
-				ModelName: "NA",
+				ModelName: s.modelName,
 				Metadata:  s.reqMetadata,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
@@ -135,7 +153,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 						Role:    "model",
 						Content: responseChunk.Text,
 					},
-					FinishReason: finishReason,
+					FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 				},
 			}, nil
 		}
@@ -145,14 +163,13 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			ID:        s.reqID,
 			Provider:  providerName,
 			Cached:    false,
-			ModelName: "NA",
+			ModelName: s.modelName,
 			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Message: schemas.ChatMessage{
 					Role:    "model",
 					Content: responseChunk.Text,
 				},
-				FinishReason: finishReason,
 			},
 		}, nil
 	}
@@ -182,8 +199,10 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.httpClient,
 		httpRequest,
 		req.ID,
+		c.chatRequestTemplate.Model,
 		req.Metadata,
 		c.errMapper,
+		c.finishReasonMapper,
 	), nil
 }
 

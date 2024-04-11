@@ -24,6 +24,7 @@ type Client struct {
 	chatURL             string
 	chatRequestTemplate *ChatRequest
 	errMapper           *ErrorMapper
+	finishReasonMapper  *FinishReasonMapper
 	config              *Config
 	httpClient          *http.Client
 	tel                 *telemetry.Telemetry
@@ -41,6 +42,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		chatURL:             chatURL,
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
+		finishReasonMapper:  NewFinishReasonMapper(tel),
 		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
 			Timeout: *clientConfig.Timeout,
