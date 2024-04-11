@@ -53,7 +53,7 @@ func (s *ModelSchedule) Update() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.expireAt = time.Now().Add(*s.model.LatencyUpdateInterval())
+	s.expireAt = time.Now().Add(time.Duration(*s.model.LatencyUpdateInterval()))
 }
 
 // LeastLatencyRouting routes requests to the model that responses the fastest

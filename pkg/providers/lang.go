@@ -5,6 +5,8 @@ import (
 	"io"
 	"time"
 
+	"glide/pkg/config/fields"
+
 	"glide/pkg/routers/health"
 
 	"glide/pkg/api/schemas"
@@ -40,7 +42,7 @@ type LanguageModel struct {
 	healthTracker         *health.Tracker
 	chatLatency           *latency.MovingAverage
 	chatStreamLatency     *latency.MovingAverage
-	latencyUpdateInterval *time.Duration
+	latencyUpdateInterval *fields.Duration
 }
 
 func NewLangModel(modelID string, client LangProvider, budget *health.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
@@ -67,7 +69,7 @@ func (m LanguageModel) Weight() int {
 	return m.weight
 }
 
-func (m LanguageModel) LatencyUpdateInterval() *time.Duration {
+func (m LanguageModel) LatencyUpdateInterval() *fields.Duration {
 	return m.latencyUpdateInterval
 }
 
