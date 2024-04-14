@@ -1,7 +1,7 @@
 package providers
 
 import (
-	"time"
+	"glide/pkg/config/fields"
 )
 
 // ModelProvider exposes provider context
@@ -13,6 +13,6 @@ type ModelProvider interface {
 type Model interface {
 	ID() string
 	Healthy() bool
-	LatencyUpdateInterval() *time.Duration
+	LatencyUpdateInterval() *fields.Duration
 	Weight() int
 }
