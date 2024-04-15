@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
 	"io"
 	"net/http"
+
+	"glide/pkg/providers/clients"
+	"glide/pkg/telemetry"
 
 	"go.uber.org/zap"
 
@@ -29,9 +30,7 @@ var (
 type ChatStream struct {
 	client             *http.Client
 	req                *http.Request
-	reqID              string
 	modelName          string
-	reqMetadata        *schemas.Metadata
 	resp               *http.Response
 	generationID       string
 	streamFinished     bool
@@ -46,7 +45,6 @@ func NewChatStream(
 	client *http.Client,
 	req *http.Request,
 	modelName string,
-	reqMetadata *schemas.Metadata,
 	errMapper *ErrorMapper,
 	finishReasonMapper *FinishReasonMapper,
 ) *ChatStream {
@@ -55,7 +53,6 @@ func NewChatStream(
 		client:             client,
 		req:                req,
 		modelName:          modelName,
-		reqMetadata:        reqMetadata,
 		errMapper:          errMapper,
 		streamFinished:     false,
 		finishReasonMapper: finishReasonMapper,
@@ -133,13 +130,13 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 			// TODO: use objectpool here
 			return &schemas.ChatStreamChunk{
-				Provider:  providerName,
 				Cached:    false,
+				Provider:  providerName,
 				ModelName: s.modelName,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
-						"generationId": s.generationID,
-						"responseId":   responseChunk.Response.ResponseID,
+						"generation_id": s.generationID,
+						"response_id":   responseChunk.Response.ResponseID,
 					},
 					Message: schemas.ChatMessage{
 						Role:    "model",
@@ -152,12 +149,12 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			Provider:  providerName,
 			Cached:    false,
+			Provider:  providerName,
 			ModelName: s.modelName,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
-					"generationId": s.generationID,
+					"generation_id": s.generationID,
 				},
 				Message: schemas.ChatMessage{
 					Role:    "model",
@@ -192,7 +189,6 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.httpClient,
 		httpRequest,
 		c.chatRequestTemplate.Model,
-		req.Metadata,
 		c.errMapper,
 		c.finishReasonMapper,
 	), nil

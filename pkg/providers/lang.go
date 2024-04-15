@@ -87,8 +87,8 @@ func (m LanguageModel) ChatStreamLatency() *latency.MovingAverage {
 
 func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	startedAt := time.Now()
-	resp, err := m.client.Chat(ctx, request)
 
+	resp, err := m.client.Chat(ctx, request)
 	if err != nil {
 		m.healthTracker.TrackErr(err)
 

@@ -84,9 +84,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", string(c.config.APIKey)))
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.tel.Logger.Debug(
+	c.logger.Debug(
 		"Chat Request",
-		zap.String("provider", c.Provider()),
 		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", payload),
 	)
@@ -105,9 +104,9 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.tel.Logger.Error(
+		c.logger.Error(
 			"Failed to read chat response",
-			zap.String("provider", c.Provider()), zap.Error(err),
+			zap.Error(err),
 			zap.ByteString("rawResponse", bodyBytes),
 		)
 
@@ -119,9 +118,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
-		c.tel.Logger.Error(
+		c.logger.Error(
 			"Failed to unmarshal chat response",
-			zap.String("provider", c.Provider()),
 			zap.ByteString("rawResponse", bodyBytes),
 			zap.Error(err),
 		)

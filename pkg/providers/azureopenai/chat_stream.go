@@ -123,8 +123,8 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			Provider:  providerName,
 			Cached:    false,
+			Provider:  providerName,
 			ModelName: completionChunk.ModelName,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
