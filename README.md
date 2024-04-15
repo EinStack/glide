@@ -46,9 +46,9 @@ Check out our [documentation](https://glide.einstack.ai)!
 |-----------------------------------------------------------------------|-------------------------------------------|
 | <img src="docs/images/openai.svg" width="18" /> OpenAI                | ✅ Chat <br/> ✅ Streaming Chat             |
 | <img src="docs/images/anthropic.svg" width="18" /> Anthropic          | ✅ Chat<br/>🏗️ Streaming Chat (coming soon) |
-| <img src="docs/images/azure.svg" width="18" /> Azure OpenAI           | ✅ Chat<br/> 🏗️ Streaming Chat (coming soon)   |
+| <img src="docs/images/azure.svg" width="18" /> Azure OpenAI           | ✅ Chat<br/> ✅ Streaming Chat   |
 | <img src="docs/images/aws-icon.png" width="18" /> AWS Bedrock (Titan) | ✅ Chat                                    |
-| <img src="docs/images/cohere.png" width="18" /> Cohere                | ✅ Chat<br/> 🏗️ Streaming Chat (coming soon)   |
+| <img src="docs/images/cohere.png" width="18" /> Cohere                | ✅ Chat<br/> ✅ Streaming Chat   |
 | <img src="docs/images/bard.svg" width="18" /> Google Gemini           | 🏗️ Chat (coming soon)                    |
 | <img src="docs/images/octo.png" width="18" /> OctoML                  | ✅ Chat                                    |
 | <img src="docs/images/ollama.png" width="18" /> Ollama                | ✅ Chat                                    |

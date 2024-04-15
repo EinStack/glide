@@ -106,7 +106,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 		chatModels = append(chatModels, model)
 
 		if !model.SupportChatStream() {
-			tel.L().Warn(
+			tel.L().WithOptions(zap.AddStacktrace(zap.ErrorLevel)).Warn(
 				"Provider doesn't support or have not been yet integrated with streaming chat, it won't serve streaming chat requests",
 				zap.String("routerID", c.ID),
 				zap.String("modelID", model.ID()),

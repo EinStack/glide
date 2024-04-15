@@ -69,10 +69,12 @@ type ConnectorsResponse struct {
 // ChatCompletionChunk represents SSEvent a chat response is broken down on chat streaming
 // Ref: https://docs.cohere.com/reference/about
 type ChatCompletionChunk struct {
-	IsFinished bool          `json:"is_finished"`
-	EventType  string        `json:"event_type"`
-	Text       string        `json:"text"`
-	Response   FinalResponse `json:"response,omitempty"`
+	IsFinished   bool           `json:"is_finished"`
+	EventType    string         `json:"event_type"`
+	GenerationID *string        `json:"generation_id"`
+	Text         string         `json:"text"`
+	Response     *FinalResponse `json:"response,omitempty"`
+	FinishReason *string        `json:"finish_reason,omitempty"`
 }
 
 type FinalResponse struct {
@@ -81,7 +83,6 @@ type FinalResponse struct {
 	GenerationID string     `json:"generation_id"`
 	TokenCount   TokenCount `json:"token_count"`
 	Meta         Meta       `json:"meta"`
-	FinishReason string     `json:"finish_reason"`
 }
 
 type ChatMessage struct {

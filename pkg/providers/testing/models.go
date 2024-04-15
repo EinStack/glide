@@ -3,6 +3,8 @@ package testing
 import (
 	"time"
 
+	"glide/pkg/config/fields"
+
 	"glide/pkg/providers"
 	"glide/pkg/routers/latency"
 )
@@ -42,10 +44,10 @@ func (m *LangModelMock) ChatLatency() *latency.MovingAverage {
 	return m.chatLatency
 }
 
-func (m LangModelMock) LatencyUpdateInterval() *time.Duration {
+func (m LangModelMock) LatencyUpdateInterval() *fields.Duration {
 	updateInterval := 30 * time.Second
 
-	return &updateInterval
+	return (*fields.Duration)(&updateInterval)
 }
 
 func (m LangModelMock) Weight() int {

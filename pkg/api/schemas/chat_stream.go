@@ -5,7 +5,12 @@ type (
 	FinishReason = string
 )
 
-var Complete FinishReason = "complete"
+var (
+	Complete        FinishReason = "complete"
+	MaxTokens       FinishReason = "max_tokens"
+	ContentFiltered FinishReason = "content_filtered"
+	Other           FinishReason = "other"
+)
 
 // ChatStreamRequest defines a message that requests a new streaming chat
 type ChatStreamRequest struct {
