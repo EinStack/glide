@@ -89,17 +89,17 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 	startedAt := time.Now()
 	resp, err := m.client.Chat(ctx, request)
 
-	if err == nil {
-		// record latency per token to normalize measurements
-		m.chatLatency.Add(float64(time.Since(startedAt)) / float64(resp.ModelResponse.TokenUsage.ResponseTokens))
-
-		// successful response
-		resp.ModelID = m.modelID
+	if err != nil {
+		m.healthTracker.TrackErr(err)
 
 		return resp, err
 	}
 
-	m.healthTracker.TrackErr(err)
+	// record latency per token to normalize measurements
+	m.chatLatency.Add(float64(time.Since(startedAt)) / float64(resp.ModelResponse.TokenUsage.ResponseTokens))
+
+	// successful response
+	resp.ModelID = m.modelID
 
 	return resp, err
 }

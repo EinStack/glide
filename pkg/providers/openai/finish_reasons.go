@@ -44,7 +44,7 @@ func (m *FinishReasonMapper) Map(finishReason string) *schemas.FinishReason {
 			zap.String("unknown_reason", finishReason),
 		)
 
-		reason = &schemas.Other
+		reason = &schemas.OtherReason
 	}
 
 	return reason

@@ -5,11 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
+	"io"
+	"net/http"
 
 	"go.uber.org/zap"
 
@@ -46,7 +45,6 @@ func NewChatStream(
 	tel *telemetry.Telemetry,
 	client *http.Client,
 	req *http.Request,
-	reqID string,
 	modelName string,
 	reqMetadata *schemas.Metadata,
 	errMapper *ErrorMapper,
@@ -56,7 +54,6 @@ func NewChatStream(
 		tel:                tel,
 		client:             client,
 		req:                req,
-		reqID:              reqID,
 		modelName:          modelName,
 		reqMetadata:        reqMetadata,
 		errMapper:          errMapper,
@@ -136,11 +133,9 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 			// TODO: use objectpool here
 			return &schemas.ChatStreamChunk{
-				ID:        s.reqID,
 				Provider:  providerName,
 				Cached:    false,
 				ModelName: s.modelName,
-				Metadata:  s.reqMetadata,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
 						"generationId": s.generationID,
@@ -150,18 +145,16 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 						Role:    "model",
 						Content: responseChunk.Text,
 					},
-					FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 				},
+				FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 			}, nil
 		}
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        s.reqID,
 			Provider:  providerName,
 			Cached:    false,
 			ModelName: s.modelName,
-			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
 					"generationId": s.generationID,
@@ -198,7 +191,6 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
-		req.ID,
 		c.chatRequestTemplate.Model,
 		req.Metadata,
 		c.errMapper,

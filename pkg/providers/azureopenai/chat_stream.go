@@ -25,8 +25,6 @@ type ChatStream struct {
 	tel                *telemetry.Telemetry
 	client             *http.Client
 	req                *http.Request
-	reqID              string
-	reqMetadata        *schemas.Metadata
 	resp               *http.Response
 	reader             *sse.EventStreamReader
 	finishReasonMapper *openai.FinishReasonMapper
@@ -37,8 +35,6 @@ func NewChatStream(
 	tel *telemetry.Telemetry,
 	client *http.Client,
 	req *http.Request,
-	reqID string,
-	reqMetadata *schemas.Metadata,
 	finishReasonMapper *openai.FinishReasonMapper,
 	errMapper *ErrorMapper,
 ) *ChatStream {
@@ -46,8 +42,6 @@ func NewChatStream(
 		tel:                tel,
 		client:             client,
 		req:                req,
-		reqID:              reqID,
-		reqMetadata:        reqMetadata,
 		finishReasonMapper: finishReasonMapper,
 		errMapper:          errMapper,
 	}
@@ -129,11 +123,9 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        s.reqID,
 			Provider:  providerName,
 			Cached:    false,
 			ModelName: completionChunk.ModelName,
-			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
 					"response_id":        completionChunk.ID,
@@ -143,8 +135,8 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 					Role:    responseChunk.Delta.Role,
 					Content: responseChunk.Delta.Content,
 				},
-				FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 			},
+			FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 		}, nil
 	}
 }
@@ -172,8 +164,6 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
-		req.ID,
-		req.Metadata,
 		c.finishReasonMapper,
 		c.errMapper,
 	), nil
