@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 
@@ -17,25 +16,30 @@ import (
 	"glide/pkg/api/schemas"
 )
 
+// SupportedEventType Cohere has other types too:
+// Ref: https://docs.cohere.com/reference/chat (see Chat -> Responses -> StreamedChatResponse)
 type SupportedEventType = string
 
 var (
-	TextGenEvent   SupportedEventType = "text-generation"
-	StreamEndEvent SupportedEventType = "stream-end"
+	StreamStartEvent SupportedEventType = "stream-start"
+	TextGenEvent     SupportedEventType = "text-generation"
+	StreamEndEvent   SupportedEventType = "stream-end"
 )
 
 // ChatStream represents cohere chat stream for a specific request
 type ChatStream struct {
-	tel                *telemetry.Telemetry
 	client             *http.Client
 	req                *http.Request
 	reqID              string
 	modelName          string
 	reqMetadata        *schemas.Metadata
 	resp               *http.Response
-	reader             *sse.EventStreamReader
+	generationID       string
+	streamFinished     bool
+	reader             *StreamReader
 	errMapper          *ErrorMapper
 	finishReasonMapper *FinishReasonMapper
+	tel                *telemetry.Telemetry
 }
 
 func NewChatStream(
@@ -56,6 +60,7 @@ func NewChatStream(
 		modelName:          modelName,
 		reqMetadata:        reqMetadata,
 		errMapper:          errMapper,
+		streamFinished:     false,
 		finishReasonMapper: finishReasonMapper,
 	}
 }
@@ -70,17 +75,23 @@ func (s *ChatStream) Open() error {
 		return s.errMapper.Map(resp)
 	}
 
+	s.tel.L().Debug("Resp Headers", zap.Any("headers", resp.Header))
+
 	s.resp = resp
-	s.reader = sse.NewEventStreamReader(resp.Body, 8192) // TODO: should we expose maxBufferSize?
+	s.reader = NewStreamReader(resp.Body, 8192) // TODO: should we expose maxBufferSize?
 
 	return nil
 }
 
 func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
+	if s.streamFinished {
+		return nil, io.EOF
+	}
+
 	var responseChunk ChatCompletionChunk
 
 	for {
-		rawEvent, err := s.reader.ReadEvent()
+		rawChunk, err := s.reader.ReadEvent()
 		if err != nil {
 			s.tel.L().Warn(
 				"Chat stream is unexpectedly disconnected",
@@ -88,12 +99,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 				zap.Error(err),
 			)
 
-			if err == io.EOF {
-				return nil, io.EOF
-			}
-
-			// if err is io.EOF, this still means that the stream is interrupted unexpectedly
-			//  because the normal stream termination is done via finding out streamDoneMarker
+			// if io.EOF occurred in the middle of the stream, then the stream was interrupted
 
 			return nil, clients.ErrProviderUnavailable
 		}
@@ -101,42 +107,33 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		s.tel.L().Debug(
 			"Raw chat stream chunk",
 			zap.String("provider", providerName),
-			zap.ByteString("rawChunk", rawEvent),
+			zap.ByteString("rawChunk", rawChunk),
 		)
-
-		event, err := clients.ParseSSEvent(rawEvent)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse chat stream message: %v", err)
-		}
-
-		if !event.HasContent() {
-			s.tel.L().Debug(
-				"Received an empty message in chat stream, skipping it",
-				zap.String("provider", providerName),
-				zap.Any("msg", event),
-			)
-
-			continue
-		}
-
-		rawChunk := event.Data
 
 		err = json.Unmarshal(rawChunk, &responseChunk)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
 
+		if responseChunk.EventType == StreamStartEvent {
+			s.generationID = *responseChunk.GenerationID
+
+			continue
+		}
+
 		if responseChunk.EventType != TextGenEvent && responseChunk.EventType != StreamEndEvent {
 			s.tel.L().Debug(
 				"Unsupported stream chunk type, skipping it",
 				zap.String("provider", providerName),
-				zap.Any("chunk", string(rawChunk)),
+				zap.ByteString("chunk", rawChunk),
 			)
 
 			continue
 		}
 
 		if responseChunk.IsFinished {
+			s.streamFinished = true
+
 			// TODO: use objectpool here
 			return &schemas.ChatStreamChunk{
 				ID:        s.reqID,
@@ -146,7 +143,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 				Metadata:  s.reqMetadata,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
-						"generationId": responseChunk.Response.GenerationID,
+						"generationId": s.generationID,
 						"responseId":   responseChunk.Response.ResponseID,
 					},
 					Message: schemas.ChatMessage{
@@ -166,6 +163,9 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			ModelName: s.modelName,
 			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
+				Metadata: &schemas.Metadata{
+					"generationId": s.generationID,
+				},
 				Message: schemas.ChatMessage{
 					Role:    "model",
 					Content: responseChunk.Text,
