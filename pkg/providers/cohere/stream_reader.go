@@ -7,7 +7,8 @@ import (
 	"io"
 )
 
-// StreamReader reads Cohere streaming chat chunks that are formated as serializer chunk json per line
+// StreamReader reads Cohere streaming chat chunks that are formated
+// as serializer chunk json per line (a.k.a. application/stream+json)
 type StreamReader struct {
 	scanner *bufio.Scanner
 }

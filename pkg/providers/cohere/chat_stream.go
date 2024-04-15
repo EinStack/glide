@@ -16,26 +16,30 @@ import (
 	"glide/pkg/api/schemas"
 )
 
+// SupportedEventType Cohere has other types too:
+// Ref: https://docs.cohere.com/reference/chat (see Chat -> Responses -> StreamedChatResponse)
 type SupportedEventType = string
 
 var (
-	TextGenEvent   SupportedEventType = "text-generation"
-	StreamEndEvent SupportedEventType = "stream-end"
+	StreamStartEvent SupportedEventType = "stream-start"
+	TextGenEvent     SupportedEventType = "text-generation"
+	StreamEndEvent   SupportedEventType = "stream-end"
 )
 
 // ChatStream represents cohere chat stream for a specific request
 type ChatStream struct {
-	tel                *telemetry.Telemetry
 	client             *http.Client
 	req                *http.Request
 	reqID              string
 	modelName          string
 	reqMetadata        *schemas.Metadata
 	resp               *http.Response
+	generationID       string
 	streamFinished     bool
 	reader             *StreamReader
 	errMapper          *ErrorMapper
 	finishReasonMapper *FinishReasonMapper
+	tel                *telemetry.Telemetry
 }
 
 func NewChatStream(
@@ -70,6 +74,8 @@ func (s *ChatStream) Open() error {
 	if resp.StatusCode != http.StatusOK {
 		return s.errMapper.Map(resp)
 	}
+
+	s.tel.L().Debug("Resp Headers", zap.Any("headers", resp.Header))
 
 	s.resp = resp
 	s.reader = NewStreamReader(resp.Body, 8192) // TODO: should we expose maxBufferSize?
@@ -109,6 +115,12 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
 
+		if responseChunk.EventType == StreamStartEvent {
+			s.generationID = *responseChunk.GenerationID
+
+			continue
+		}
+
 		if responseChunk.EventType != TextGenEvent && responseChunk.EventType != StreamEndEvent {
 			s.tel.L().Debug(
 				"Unsupported stream chunk type, skipping it",
@@ -131,7 +143,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 				Metadata:  s.reqMetadata,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
-						"generationId": responseChunk.Response.GenerationID,
+						"generationId": s.generationID,
 						"responseId":   responseChunk.Response.ResponseID,
 					},
 					Message: schemas.ChatMessage{
@@ -151,6 +163,9 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			ModelName: s.modelName,
 			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
+				Metadata: &schemas.Metadata{
+					"generationId": s.generationID,
+				},
 				Message: schemas.ChatMessage{
 					Role:    "model",
 					Content: responseChunk.Text,

@@ -50,7 +50,7 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 					t.Errorf("error reading cohere chat mock response: %v", err)
 				}
 
-				w.Header().Set("Content-Type", "text/event-stream")
+				w.Header().Set("Content-Type", "application/stream+json")
 
 				_, err = w.Write(chatResponse)
 				if err != nil {
@@ -94,7 +94,7 @@ func TestCohere_ChatStreamRequest(t *testing.T) {
 
 func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 	tests := map[string]string{
-		"success stream, but with empty event": "./testdata/chat_stream.empty.txt",
+		"interrupted stream": "./testdata/chat_stream.interrupted.txt",
 	}
 
 	for name, streamFile := range tests {
@@ -141,16 +141,17 @@ func TestCohere_ChatStreamRequestInterrupted(t *testing.T) {
 			err = stream.Open()
 			require.NoError(t, err)
 
-			for {
+			for range 5 {
 				chunk, err := stream.Recv()
-				if err != nil {
-					require.ErrorIs(t, err, io.EOF)
-					return
-				}
 
 				require.NoError(t, err)
 				require.NotNil(t, chunk)
 			}
+
+			chunk, err := stream.Recv()
+
+			require.Error(t, err)
+			require.Nil(t, chunk)
 		})
 	}
 }

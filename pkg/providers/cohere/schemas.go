@@ -71,6 +71,7 @@ type ConnectorsResponse struct {
 type ChatCompletionChunk struct {
 	IsFinished   bool           `json:"is_finished"`
 	EventType    string         `json:"event_type"`
+	GenerationID *string        `json:"generation_id"`
 	Text         string         `json:"text"`
 	Response     *FinalResponse `json:"response,omitempty"`
 	FinishReason *string        `json:"finish_reason,omitempty"`
