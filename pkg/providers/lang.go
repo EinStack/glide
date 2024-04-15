@@ -151,6 +151,8 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatStreamR
 				return
 			}
 
+			chunk.ModelID = m.modelID
+
 			streamResultC <- clients.NewChatStreamResult(chunk, nil)
 
 			if chunkLatency > 1*time.Millisecond {

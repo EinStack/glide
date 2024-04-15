@@ -190,7 +190,11 @@ func (r *LangRouter) ChatStream(
 					continue NextModel
 				}
 
-				respC <- schemas.NewChatStreamResult(chunkResult.Chunk())
+				chunk := chunkResult.Chunk()
+
+				chunk.RouterID = r.routerID
+
+				respC <- schemas.NewChatStreamResult(chunk)
 			}
 
 			return
