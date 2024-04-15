@@ -70,8 +70,9 @@ type ChatStreamChunk struct {
 }
 
 type ChatStreamError struct {
-	ErrCode ErrorCode `json:"errCode"`
-	Message string    `json:"message"`
+	ErrCode      ErrorCode     `json:"errCode"`
+	Message      string        `json:"message"`
+	FinishReason *FinishReason `json:"finishReason,omitempty"`
 }
 
 func NewChatStreamChunk(
@@ -95,6 +96,7 @@ func NewChatStreamError(
 	errCode ErrorCode,
 	errMsg string,
 	reqMetadata *Metadata,
+	finishReason *FinishReason,
 ) *ChatStreamMessage {
 	return &ChatStreamMessage{
 		ID:        reqID,
@@ -102,8 +104,9 @@ func NewChatStreamError(
 		CreatedAt: int(time.Now().UTC().Unix()),
 		Metadata:  reqMetadata,
 		Error: &ChatStreamError{
-			ErrCode: errCode,
-			Message: errMsg,
+			ErrCode:      errCode,
+			Message:      errMsg,
+			FinishReason: finishReason,
 		},
 	}
 }

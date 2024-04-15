@@ -137,6 +137,7 @@ func (r *LangRouter) ChatStream(
 			schemas.NoModelConfigured,
 			ErrNoModels.Error(),
 			req.Metadata,
+			&schemas.ErrorReason,
 		)
 
 		return
@@ -188,6 +189,7 @@ func (r *LangRouter) ChatStream(
 						schemas.ModelUnavailable,
 						err.Error(),
 						req.Metadata,
+						nil,
 					)
 
 					continue NextModel
@@ -219,6 +221,7 @@ func (r *LangRouter) ChatStream(
 				schemas.UnknownError,
 				err.Error(),
 				req.Metadata,
+				nil,
 			)
 
 			return
@@ -237,5 +240,6 @@ func (r *LangRouter) ChatStream(
 		schemas.AllModelsUnavailable,
 		ErrNoModelAvailable.Error(),
 		req.Metadata,
+		&schemas.ErrorReason,
 	)
 }
