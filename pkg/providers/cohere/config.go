@@ -7,23 +7,25 @@ import (
 // Params defines Cohere-specific model params with the specific validation of values
 // TODO: Add validations
 type Params struct {
-	Temperature       float64       `json:"temperature,omitempty"`
-	Preamble          string        `json:"preamble,omitempty"`
-	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
-	ConversationID    string        `json:"conversation_id,omitempty"`
-	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
-	Connectors        []string      `json:"connectors,omitempty"`
-	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
+	Seed              *int     `yaml:"seed,omitempty" json:"seed,omitempty" validate:"omitempty,number"`
+	Temperature       float64  `yaml:"temperature,omitempty" json:"temperature" validate:"required,number"`
+	MaxTokens         *int     `yaml:"max_tokens,omitempty" json:"max_tokens,omitempty" validate:"omitempty,number"`
+	K                 int      `yaml:"k,omitempty" json:"k" validate:"number,gte=0,lte=500"`
+	P                 float32  `yaml:"p,omitempty" json:"p" validate:"number,gte=0.01,lte=0.99"`
+	FrequencyPenalty  float32  `yaml:"frequency_penalty,omitempty" json:"frequency_penalty" validate:"gte=0.0,lte=1.0"`
+	PresencePenalty   float32  `yaml:"presence_penalty,omitempty" json:"presence_penalty" validate:"gte=0.0,lte=1.0"`
+	Preamble          string   `yaml:"preamble,omitempty" json:"preamble,omitempty"`
+	StopSequences     []string `yaml:"stop_sequences,omitempty" json:"stop_sequences" validate:"max=5"`
+	PromptTruncation  *string  `yaml:"prompt_truncation,omitempty" json:"prompt_truncation,omitempty"`
+	Connectors        []string `yaml:"connectors,omitempty" json:"connectors,omitempty"`
+	SearchQueriesOnly bool     `yaml:"search_queries_only,omitempty" json:"search_queries_only,omitempty"`
 }
 
 func DefaultParams() Params {
 	return Params{
 		Temperature:       0.3,
-		Preamble:          "",
-		ChatHistory:       nil,
-		ConversationID:    "",
-		PromptTruncation:  "",
-		Connectors:        []string{},
+		K:                 0,
+		P:                 .75,
 		SearchQueriesOnly: false,
 	}
 }
@@ -37,9 +39,9 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
-	BaseURL       string        `yaml:"base_url" json:"baseUrl" validate:"required"`
+	BaseURL       string        `yaml:"base_url" json:"baseUrl" validate:"required,http_url"`
 	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chatEndpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
+	Model         string        `yaml:"model" json:"model" validate:"required"` // https://docs.cohere.com/docs/models#command
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	DefaultParams *Params       `yaml:"default_params,omitempty" json:"defaultParams"`
 }
