@@ -41,7 +41,7 @@ TBU
 
 TBU
 
-## [0.0.3-rc2] (Apr 17, 2024)
+## [0.0.3-rc2], [0.0.3] (Apr 17, 2024)
 
 Final major improvements to streaming chat workflow. Fixed issues with Cohere streaming chat. 
 Expanded and revisited Cohere params in config.
@@ -166,7 +166,9 @@ Bringing support for streaming chat in Glide.
 - 🔧 [chores] Automatic coverage reports #39 (@roma-glushko)
 - 👷 [build] Setup release workflows #9 (@roma-glushko)
 
-[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/0.0.3-rc.1...HEAD
+[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/0.0.3...HEAD
+[0.0.3]: https://github.com/EinStack/glide/compare/0.0.3-rc.1..0.0.3
+[0.0.3-rc.2]: https://github.com/EinStack/glide/compare/0.0.3-rc.1..0.0.3-rc.2
 [0.0.3-rc.1]: https://github.com/EinStack/glide/compare/0.0.2..0.0.3-rc.1
 [0.0.2]: https://github.com/EinStack/glide/compare/0.0.2-rc.1..0.0.2
 [0.0.2-rc.2]: https://github.com/EinStack/glide/compare/0.0.2-rc.1..0.0.2-rc.2
