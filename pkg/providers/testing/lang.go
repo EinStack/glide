@@ -30,7 +30,6 @@ func (m *RespMock) Resp() *schemas.ChatResponse {
 
 func (m *RespMock) RespChunk() *schemas.ChatStreamChunk {
 	return &schemas.ChatStreamChunk{
-		ID: "rsp0001",
 		ModelResponse: schemas.ModelChunkResponse{
 			Message: schemas.ChatMessage{
 				Content: m.Msg,

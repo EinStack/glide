@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"go.uber.org/zap"
+
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 )
@@ -24,9 +26,11 @@ type Client struct {
 	chatURL             string
 	chatRequestTemplate *ChatRequest
 	errMapper           *ErrorMapper
+	finishReasonMapper  *FinishReasonMapper
 	config              *Config
 	httpClient          *http.Client
 	tel                 *telemetry.Telemetry
+	logger              *zap.Logger
 }
 
 // NewClient creates a new OpenAI client for the OpenAI API.
@@ -36,11 +40,16 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		return nil, err
 	}
 
+	logger := tel.L().With(
+		zap.String("provider", providerName),
+	)
+
 	c := &Client{
 		baseURL:             providerConfig.BaseURL,
 		chatURL:             chatURL,
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
+		finishReasonMapper:  NewFinishReasonMapper(tel),
 		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
 			Timeout: *clientConfig.Timeout,
@@ -50,7 +59,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 				MaxIdleConnsPerHost: 2,
 			},
 		},
-		tel: tel,
+		tel:    tel,
+		logger: logger,
 	}
 
 	return c, nil

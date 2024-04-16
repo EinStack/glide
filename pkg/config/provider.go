@@ -72,6 +72,10 @@ func (p *Provider) Load(configPath string) (*Provider, error) {
 	return p, nil
 }
 
+func Indent(text string, level int) string {
+	return strings.Repeat("   ", level) + text
+}
+
 func (p *Provider) formatValidationError(configPath string, err error) error {
 	// this check is only needed when your code could produce
 	// an invalid value for validation such as interface with nil
@@ -86,14 +90,14 @@ func (p *Provider) formatValidationError(configPath string, err error) error {
 		errors = append(
 			errors,
 			fmt.Sprintf(
-				"- ❌ %v", p.formatFieldError(fieldErr),
+				Indent("✗ %v", 1), p.formatFieldError(fieldErr),
 			),
 		)
 	}
 
 	// from here you can create your own error messages in whatever language you wish
 	return fmt.Errorf(
-		"invalid config file %v:\n%v\nPlease make sure the config file is properly formatted",
+		"invalid config file %v:\n\n%v\n\nPlease make sure the config file is properly formatted",
 		configPath,
 		strings.Join(errors, "\n"),
 	)
@@ -105,19 +109,27 @@ func (p *Provider) formatFieldError(fieldErr validator.FieldError) string {
 	switch fieldErr.Tag() {
 	case "required":
 		return fmt.Sprintf(
-			"\"%v\"field is required, \"%v\" provided",
+			"%v field is required, \"%v\" provided",
 			namespace,
 			fieldErr.Value(),
 		)
 	case "min":
 		if fieldErr.Kind() == reflect.Map || fieldErr.Kind() == reflect.Slice {
-			return fmt.Sprintf("\"%v\" field must have at least %s element(s)", namespace, fieldErr.Param())
+			return fmt.Sprintf("%v field must have at least %s element(s)", namespace, fieldErr.Param())
 		}
 
-		return fmt.Sprintf("\"%v\" field must have minimum value: %q", namespace, fieldErr.Param())
+		return fmt.Sprintf("%v field must have minimum value: %q", namespace, fieldErr.Param())
+	case "max":
+		if fieldErr.Kind() == reflect.Map || fieldErr.Kind() == reflect.Slice {
+			return fmt.Sprintf("%v field must have at most %s element(s)", namespace, fieldErr.Param())
+		}
+
+		return fmt.Sprintf("%v field must have maximum value: %q", namespace, fieldErr.Param())
+	case "lte":
+		return fmt.Sprintf("%v field must less than or equal to: %q", namespace, fieldErr.Param())
 	default:
 		return fmt.Sprintf(
-			"\"%v\"field: %v",
+			"%v field: %v",
 			namespace,
 			fieldErr.Tag(),
 		)

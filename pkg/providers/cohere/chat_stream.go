@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
 	"glide/pkg/telemetry"
 
@@ -17,35 +16,46 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-var StopReason = "stream-end"
+// SupportedEventType Cohere has other types too:
+// Ref: https://docs.cohere.com/reference/chat (see Chat -> Responses -> StreamedChatResponse)
+type SupportedEventType = string
+
+var (
+	StreamStartEvent SupportedEventType = "stream-start"
+	TextGenEvent     SupportedEventType = "text-generation"
+	StreamEndEvent   SupportedEventType = "stream-end"
+)
 
 // ChatStream represents cohere chat stream for a specific request
 type ChatStream struct {
-	tel         *telemetry.Telemetry
-	client      *http.Client
-	req         *http.Request
-	reqID       string
-	reqMetadata *schemas.Metadata
-	resp        *http.Response
-	reader      *sse.EventStreamReader
-	errMapper   *ErrorMapper
+	client             *http.Client
+	req                *http.Request
+	modelName          string
+	resp               *http.Response
+	generationID       string
+	streamFinished     bool
+	reader             *StreamReader
+	errMapper          *ErrorMapper
+	finishReasonMapper *FinishReasonMapper
+	tel                *telemetry.Telemetry
 }
 
 func NewChatStream(
 	tel *telemetry.Telemetry,
 	client *http.Client,
 	req *http.Request,
-	reqID string,
-	reqMetadata *schemas.Metadata,
+	modelName string,
 	errMapper *ErrorMapper,
+	finishReasonMapper *FinishReasonMapper,
 ) *ChatStream {
 	return &ChatStream{
-		tel:         tel,
-		client:      client,
-		req:         req,
-		reqID:       reqID,
-		reqMetadata: reqMetadata,
-		errMapper:   errMapper,
+		tel:                tel,
+		client:             client,
+		req:                req,
+		modelName:          modelName,
+		errMapper:          errMapper,
+		streamFinished:     false,
+		finishReasonMapper: finishReasonMapper,
 	}
 }
 
@@ -59,17 +69,23 @@ func (s *ChatStream) Open() error {
 		return s.errMapper.Map(resp)
 	}
 
+	s.tel.L().Debug("Resp Headers", zap.Any("headers", resp.Header))
+
 	s.resp = resp
-	s.reader = sse.NewEventStreamReader(resp.Body, 8192) // TODO: should we expose maxBufferSize?
+	s.reader = NewStreamReader(resp.Body, 8192) // TODO: should we expose maxBufferSize?
 
 	return nil
 }
 
 func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
-	var completionChunk ChatCompletionChunk
+	if s.streamFinished {
+		return nil, io.EOF
+	}
+
+	var responseChunk ChatCompletionChunk
 
 	for {
-		rawEvent, err := s.reader.ReadEvent()
+		rawChunk, err := s.reader.ReadEvent()
 		if err != nil {
 			s.tel.L().Warn(
 				"Chat stream is unexpectedly disconnected",
@@ -77,12 +93,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 				zap.Error(err),
 			)
 
-			if err == io.EOF {
-				return nil, io.EOF
-			}
-
-			// if err is io.EOF, this still means that the stream is interrupted unexpectedly
-			//  because the normal stream termination is done via finding out streamDoneMarker
+			// if io.EOF occurred in the middle of the stream, then the stream was interrupted
 
 			return nil, clients.ErrProviderUnavailable
 		}
@@ -90,69 +101,65 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		s.tel.L().Debug(
 			"Raw chat stream chunk",
 			zap.String("provider", providerName),
-			zap.ByteString("rawChunk", rawEvent),
+			zap.ByteString("rawChunk", rawChunk),
 		)
 
-		event, err := clients.ParseSSEvent(rawEvent)
+		err = json.Unmarshal(rawChunk, &responseChunk)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse chat stream message: %v", err)
+			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
 		}
 
-		if !event.HasContent() {
+		if responseChunk.EventType == StreamStartEvent {
+			s.generationID = *responseChunk.GenerationID
+
+			continue
+		}
+
+		if responseChunk.EventType != TextGenEvent && responseChunk.EventType != StreamEndEvent {
 			s.tel.L().Debug(
-				"Received an empty message in chat stream, skipping it",
+				"Unsupported stream chunk type, skipping it",
 				zap.String("provider", providerName),
-				zap.Any("msg", event),
+				zap.ByteString("chunk", rawChunk),
 			)
 
 			continue
 		}
 
-		err = json.Unmarshal(event.Data, &completionChunk)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal chat stream chunk: %v", err)
-		}
-
-		responseChunk := completionChunk
-
-		var finishReason *schemas.FinishReason
-
 		if responseChunk.IsFinished {
-			finishReason = &schemas.Complete
+			s.streamFinished = true
 
+			// TODO: use objectpool here
 			return &schemas.ChatStreamChunk{
-				ID:        s.reqID,
-				Provider:  providerName,
 				Cached:    false,
-				ModelName: "NA",
-				Metadata:  s.reqMetadata,
+				Provider:  providerName,
+				ModelName: s.modelName,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
-						"generationId": responseChunk.Response.GenerationID,
-						"responseId":   responseChunk.Response.ResponseID,
+						"generation_id": s.generationID,
+						"response_id":   responseChunk.Response.ResponseID,
 					},
 					Message: schemas.ChatMessage{
 						Role:    "model",
 						Content: responseChunk.Text,
 					},
-					FinishReason: finishReason,
 				},
+				FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 			}, nil
 		}
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        s.reqID,
-			Provider:  providerName,
 			Cached:    false,
-			ModelName: "NA",
-			Metadata:  s.reqMetadata,
+			Provider:  providerName,
+			ModelName: s.modelName,
 			ModelResponse: schemas.ModelChunkResponse{
+				Metadata: &schemas.Metadata{
+					"generation_id": s.generationID,
+				},
 				Message: schemas.ChatMessage{
 					Role:    "model",
 					Content: responseChunk.Text,
 				},
-				FinishReason: finishReason,
 			},
 		}, nil
 	}
@@ -181,29 +188,29 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
-		req.ID,
-		req.Metadata,
+		c.chatRequestTemplate.Model,
 		c.errMapper,
+		c.finishReasonMapper,
 	), nil
 }
 
 func (c *Client) createRequestFromStream(request *schemas.ChatStreamRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
-
 	chatRequest.Message = request.Message.Content
 
 	// Build the Cohere specific ChatHistory
 	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
-		for i, message := range request.MessageHistory {
-			chatRequest.ChatHistory[i] = ChatHistory{
-				// Copy the necessary fields from message to ChatHistory
-				// For example, if ChatHistory has a field called "Text", you can do:
-				Role:    message.Role,
-				Message: message.Content,
-				User:    "",
-			}
+		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
+
+		for _, message := range request.MessageHistory {
+			chatRequest.ChatHistory = append(
+				chatRequest.ChatHistory,
+				ChatMessage{
+					Role:    message.Role,
+					Content: message.Content,
+				},
+			)
 		}
 	}
 

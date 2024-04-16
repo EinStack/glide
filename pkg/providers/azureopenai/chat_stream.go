@@ -10,6 +10,7 @@ import (
 
 	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
+	"glide/pkg/providers/openai"
 	"glide/pkg/telemetry"
 
 	"go.uber.org/zap"
@@ -17,38 +18,32 @@ import (
 	"glide/pkg/api/schemas"
 )
 
-var (
-	StopReason       = "stop"
-	streamDoneMarker = []byte("[DONE]")
-)
+// TODO: Think about reducing the number of copy-pasted code btw OpenAI and Azure providers
 
 // ChatStream represents chat stream for a specific request
 type ChatStream struct {
-	tel         *telemetry.Telemetry
-	client      *http.Client
-	req         *http.Request
-	reqID       string
-	reqMetadata *schemas.Metadata
-	resp        *http.Response
-	reader      *sse.EventStreamReader
-	errMapper   *ErrorMapper
+	tel                *telemetry.Telemetry
+	client             *http.Client
+	req                *http.Request
+	resp               *http.Response
+	reader             *sse.EventStreamReader
+	finishReasonMapper *openai.FinishReasonMapper
+	errMapper          *ErrorMapper
 }
 
 func NewChatStream(
 	tel *telemetry.Telemetry,
 	client *http.Client,
 	req *http.Request,
-	reqID string,
-	reqMetadata *schemas.Metadata,
+	finishReasonMapper *openai.FinishReasonMapper,
 	errMapper *ErrorMapper,
 ) *ChatStream {
 	return &ChatStream{
-		tel:         tel,
-		client:      client,
-		req:         req,
-		reqID:       reqID,
-		reqMetadata: reqMetadata,
-		errMapper:   errMapper,
+		tel:                tel,
+		client:             client,
+		req:                req,
+		finishReasonMapper: finishReasonMapper,
+		errMapper:          errMapper,
 	}
 }
 
@@ -96,7 +91,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		event, err := clients.ParseSSEvent(rawEvent)
 
-		if bytes.Equal(event.Data, streamDoneMarker) {
+		if bytes.Equal(event.Data, openai.StreamDoneMarker) {
 			s.tel.L().Info(
 				"EOF: [DONE] marker found in chat stream",
 				zap.String("provider", providerName),
@@ -126,19 +121,11 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		responseChunk := completionChunk.Choices[0]
 
-		var finishReason *schemas.FinishReason
-
-		if responseChunk.FinishReason == StopReason {
-			finishReason = &schemas.Complete
-		}
-
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        s.reqID,
-			Provider:  providerName,
 			Cached:    false,
+			Provider:  providerName,
 			ModelName: completionChunk.ModelName,
-			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
 					"response_id":        completionChunk.ID,
@@ -148,8 +135,8 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 					Role:    responseChunk.Delta.Role,
 					Content: responseChunk.Delta.Content,
 				},
-				FinishReason: finishReason,
 			},
+			FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 		}, nil
 	}
 }
@@ -177,8 +164,7 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
-		req.ID,
-		req.Metadata,
+		c.finishReasonMapper,
 		c.errMapper,
 	), nil
 }

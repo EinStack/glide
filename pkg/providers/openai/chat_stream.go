@@ -10,45 +10,37 @@ import (
 
 	"github.com/r3labs/sse/v2"
 	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
-
 	"go.uber.org/zap"
 
 	"glide/pkg/api/schemas"
 )
 
-var (
-	StopReason       = "stop"
-	streamDoneMarker = []byte("[DONE]")
-)
+var StreamDoneMarker = []byte("[DONE]")
 
 // ChatStream represents OpenAI chat stream for a specific request
 type ChatStream struct {
-	tel         *telemetry.Telemetry
-	client      *http.Client
-	req         *http.Request
-	reqID       string
-	reqMetadata *schemas.Metadata
-	resp        *http.Response
-	reader      *sse.EventStreamReader
-	errMapper   *ErrorMapper
+	client             *http.Client
+	req                *http.Request
+	resp               *http.Response
+	reader             *sse.EventStreamReader
+	finishReasonMapper *FinishReasonMapper
+	errMapper          *ErrorMapper
+	logger             *zap.Logger
 }
 
 func NewChatStream(
-	tel *telemetry.Telemetry,
 	client *http.Client,
 	req *http.Request,
-	reqID string,
-	reqMetadata *schemas.Metadata,
+	finishReasonMapper *FinishReasonMapper,
 	errMapper *ErrorMapper,
+	logger *zap.Logger,
 ) *ChatStream {
 	return &ChatStream{
-		tel:         tel,
-		client:      client,
-		req:         req,
-		reqID:       reqID,
-		reqMetadata: reqMetadata,
-		errMapper:   errMapper,
+		client:             client,
+		req:                req,
+		finishReasonMapper: finishReasonMapper,
+		errMapper:          errMapper,
+		logger:             logger,
 	}
 }
 
@@ -74,9 +66,8 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 	for {
 		rawEvent, err := s.reader.ReadEvent()
 		if err != nil {
-			s.tel.L().Warn(
+			s.logger.Warn(
 				"Chat stream is unexpectedly disconnected",
-				zap.String("provider", providerName),
 				zap.Error(err),
 			)
 
@@ -86,15 +77,14 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			return nil, clients.ErrProviderUnavailable
 		}
 
-		s.tel.L().Debug(
+		s.logger.Debug(
 			"Raw chat stream chunk",
-			zap.String("provider", providerName),
 			zap.ByteString("rawChunk", rawEvent),
 		)
 
 		event, err := clients.ParseSSEvent(rawEvent)
 
-		if bytes.Equal(event.Data, streamDoneMarker) {
+		if bytes.Equal(event.Data, StreamDoneMarker) {
 			return nil, io.EOF
 		}
 
@@ -103,9 +93,8 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 		}
 
 		if !event.HasContent() {
-			s.tel.L().Debug(
+			s.logger.Debug(
 				"Received an empty message in chat stream, skipping it",
-				zap.String("provider", providerName),
 				zap.Any("msg", event),
 			)
 
@@ -119,30 +108,23 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 		responseChunk := completionChunk.Choices[0]
 
-		var finishReason *schemas.FinishReason
-
-		if responseChunk.FinishReason == StopReason {
-			finishReason = &schemas.Complete
-		}
-
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        s.reqID,
-			Provider:  providerName,
 			Cached:    false,
+			Provider:  providerName,
 			ModelName: completionChunk.ModelName,
-			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
 					"response_id":        completionChunk.ID,
 					"system_fingerprint": completionChunk.SystemFingerprint,
+					"generated_at":       completionChunk.Created,
 				},
 				Message: schemas.ChatMessage{
 					Role:    responseChunk.Delta.Role,
 					Content: responseChunk.Delta.Content,
 				},
-				FinishReason: finishReason,
 			},
+			FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 		}, nil
 	}
 }
@@ -167,12 +149,11 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 	}
 
 	return NewChatStream(
-		c.tel,
 		c.httpClient,
 		httpRequest,
-		req.ID,
-		req.Metadata,
+		c.finishReasonMapper,
 		c.errMapper,
+		c.logger,
 	), nil
 }
 
@@ -214,7 +195,7 @@ func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamReque
 	request.Header.Set("Connection", "keep-alive")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.tel.L().Debug(
+	c.logger.Debug(
 		"Stream chat request",
 		zap.String("chatURL", c.chatURL),
 		zap.Any("payload", chatRequest),

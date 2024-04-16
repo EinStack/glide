@@ -20,13 +20,10 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
 		Model:             cfg.Model,
 		Temperature:       cfg.DefaultParams.Temperature,
-		PreambleOverride:  cfg.DefaultParams.PreambleOverride,
-		ChatHistory:       cfg.DefaultParams.ChatHistory,
-		ConversationID:    cfg.DefaultParams.ConversationID,
+		Preamble:          cfg.DefaultParams.Preamble,
 		PromptTruncation:  cfg.DefaultParams.PromptTruncation,
 		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
-		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
 		Stream:            false,
 	}
 }
@@ -55,15 +52,16 @@ func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest 
 
 	// Build the Cohere specific ChatHistory
 	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
-		for i, message := range request.MessageHistory {
-			chatRequest.ChatHistory[i] = ChatHistory{
-				// Copy the necessary fields from message to ChatHistory
-				// For example, if ChatHistory has a field called "Text", you can do:
-				Role:    message.Role,
-				Message: message.Content,
-				User:    "",
-			}
+		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
+
+		for _, message := range request.MessageHistory {
+			chatRequest.ChatHistory = append(
+				chatRequest.ChatHistory,
+				ChatMessage{
+					Role:    message.Role,
+					Content: message.Content,
+				},
+			)
 		}
 	}
 
@@ -108,12 +106,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		c.tel.Logger.Error(
 			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
+			zap.ByteString("response", bodyBytes),
 			zap.Any("headers", resp.Header),
 		)
 
 		if resp.StatusCode != http.StatusOK {
-			return c.handleErrorResponse(resp)
+			return nil, c.errMapper.Map(resp)
 		}
 
 		// Server & client errors result in the same error to keep gateway resilient
@@ -124,15 +122,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
-		return nil, err
-	}
-
-	// Parse the response JSON
-	var responseJSON map[string]interface{}
-
-	err = json.Unmarshal(bodyBytes, &responseJSON)
-	if err != nil {
-		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -171,45 +160,4 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	return &response, nil
-}
-
-func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse, error) {
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
-		return nil, err
-	}
-
-	c.tel.Logger.Error(
-		"cohere chat request failed",
-		zap.Int("status_code", resp.StatusCode),
-		zap.String("response", string(bodyBytes)),
-		zap.Any("headers", resp.Header),
-	)
-
-	if resp.StatusCode == http.StatusTooManyRequests {
-		cooldownDelay, err := c.getCooldownDelay(resp)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-		}
-
-		return nil, clients.NewRateLimitError(&cooldownDelay)
-	}
-
-	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, clients.ErrUnauthorized
-	}
-
-	return nil, clients.ErrProviderUnavailable
-}
-
-func (c *Client) getCooldownDelay(resp *http.Response) (time.Duration, error) {
-	retryAfter := resp.Header.Get("Retry-After")
-
-	cooldownDelay, err := time.ParseDuration(retryAfter)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-	}
-
-	return cooldownDelay, nil
 }
