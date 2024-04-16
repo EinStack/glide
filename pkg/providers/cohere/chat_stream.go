@@ -197,20 +197,20 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 func (c *Client) createRequestFromStream(request *schemas.ChatStreamRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
 	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
-
 	chatRequest.Message = request.Message.Content
 
 	// Build the Cohere specific ChatHistory
 	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
-		for i, message := range request.MessageHistory {
-			chatRequest.ChatHistory[i] = ChatHistory{
-				// Copy the necessary fields from message to ChatHistory
-				// For example, if ChatHistory has a field called "Text", you can do:
-				Role:    message.Role,
-				Message: message.Content,
-				User:    "",
-			}
+		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
+
+		for _, message := range request.MessageHistory {
+			chatRequest.ChatHistory = append(
+				chatRequest.ChatHistory,
+				ChatMessage{
+					Role:    message.Role,
+					Content: message.Content,
+				},
+			)
 		}
 	}
 

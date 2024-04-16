@@ -86,29 +86,29 @@ type FinalResponse struct {
 }
 
 type ChatMessage struct {
-	Role    string `json:"role"`
+	Role    string `json:"role"` // CHATBOT, SYSTEM, USER
 	Content string `json:"content"`
 }
 
-type ChatHistory struct {
-	Role    string `json:"role"`
-	Message string `json:"message"`
-	User    string `json:"user,omitempty"`
-}
-
-// ChatRequest is a request to complete a chat completion..
+// ChatRequest is a request to complete a chat completion
+// Ref: https://docs.cohere.com/reference/chat
 type ChatRequest struct {
 	Model             string        `json:"model"`
 	Message           string        `json:"message"`
+	ChatHistory       []ChatMessage `json:"chat_history"`
 	Temperature       float64       `json:"temperature,omitempty"`
-	PreambleOverride  string        `json:"preamble_override,omitempty"`
-	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
-	ConversationID    string        `json:"conversation_id,omitempty"`
-	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
+	Preamble          string        `json:"preamble,omitempty"`
+	PromptTruncation  *string       `json:"prompt_truncation,omitempty"`
 	Connectors        []string      `json:"connectors,omitempty"`
 	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
-	CitiationQuality  string        `json:"citiation_quality,omitempty"`
 	Stream            bool          `json:"stream,omitempty"`
+	Seed              *int          `json:"seed,omitempty"`
+	MaxTokens         *int          `json:"max_tokens,omitempty"`
+	K                 int           `json:"k"`
+	P                 float32       `json:"p"`
+	FrequencyPenalty  float32       `json:"frequency_penalty"`
+	PresencePenalty   float32       `json:"presence_penalty"`
+	StopSequences     []string      `json:"stop_sequences"`
 }
 
 type Connectors struct {

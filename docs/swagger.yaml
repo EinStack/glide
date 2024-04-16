@@ -129,15 +129,6 @@ definitions:
       timeout:
         type: string
     type: object
-  cohere.ChatHistory:
-    properties:
-      message:
-        type: string
-      role:
-        type: string
-      user:
-        type: string
-    type: object
   cohere.Config:
     properties:
       baseUrl:
@@ -147,6 +138,7 @@ definitions:
       defaultParams:
         $ref: '#/definitions/cohere.Params'
       model:
+        description: https://docs.cohere.com/docs/models#command
         type: string
     required:
     - baseUrl
@@ -155,28 +147,45 @@ definitions:
     type: object
   cohere.Params:
     properties:
-      chat_history:
-        items:
-          $ref: '#/definitions/cohere.ChatHistory'
-        type: array
-      citiation_quality:
-        type: string
       connectors:
         items:
           type: string
         type: array
-      conversation_id:
+      frequency_penalty:
+        maximum: 1
+        minimum: 0
+        type: number
+      k:
+        maximum: 500
+        minimum: 0
+        type: integer
+      max_tokens:
+        type: integer
+      p:
+        maximum: 0.99
+        minimum: 0.01
+        type: number
+      preamble:
         type: string
-      preamble_override:
-        type: string
+      presence_penalty:
+        maximum: 1
+        minimum: 0
+        type: number
       prompt_truncation:
         type: string
       search_queries_only:
         type: boolean
-      stream:
-        type: boolean
+      seed:
+        type: integer
+      stop_sequences:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       temperature:
         type: number
+    required:
+    - temperature
     type: object
   http.ErrorSchema:
     properties:

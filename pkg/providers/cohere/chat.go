@@ -20,13 +20,10 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
 		Model:             cfg.Model,
 		Temperature:       cfg.DefaultParams.Temperature,
-		PreambleOverride:  cfg.DefaultParams.PreambleOverride,
-		ChatHistory:       cfg.DefaultParams.ChatHistory,
-		ConversationID:    cfg.DefaultParams.ConversationID,
+		Preamble:          cfg.DefaultParams.Preamble,
 		PromptTruncation:  cfg.DefaultParams.PromptTruncation,
 		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
-		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
 		Stream:            false,
 	}
 }
@@ -55,15 +52,16 @@ func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest 
 
 	// Build the Cohere specific ChatHistory
 	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
-		for i, message := range request.MessageHistory {
-			chatRequest.ChatHistory[i] = ChatHistory{
-				// Copy the necessary fields from message to ChatHistory
-				// For example, if ChatHistory has a field called "Text", you can do:
-				Role:    message.Role,
-				Message: message.Content,
-				User:    "",
-			}
+		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
+
+		for _, message := range request.MessageHistory {
+			chatRequest.ChatHistory = append(
+				chatRequest.ChatHistory,
+				ChatMessage{
+					Role:    message.Role,
+					Content: message.Content,
+				},
+			)
 		}
 	}
 
