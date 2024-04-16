@@ -41,6 +41,26 @@ TBU
 
 TBU
 
+## [0.0.3-rc2] (Apr 17, 2024)
+
+Final major improvements to streaming chat workflow. Fixed issues with Cohere streaming chat. 
+Expanded and revisited Cohere params in config.
+
+### Added
+
+- 🔧 #195 #196: Set router ctx in stream chunks & handle end of stream in case of some errors (@roma-glushko)
+- 🐛🔧 #197: Handle max_tokens & content_filtered finish reasons across OpenAI, Azure and Cohere (@roma-glushko)
+
+### Changed
+
+- 🔧 💥 #198: Expose more Cohere params & fixing validation of provider params in config (breaking change) (@roma-glushko)
+- 🔧 #186: Rendering Durations in a human-friendly way (@roma-glushko)
+
+### Fixed
+
+- 🐛 #209: Embed Swagger specs into binary to fix panics caused by missing swagger.yaml file (@roma-glushko)
+- 🐛 #200: Implemented a custom json per line stream reader to read Cohere chat streams correctly (@roma-glushko)
+
 ## [0.0.3-rc.1] (Apr 7th, 2024)
 
 Bringing support for streaming chat in Glide.
