@@ -110,6 +110,7 @@ func TestLangRouter_Chat_PickThirdHealthy(t *testing.T) {
 		chatModels:        langModels,
 		chatStreamModels:  langModels,
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
 	ctx := context.Background()
@@ -158,6 +159,7 @@ func TestLangRouter_Chat_SuccessOnRetry(t *testing.T) {
 		chatModels:        langModels,
 		chatStreamModels:  langModels,
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
 	resp, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
@@ -201,6 +203,7 @@ func TestLangRouter_Chat_UnhealthyModelInThePool(t *testing.T) {
 		chatStreamModels:  langModels,
 		chatStreamRouting: routing.NewPriority(models),
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
 	for i := 0; i < 2; i++ {
@@ -246,6 +249,7 @@ func TestLangRouter_Chat_AllModelsUnavailable(t *testing.T) {
 		chatStreamModels:  langModels,
 		chatStreamRouting: routing.NewPriority(models),
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
 	_, err := router.Chat(context.Background(), schemas.NewChatFromStr("tell me a dad joke"))
@@ -302,11 +306,12 @@ func TestLangRouter_ChatStream(t *testing.T) {
 		chatStreamRouting: routing.NewPriority(models),
 		chatStreamModels:  langModels,
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
 	ctx := context.Background()
 	req := schemas.NewChatStreamFromStr("tell me a dad joke")
-	respC := make(chan *schemas.ChatStreamResult)
+	respC := make(chan *schemas.ChatStreamMessage)
 
 	defer close(respC)
 
@@ -316,11 +321,12 @@ func TestLangRouter_ChatStream(t *testing.T) {
 
 	for range 5 {
 		select { //nolint:gosimple
-		case chunk := <-respC:
-			require.Nil(t, chunk.Error())
-			require.NotNil(t, chunk.Chunk().ModelResponse.Message.Content)
+		case message := <-respC:
+			require.Nil(t, message.Error)
+			require.NotNil(t, message.Chunk)
+			require.NotNil(t, message.Chunk.ModelResponse.Message.Content)
 
-			chunks = append(chunks, chunk.Chunk().ModelResponse.Message.Content)
+			chunks = append(chunks, message.Chunk.ModelResponse.Message.Content)
 		}
 	}
 
@@ -370,11 +376,12 @@ func TestLangRouter_ChatStream_FailOnFirst(t *testing.T) {
 		chatStreamRouting: routing.NewPriority(models),
 		chatStreamModels:  langModels,
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
 	ctx := context.Background()
 	req := schemas.NewChatStreamFromStr("tell me a dad joke")
-	respC := make(chan *schemas.ChatStreamResult)
+	respC := make(chan *schemas.ChatStreamMessage)
 
 	defer close(respC)
 
@@ -384,11 +391,12 @@ func TestLangRouter_ChatStream_FailOnFirst(t *testing.T) {
 
 	for range 3 {
 		select { //nolint:gosimple
-		case chunk := <-respC:
-			require.Nil(t, chunk.Error())
-			require.NotNil(t, chunk.Chunk().ModelResponse.Message.Content)
+		case message := <-respC:
+			require.Nil(t, message.Error)
+			require.NotNil(t, message.Chunk.ModelResponse.Message.Content)
+			require.NotNil(t, message.Chunk.ModelResponse.Message.Content)
 
-			chunks = append(chunks, chunk.Chunk().ModelResponse.Message.Content)
+			chunks = append(chunks, message.Chunk.ModelResponse.Message.Content)
 		}
 	}
 
@@ -438,9 +446,10 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		chatStreamModels:  langModels,
 		chatStreamRouting: routing.NewPriority(models),
 		tel:               telemetry.NewTelemetryMock(),
+		logger:            telemetry.NewLoggerMock(),
 	}
 
-	respC := make(chan *schemas.ChatStreamResult)
+	respC := make(chan *schemas.ChatStreamMessage)
 	defer close(respC)
 
 	go router.ChatStream(context.Background(), schemas.NewChatStreamFromStr("tell me a dad joke"), respC)
@@ -449,10 +458,11 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 
 	for range 3 {
 		result := <-respC
-		require.Nil(t, result.Chunk())
+		require.Nil(t, result.Chunk)
+		require.NotNil(t, result.Error)
 
-		errs = append(errs, result.Error().ErrCode)
+		errs = append(errs, result.Error.ErrCode)
 	}
 
-	require.Equal(t, []string{"modelUnavailable", "modelUnavailable", "allModelsUnavailable"}, errs)
+	require.Equal(t, []string{schemas.ModelUnavailable, schemas.ModelUnavailable, schemas.AllModelsUnavailable}, errs)
 }

@@ -30,9 +30,7 @@ var (
 type ChatStream struct {
 	client             *http.Client
 	req                *http.Request
-	reqID              string
 	modelName          string
-	reqMetadata        *schemas.Metadata
 	resp               *http.Response
 	generationID       string
 	streamFinished     bool
@@ -46,9 +44,7 @@ func NewChatStream(
 	tel *telemetry.Telemetry,
 	client *http.Client,
 	req *http.Request,
-	reqID string,
 	modelName string,
-	reqMetadata *schemas.Metadata,
 	errMapper *ErrorMapper,
 	finishReasonMapper *FinishReasonMapper,
 ) *ChatStream {
@@ -56,9 +52,7 @@ func NewChatStream(
 		tel:                tel,
 		client:             client,
 		req:                req,
-		reqID:              reqID,
 		modelName:          modelName,
-		reqMetadata:        reqMetadata,
 		errMapper:          errMapper,
 		streamFinished:     false,
 		finishReasonMapper: finishReasonMapper,
@@ -136,35 +130,31 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 			// TODO: use objectpool here
 			return &schemas.ChatStreamChunk{
-				ID:        s.reqID,
-				Provider:  providerName,
 				Cached:    false,
+				Provider:  providerName,
 				ModelName: s.modelName,
-				Metadata:  s.reqMetadata,
 				ModelResponse: schemas.ModelChunkResponse{
 					Metadata: &schemas.Metadata{
-						"generationId": s.generationID,
-						"responseId":   responseChunk.Response.ResponseID,
+						"generation_id": s.generationID,
+						"response_id":   responseChunk.Response.ResponseID,
 					},
 					Message: schemas.ChatMessage{
 						Role:    "model",
 						Content: responseChunk.Text,
 					},
-					FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 				},
+				FinishReason: s.finishReasonMapper.Map(responseChunk.FinishReason),
 			}, nil
 		}
 
 		// TODO: use objectpool here
 		return &schemas.ChatStreamChunk{
-			ID:        s.reqID,
-			Provider:  providerName,
 			Cached:    false,
+			Provider:  providerName,
 			ModelName: s.modelName,
-			Metadata:  s.reqMetadata,
 			ModelResponse: schemas.ModelChunkResponse{
 				Metadata: &schemas.Metadata{
-					"generationId": s.generationID,
+					"generation_id": s.generationID,
 				},
 				Message: schemas.ChatMessage{
 					Role:    "model",
@@ -198,9 +188,7 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 		c.tel,
 		c.httpClient,
 		httpRequest,
-		req.ID,
 		c.chatRequestTemplate.Model,
-		req.Metadata,
 		c.errMapper,
 		c.finishReasonMapper,
 	), nil

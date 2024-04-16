@@ -35,10 +35,14 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	}, nil
 }
 
+func NewLoggerMock() *zap.Logger {
+	return zap.NewNop()
+}
+
 // NewTelemetryMock returns Telemetry object with NoOp loggers, meters, tracers
 func NewTelemetryMock() *Telemetry {
 	return &Telemetry{
 		Config: DefaultConfig(),
-		Logger: zap.NewNop(),
+		Logger: NewLoggerMock(),
 	}
 }

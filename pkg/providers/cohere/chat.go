@@ -108,7 +108,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		c.tel.Logger.Error(
 			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
+			zap.ByteString("response", bodyBytes),
 			zap.Any("headers", resp.Header),
 		)
 
@@ -124,15 +124,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
-		return nil, err
-	}
-
-	// Parse the response JSON
-	var responseJSON map[string]interface{}
-
-	err = json.Unmarshal(bodyBytes, &responseJSON)
-	if err != nil {
-		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
