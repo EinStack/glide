@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofiber/contrib/fiberzap/v2"
+	"github.com/gofiber/swagger"
 
-	"github.com/gofiber/contrib/swagger"
+	"glide/docs"
+
+	"github.com/gofiber/contrib/fiberzap/v2"
 
 	"github.com/gofiber/fiber/v2"
 	_ "glide/docs" // importing docs package to include them into the binary
@@ -37,18 +39,21 @@ func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *ro
 }
 
 func (srv *Server) Run() error {
-	srv.server.Use(swagger.New(swagger.Config{
-		Title:    "Glide API Docs",
-		BasePath: "/v1/",
-		Path:     "swagger",
-		FilePath: "./docs/swagger.yaml",
-	}))
+	// TODO: refactor this when https://github.com/gofiber/contrib/pull/1069 is merged
+	srv.server.Get("/swagger.json", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).Type("json").Send(docs.SwaggerJSON)
+	})
 
 	srv.server.Use(fiberzap.New(fiberzap.Config{
 		Logger: srv.telemetry.Logger,
 	}))
 
 	v1 := srv.server.Group("/v1")
+
+	v1.Get("/swagger/*", swagger.New(swagger.Config{
+		Title: "Glide API Docs",
+		URL:   "/swagger.json",
+	}))
 
 	v1.Get("/language/", LangRoutersHandler(srv.routerManager))
 	v1.Post("/language/:router/chat/", LangChatHandler(srv.routerManager))
