@@ -17,19 +17,16 @@ We take all problems of managing and communicating with external providers out o
 so you can dive into tackling your core challenges.
 
 > [!Important]
-> Give us a star⭐ to support the project and watch👀 our repositories not to miss any update. Appriciate your interest 🙏
+> Glide is under active development right now 🛠️
+> 
+> Give us a star⭐ to support the project and watch👀 our repositories not to miss any update. Appreciate your interest 🙏
 
 Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
 model failover, caching, key management, etc. 
 
 <img src="docs/images/marketecture.svg" />
 
-Take a look at the develop branch.
-
 Check out our [documentation](https://glide.einstack.ai)!
-
-> [!Warning]
-> Glide is under active development right now 🛠️
 
 ## Features
 
