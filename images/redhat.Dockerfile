@@ -11,7 +11,7 @@ WORKDIR /build
 
 COPY . /build/
 RUN go mod download
-RUN go build -ldflags "-s -w -X glide/pkg.version=$VERSION -X glide/pkg.commitSha=$COMMIT -X glide/pkg.buildDate=$BUILD_DATE" -o /build/dist/glide
+RUN go build -ldflags "-s -w -X glide/pkg/version.version=$VERSION -X glide/pkg/version.commitSha=$COMMIT -X glide/pkg/version.buildDate=$BUILD_DATE" -o /build/dist/glide
 
 FROM redhat/ubi8-micro:8.9 as release
 

@@ -1,10 +1,10 @@
 CHECKER_BIN=$(PWD)/tmp/bin
-VERSION_PACKAGE := glide/pkg
+VERSION_PACKAGE := glide/pkg/version
 COMMIT ?= $(shell git describe --dirty --long --always --abbrev=15)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 VERSION ?= "latest"
 
-LDFLAGS_COMMON := "-s -w -X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).version=$(VERSION) -X $(VERSION_PACKAGE).buildDate=$(BUILD_DATE)"
+LDFLAGS_COMMON := "-s -w -X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).Version=$(VERSION) -X $(VERSION_PACKAGE).buildDate=$(BUILD_DATE)"
 
 .PHONY: help
 
@@ -40,7 +40,11 @@ run: ## Run Glide
 	@go run -ldflags $(LDFLAGS_COMMON) main.go -c ./config.dev.yaml
 
 build: ## Build Glide
-	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide
+	@echo "🔨Building Glide binary.."
+	@echo "Version: $(VERSION)"
+	@echo "Commit: $(COMMIT)"
+	@echo "Build Date: $(BUILD_DATE)"
+	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide;
 
 test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
