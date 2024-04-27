@@ -1,4 +1,8 @@
 # syntax=docker/dockerfile:1
+ARG VERSION
+ARG COMMIT
+ARG BUILD_DATE
+
 FROM golang:1.22-alpine as build
 
 ARG VERSION
