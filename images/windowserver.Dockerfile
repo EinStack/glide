@@ -5,13 +5,15 @@ ARG VERSION
 ARG COMMIT
 ARG BUILD_DATE
 
+ENV GOOS=windows
+
 WORKDIR /build
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 COPY . /build/
 RUN go mod download
-RUN GOOS=windows go build -v -o /build/dist/glide.exe -ldflags "-s -w -X glide/pkg/version.Version="$VERSION" -X glide/pkg/version.commitSha="$COMMIT" -X glide/pkg/version.buildDate="$BUILD_DATE""
+RUN go build -v -o /build/dist/glide.exe -ldflags "-s -w -X glide/pkg/version.Version="$VERSION" -X glide/pkg/version.commitSha="$COMMIT" -X glide/pkg/version.buildDate="$BUILD_DATE""
 
 FROM mcr.microsoft.com/windows/servercore:1809 as release
 
