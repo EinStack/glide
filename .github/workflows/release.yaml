@@ -32,8 +32,7 @@ jobs:
             DRY_RUN="true"
           fi
           
-          echo "dry-run=$DRY_RUN" >> $GITHUB_ENV
-          echo "::set-output name=dry-run::$DRY_RUN"
+          echo "dry-run=$DRY_RUN" >> $GITHUB_OUTPUT
 
 #  lint:
 #    uses: ./.github/workflows/lint.yaml
