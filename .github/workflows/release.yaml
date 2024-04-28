@@ -34,18 +34,26 @@ jobs:
           if [[ $LABELS == *"build:dry-run"* ]]; then
             DRY_RUN="true"
           fi
-          
-          echo "dry-run=$DRY_RUN" >> $GITHUB_OUTPUT
+                    
+          VERSION="${{ github.ref_name }}"
           
           if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
             PR_ID=$(echo "${{ github.ref }}" | cut -d '/' -f 3)
-            echo "version=dev.$PR_ID" >> $GITHUB_OUTPUT
-          else
-             echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            VERSION='dev.$PR_ID'
           fi
           
-          echo "commit=$(git rev-parse --short '$GITHUB_SHA')" >> $GITHUB_OUTPUT
-          echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          COMMIT=$(git rev-parse --short "$GITHUB_SHA")
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "Dry Run: $DRY_RUN"
+          echo "Version: $VERSION"
+          echo "Commit: $COMMIT"
+          echo "Build Date: $BUILD_DATE"
+          
+          echo "dry-run=$DRY_RUN" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
 
 #  lint:
 #    uses: ./.github/workflows/lint.yaml
