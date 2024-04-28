@@ -41,7 +41,7 @@ builds:
         goarch: arm
 
 changelog:
-  skip: true
+  disable: true
 
 archives:
   - id: glide
