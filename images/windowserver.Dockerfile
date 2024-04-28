@@ -13,7 +13,7 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 
 COPY . /build/
 RUN go mod download
-RUN go build -ldflags "-s -w -X glide/pkg.version=$VERSION -X glide/pkg.commitSha=$COMMIT -X glide/pkg.buildDate=$BUILD_DATE" -o /build/dist/glide.exe
+RUN go build -ldflags "-s -w -X glide/pkg/version.version=$VERSION -X glide/pkg.commitSha=$COMMIT -X glide/pkg.buildDate=$BUILD_DATE" -o /build/dist/glide.exe
 
 FROM mcr.microsoft.com/windows/servercore:1809 as release
 
