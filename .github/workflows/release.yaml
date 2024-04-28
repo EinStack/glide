@@ -49,7 +49,8 @@ jobs:
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
           DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
-  images:
+
+  images-linux:
     strategy:
       matrix:
         image:
@@ -85,3 +86,32 @@ jobs:
       - name: publish ${{ matrix.image }} image to DockerHub
         working-directory: ./images
         run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
+
+  images-win:
+    strategy:
+      matrix:
+        image:
+          - nanoserver
+          - windows-server
+    needs:
+      - release
+
+    runs-on: windows-2019
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: login into Github Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: login into Docker
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack --password-stdin
+
+      - name: build ${{ matrix.image }} image
+        working-directory: ./images
+        env:
+          BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
+        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
