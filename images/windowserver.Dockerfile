@@ -17,7 +17,7 @@ RUN  $env:VERSION = '$VERSION'; \
 
 COPY . /build/
 RUN go mod download
-RUN go build -ldflags "-s -w -X glide/pkg/version.Version=$env:VERSION -X glide/pkg/version.commitSha=$env:COMMIT -X glide/pkg/version.buildDate=$env:BUILD_DATE" -o /build/dist/glide.exe
+RUN go build -o /build/dist/glide.exe -ldflags "-s -w -X glide/pkg/version.Version=$env:VERSION -X glide/pkg/version.commitSha=$env:COMMIT -X glide/pkg/version.buildDate=$env:BUILD_DATE"
 
 FROM mcr.microsoft.com/windows/servercore:1809 as release
 
