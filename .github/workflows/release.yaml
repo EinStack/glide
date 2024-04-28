@@ -44,6 +44,7 @@ jobs:
           version: latest
           args: release --clean
         env:
+          GORELEASER_DRY_RUN: ${{ contains(github.event.pull_request.labels.*.name, 'build:dry-run') && 'true' || 'false' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
@@ -80,10 +81,12 @@ jobs:
         run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
+        if: "!contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
         working-directory: ./images
         run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to DockerHub
+        if: "!contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
         working-directory: ./images
         run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
 
@@ -93,6 +96,7 @@ jobs:
         image:
           - nanoserver
           - windows-server
+
     needs:
       - release
 
@@ -115,3 +119,13 @@ jobs:
         env:
           BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
         run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to Github Container Registry
+        if: "!contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
+        working-directory: ./images
+        run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to DockerHub
+        if: "!contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
+        working-directory: ./images
+        run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
