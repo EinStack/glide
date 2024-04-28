@@ -12,7 +12,7 @@ WORKDIR /build
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 COPY . /build/
-RUN pwd; Get-ChildItem
+RUN dir
 RUN go mod download
 RUN go build -ldflags "-s -w -X glide/pkg/version.Version=$VERSION -X glide/pkg/version.commitSha=$COMMIT -X glide/pkg/version.buildDate=$BUILD_DATE" -o /build/dist/glide.exe
 
