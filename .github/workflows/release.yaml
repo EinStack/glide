@@ -67,7 +67,7 @@ jobs:
         run: |
           ARGS=""
           if [[ "${{ needs.setup.outputs.dry-run }}" == "true" ]]; then
-            ARGS="$ARGS --skip=validate --skip-publish"
+            ARGS="$ARGS --skip=validate --skip=publish"
           fi
           echo "GORELEASER_EXTRA_ARGS=$ARGS" >> $GITHUB_ENV
 
