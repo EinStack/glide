@@ -43,17 +43,6 @@ jobs:
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
 
-      - name: List PR Labels
-        run: |
-          echo "Pull Request Labels: ${{ toJson(github.event.pull_request.labels) }}"
-
-      - name: Should publish bins?
-        run: |
-          echo "DRY_RUN=false" >> $GITHUB_ENV
-          if [[ "${{ github.event.pull_request.labels.*.name }}" == *"build:dry-run"* ]]; then
-            echo "DRY_RUN=true" >> $GITHUB_ENV
-          fi
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
@@ -61,7 +50,7 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GORELEASER_DRY_RUN: ${{ env.DRY_RUN }}
+          GORELEASER_DRY_RUN: ${{ contains(github.event.pull_request.labels.*.name, 'build:dry-run') && 'true' || 'false' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}

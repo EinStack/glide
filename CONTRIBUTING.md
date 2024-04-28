@@ -42,6 +42,13 @@ Be sure to take a look at all available commands.
 All important checks are automated on the level of pull request checks. 
 Be sure to keep your PRs green, before moving the PR to the review stage.
 
+#### build:dry-run
+
+The Glide repository has a special `build:dry-run` label that allows to run the release workflow without actually publishing Glide artefacts. 
+This is helpful for:
+- testing image building
+- making sure any changes to the release workflow works fine
+
 ## Improve Our Documentation
 
 ### Typos & Uncovered Functionality
@@ -72,4 +79,5 @@ That's perfectly fine!
 
 Feel free to connect with us in [Discord](https://discord.gg/rsBzprY7uT) and ask any question you have.
 Remember, there are no dumb questions, but there can be missing opportunities to make your life easier if you don't speak up about things you struggle with.
+
 
