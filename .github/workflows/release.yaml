@@ -158,7 +158,7 @@ jobs:
     strategy:
       matrix:
         image:
-          - nanoserver
+#          - nanoserver
           - windows-server
     needs:
       - setup
