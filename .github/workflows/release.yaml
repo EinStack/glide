@@ -43,14 +43,28 @@ jobs:
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
 
+      - name: Determine GoReleaser Mode
+        run: |
+          echo "GORELEASER_DRY_RUN=$GORELEASER_DRY_RUN" >> $GITHUB_ENV
+        env:
+          GORELEASER_DRY_RUN: ${{ contains(github.event.pull_request.labels.*.name, 'build:dry-run') && 'true' || 'false' }}
+
+      - name: Prepare GoReleaser extra args
+        run: |
+          ARGS="--rm-dist"
+          if [[ "${{ env.GORELEASER_DRY_RUN }}" == "true" ]]; then
+            ARGS="$ARGS --skip-validate"
+          fi
+          echo "GORELEASER_EXTRA_ARGS=$ARGS" >> $GITHUB_ENV
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --clean ${{ env.GORELEASER_EXTRA_ARGS }}
         env:
-          GORELEASER_DRY_RUN: ${{ contains(github.event.pull_request.labels.*.name, 'build:dry-run') && 'true' || 'false' }}
+          GORELEASER_DRY_RUN: ${{ env.GORELEASER_DRY_RUN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
