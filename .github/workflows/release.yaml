@@ -182,7 +182,7 @@ jobs:
 
       - name: build ${{ matrix.image }} image
         working-directory: ./images
-        shell: pwsh
+        shell: powershell
         env:
           VERSION: ${{ needs.setup.outputs.version }}
           COMMIT: ${{ needs.setup.outputs.commit }}
