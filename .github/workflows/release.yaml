@@ -37,8 +37,8 @@ jobs:
           
           echo "dry-run=$DRY_RUN" >> $GITHUB_OUTPUT
           
-          if [[ ${{ github.event_name }} == 'pull_request' ]]; then
-            PR_ID=$(echo ${{ github.ref }} | cut -d '/' -f 3)
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            PR_ID=$(echo "${{ github.ref }}" | cut -d '/' -f 3)
             echo "version=dev.$PR_ID" >> $GITHUB_OUTPUT
           else
              echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
