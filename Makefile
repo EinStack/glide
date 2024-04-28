@@ -4,7 +4,7 @@ COMMIT ?= $(shell git describe --dirty --long --always --abbrev=15)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 VERSION ?= "latest"
 
-LDFLAGS_COMMON := "-s -w -X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).Version=$(VERSION) -X $(VERSION_PACKAGE).buildDate=$(BUILD_DATE)"
+LDFLAGS_COMMON := "-X $(VERSION_PACKAGE).commitSha=$(COMMIT) -X $(VERSION_PACKAGE).Version=$(VERSION) -X $(VERSION_PACKAGE).buildDate=$(BUILD_DATE)"
 
 .PHONY: help
 
@@ -51,3 +51,11 @@ test: ## Run tests
 
 docs-api: install-checkers ## Generate OpenAPI API docs
 	@$(CHECKER_BIN)/swag init
+
+telemetry-up: ## Start observability services needed to receive Glides signals
+	@docker-compose --profile telemetry up --wait
+	@echo "Jaeger UI: http://localhost:16686/"
+	@echo "Grafana UI: http://localhost:3000/"
+
+telemetry-down: ## Shutdown observability services needed to receive Glides signals
+	@docker-compose --profile telemetry down
