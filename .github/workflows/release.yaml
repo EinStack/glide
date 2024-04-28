@@ -177,24 +177,27 @@ jobs:
       - name: login into Docker
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack --password-stdin
 
+      - name: Set up Make
+        run: choco install make
+
       - name: build ${{ matrix.image }} image
         working-directory: ./images
         env:
           VERSION: ${{ needs.setup.outputs.version }}
           COMMIT: ${{ needs.setup.outputs.commit }}
           BUILD_DATE: ${{ needs.setup.outputs.build_date }}
-        run: VERSION="${{ env.VERSION }}" COMMIT="${{ needs.setup.outputs.commit }}" BUILD_DATE="${{ needs.setup.outputs.build_date }}" make ${{ matrix.image }}
+        run: make VERSION="${{ env.VERSION }}" COMMIT="${{ needs.setup.outputs.commit }}" BUILD_DATE="${{ needs.setup.outputs.build_date }}" ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
         if: "needs.setup.outputs.dry-run != 'true'"
         working-directory: ./images
         env:
           VERSION: ${{ needs.setup.outputs.version }}
-        run: VERSION="${{ env.VERSION }}" make publish-ghcr-${{ matrix.image }}
+        run: make VERSION="${{ env.VERSION }}" publish-ghcr-${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to DockerHub
         if: "needs.setup.outputs.dry-run != 'true'"
         working-directory: ./images
         env:
           VERSION: ${{ needs.setup.outputs.version }}
-        run: VERSION="${{ env.VERSION }}" make publish-dockerhub-${{ matrix.image }}
+        run: make VERSION="${{ env.VERSION }}" publish-dockerhub-${{ matrix.image }}
