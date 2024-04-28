@@ -11,6 +11,8 @@ WORKDIR /build
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
+RUN dir
+
 COPY . /build/
 RUN dir
 RUN go mod download
