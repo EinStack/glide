@@ -5,16 +5,23 @@ on:
     tags:
       - "*"
 
+  pull_request:
+    types:
+      - labeled
+
 permissions:
   contents: write
   packages: write
 
 jobs:
   lint:
+    if: "startsWith(github.ref, 'refs/tags/')"
     uses: ./.github/workflows/lint.yaml
   vuln:
+    if: "startsWith(github.ref, 'refs/tags/')"
     uses: ./.github/workflows/vuln.yaml
   release:
+    if: "startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
     needs:
       - lint
       - vuln
@@ -63,6 +70,7 @@ jobs:
           BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
 
   images-linux:
+    if: "startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
     strategy:
       matrix:
         image:
@@ -102,6 +110,7 @@ jobs:
         run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
 
   images-win:
+    if: "startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'build:dry-run')"
     strategy:
       matrix:
         image:
