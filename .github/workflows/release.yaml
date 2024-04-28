@@ -39,7 +39,7 @@ jobs:
           
           if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
             PR_ID=$(echo "${{ github.ref }}" | cut -d '/' -f 3)
-            VERSION='dev.$PR_ID'
+            VERSION="dev.$PR_ID"
           fi
           
           COMMIT=$(git rev-parse --short "$GITHUB_SHA")
