@@ -15,10 +15,10 @@ type ChatCompletion struct {
 }
 
 type TokenCount struct {
-	PromptTokens   float64 `json:"prompt_tokens"`
-	ResponseTokens float64 `json:"response_tokens"`
-	TotalTokens    float64 `json:"total_tokens"`
-	BilledTokens   float64 `json:"billed_tokens"`
+	PromptTokens   int `json:"prompt_tokens"`
+	ResponseTokens int `json:"response_tokens"`
+	TotalTokens    int `json:"total_tokens"`
+	BilledTokens   int `json:"billed_tokens"`
 }
 
 type Meta struct {
@@ -60,6 +60,58 @@ type SearchQueryObject struct {
 }
 
 type ConnectorsResponse struct {
+	ID              string            `json:"id"`
+	UserAccessToken string            `json:"user_access_token"`
+	ContOnFail      string            `json:"continue_on_failure"`
+	Options         map[string]string `json:"options"`
+}
+
+// ChatCompletionChunk represents SSEvent a chat response is broken down on chat streaming
+// Ref: https://docs.cohere.com/reference/about
+type ChatCompletionChunk struct {
+	IsFinished   bool           `json:"is_finished"`
+	EventType    string         `json:"event_type"`
+	GenerationID *string        `json:"generation_id"`
+	Text         string         `json:"text"`
+	Response     *FinalResponse `json:"response,omitempty"`
+	FinishReason *string        `json:"finish_reason,omitempty"`
+}
+
+type FinalResponse struct {
+	ResponseID   string     `json:"response_id"`
+	Text         string     `json:"text"`
+	GenerationID string     `json:"generation_id"`
+	TokenCount   TokenCount `json:"token_count"`
+	Meta         Meta       `json:"meta"`
+}
+
+type ChatMessage struct {
+	Role    string `json:"role"` // CHATBOT, SYSTEM, USER
+	Content string `json:"content"`
+}
+
+// ChatRequest is a request to complete a chat completion
+// Ref: https://docs.cohere.com/reference/chat
+type ChatRequest struct {
+	Model             string        `json:"model"`
+	Message           string        `json:"message"`
+	ChatHistory       []ChatMessage `json:"chat_history"`
+	Temperature       float64       `json:"temperature,omitempty"`
+	Preamble          string        `json:"preamble,omitempty"`
+	PromptTruncation  *string       `json:"prompt_truncation,omitempty"`
+	Connectors        []string      `json:"connectors,omitempty"`
+	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
+	Stream            bool          `json:"stream,omitempty"`
+	Seed              *int          `json:"seed,omitempty"`
+	MaxTokens         *int          `json:"max_tokens,omitempty"`
+	K                 int           `json:"k"`
+	P                 float32       `json:"p"`
+	FrequencyPenalty  float32       `json:"frequency_penalty"`
+	PresencePenalty   float32       `json:"presence_penalty"`
+	StopSequences     []string      `json:"stop_sequences"`
+}
+
+type Connectors struct {
 	ID              string            `json:"id"`
 	UserAccessToken string            `json:"user_access_token"`
 	ContOnFail      string            `json:"continue_on_failure"`

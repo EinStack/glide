@@ -2,14 +2,13 @@ VENDOR ?= einstack
 PROJECT ?= Glide
 SOURCE ?= https://github.com/EinStack/glide
 LICENSE ?= Apache-2.0
-DESCRIPTION ?= "A lightweight, cloud-native LLM gateway"
+DESCRIPTION ?= "A lightweight, cloud-native fast LLM gateway"
 REPOSITORY ?= einstack/glide
 
 VERSION ?= dev
 RC_PART ?= rc
 COMMIT ?= $(shell git describe --dirty --always --abbrev=15)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-
 
 # OCI Labels: https://specs.opencontainers.org/image-spec/annotations
 # Test images via: docker run --rm --platform linux/amd64 -i einstack/glide:dev-alpine --config config.dev.yaml

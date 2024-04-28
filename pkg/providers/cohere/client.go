@@ -23,9 +23,11 @@ type Client struct {
 	baseURL             string
 	chatURL             string
 	chatRequestTemplate *ChatRequest
+	finishReasonMapper  *FinishReasonMapper
+	errMapper           *ErrorMapper
 	config              *Config
 	httpClient          *http.Client
-	telemetry           *telemetry.Telemetry
+	tel                 *telemetry.Telemetry
 }
 
 // NewClient creates a new Cohere client for the Cohere API.
@@ -48,7 +50,9 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 				MaxIdleConnsPerHost: 2,
 			},
 		},
-		telemetry: tel,
+		errMapper:          NewErrorMapper(tel),
+		finishReasonMapper: NewFinishReasonMapper(tel),
+		tel:                tel,
 	}
 
 	return c, nil

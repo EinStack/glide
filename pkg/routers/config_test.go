@@ -111,7 +111,7 @@ func TestRouterConfig_BuildModelsPerType(t *testing.T) {
 	chatModels, streamChatModels, err := cfg.BuildModels(tel)
 
 	require.Len(t, chatModels, 2)
-	require.Len(t, streamChatModels, 1)
+	require.Len(t, streamChatModels, 2)
 	require.NoError(t, err)
 }
 

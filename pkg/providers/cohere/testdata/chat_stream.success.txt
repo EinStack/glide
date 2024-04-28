@@ -1,0 +1,31 @@
+{"is_finished":false,"event_type":"stream-start","generation_id":"8d246a38-7d24-4dd9-ba78-97be8479db54"}
+{"is_finished":false,"event_type":"text-generation","text":"The"}
+{"is_finished":false,"event_type":"text-generation","text":" capital"}
+{"is_finished":false,"event_type":"text-generation","text":" of"}
+{"is_finished":false,"event_type":"text-generation","text":" Greenland"}
+{"is_finished":false,"event_type":"text-generation","text":" is"}
+{"is_finished":false,"event_type":"text-generation","text":" Nu"}
+{"is_finished":false,"event_type":"text-generation","text":"uk"}
+{"is_finished":false,"event_type":"text-generation","text":"."}
+{"is_finished":false,"event_type":"text-generation","text":" It"}
+{"is_finished":false,"event_type":"text-generation","text":" is"}
+{"is_finished":false,"event_type":"text-generation","text":" the"}
+{"is_finished":false,"event_type":"text-generation","text":" biggest"}
+{"is_finished":false,"event_type":"text-generation","text":" urban"}
+{"is_finished":false,"event_type":"text-generation","text":" area"}
+{"is_finished":false,"event_type":"text-generation","text":" and"}
+{"is_finished":false,"event_type":"text-generation","text":" serves"}
+{"is_finished":false,"event_type":"text-generation","text":" as"}
+{"is_finished":false,"event_type":"text-generation","text":" the"}
+{"is_finished":false,"event_type":"text-generation","text":" cultural"}
+{"is_finished":false,"event_type":"text-generation","text":","}
+{"is_finished":false,"event_type":"text-generation","text":" governmental"}
+{"is_finished":false,"event_type":"text-generation","text":","}
+{"is_finished":false,"event_type":"text-generation","text":" and"}
+{"is_finished":false,"event_type":"text-generation","text":" economic"}
+{"is_finished":false,"event_type":"text-generation","text":" center"}
+{"is_finished":false,"event_type":"text-generation","text":" of"}
+{"is_finished":false,"event_type":"text-generation","text":" the"}
+{"is_finished":false,"event_type":"text-generation","text":" country"}
+{"is_finished":false,"event_type":"text-generation","text":"."}
+{"is_finished":true,"event_type":"stream-end","response":{"response_id":"56d2f72e-fd00-4d60-af27-22d62efea204","text":"The capital of Greenland is Nuuk. It is the biggest urban area and serves as the cultural, governmental, and economic center of the country.","generation_id":"8d246a38-7d24-4dd9-ba78-97be8479db54","chat_history":[{"role":"USER","message":"What is the capital of Greenland?"},{"role":"CHATBOT","message":"The capital of Greenland is Nuuk. It is the biggest urban area and serves as the cultural, governmental, and economic center of the country."}],"finish_reason":"COMPLETE","meta":{"api_version":{"version":"1"},"billed_units":{"input_tokens":58,"output_tokens":29},"tokens":{"input_tokens":69,"output_tokens":29}}},"finish_reason":"COMPLETE"}

@@ -195,9 +195,9 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				Content: ollamaCompletion.Message.Content,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   float64(ollamaCompletion.EvalCount),
-				ResponseTokens: float64(ollamaCompletion.EvalCount),
-				TotalTokens:    float64(ollamaCompletion.EvalCount),
+				PromptTokens:   ollamaCompletion.EvalCount,
+				ResponseTokens: ollamaCompletion.EvalCount,
+				TotalTokens:    ollamaCompletion.EvalCount,
 			},
 		},
 	}

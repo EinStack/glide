@@ -5,6 +5,8 @@ import (
 	"io"
 	"time"
 
+	"glide/pkg/config/fields"
+
 	"glide/pkg/routers/health"
 
 	"glide/pkg/api/schemas"
@@ -19,14 +21,14 @@ type LangProvider interface {
 	SupportChatStream() bool
 
 	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
-	ChatStream(ctx context.Context, req *schemas.ChatRequest) (clients.ChatStream, error)
+	ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (clients.ChatStream, error)
 }
 
 type LangModel interface {
 	Model
 	Provider() string
 	Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error)
-	ChatStream(ctx context.Context, req *schemas.ChatRequest) (<-chan *clients.ChatStreamResult, error)
+	ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (<-chan *clients.ChatStreamResult, error)
 }
 
 // LanguageModel wraps provider client and expend it with health & latency tracking
@@ -40,7 +42,7 @@ type LanguageModel struct {
 	healthTracker         *health.Tracker
 	chatLatency           *latency.MovingAverage
 	chatStreamLatency     *latency.MovingAverage
-	latencyUpdateInterval *time.Duration
+	latencyUpdateInterval *fields.Duration
 }
 
 func NewLangModel(modelID string, client LangProvider, budget *health.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
@@ -67,7 +69,7 @@ func (m LanguageModel) Weight() int {
 	return m.weight
 }
 
-func (m LanguageModel) LatencyUpdateInterval() *time.Duration {
+func (m LanguageModel) LatencyUpdateInterval() *fields.Duration {
 	return m.latencyUpdateInterval
 }
 
@@ -85,27 +87,42 @@ func (m LanguageModel) ChatStreamLatency() *latency.MovingAverage {
 
 func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	startedAt := time.Now()
+
 	resp, err := m.client.Chat(ctx, request)
-
-	if err == nil {
-		// record latency per token to normalize measurements
-		m.chatLatency.Add(float64(time.Since(startedAt)) / resp.ModelResponse.TokenUsage.ResponseTokens)
-
-		// successful response
-		resp.ModelID = m.modelID
+	if err != nil {
+		m.healthTracker.TrackErr(err)
 
 		return resp, err
 	}
 
-	m.healthTracker.TrackErr(err)
+	// record latency per token to normalize measurements
+	m.chatLatency.Add(float64(time.Since(startedAt)) / float64(resp.ModelResponse.TokenUsage.ResponseTokens))
+
+	// successful response
+	resp.ModelID = m.modelID
 
 	return resp, err
 }
 
-func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest) (<-chan *clients.ChatStreamResult, error) {
+func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (<-chan *clients.ChatStreamResult, error) {
 	stream, err := m.client.ChatStream(ctx, req)
 	if err != nil {
 		m.healthTracker.TrackErr(err)
+
+		return nil, err
+	}
+
+	startedAt := time.Now()
+	err = stream.Open()
+	chunkLatency := time.Since(startedAt)
+
+	// the first chunk latency
+	m.chatStreamLatency.Add(float64(chunkLatency))
+
+	if err != nil {
+		m.healthTracker.TrackErr(err)
+
+		// if connection was not even open, we should not send our clients any messages about this failure
 
 		return nil, err
 	}
@@ -114,22 +131,6 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest
 
 	go func() {
 		defer close(streamResultC)
-
-		startedAt := time.Now()
-		err = stream.Open()
-		chunkLatency := time.Since(startedAt)
-
-		// the first chunk latency
-		m.chatStreamLatency.Add(float64(chunkLatency))
-
-		if err != nil {
-			m.healthTracker.TrackErr(err)
-
-			// if connection was not even open, we should not send our clients any messages about this failure
-
-			return
-		}
-
 		defer stream.Close()
 
 		for {
@@ -149,6 +150,8 @@ func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatRequest
 
 				return
 			}
+
+			chunk.ModelID = m.modelID
 
 			streamResultC <- clients.NewChatStreamResult(chunk, nil)
 

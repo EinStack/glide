@@ -193,11 +193,15 @@ const docTemplate = `{
         "anthropic.Config": {
             "type": "object",
             "required": [
+                "apiVersion",
                 "baseUrl",
                 "chatEndpoint",
                 "model"
             ],
             "properties": {
+                "apiVersion": {
+                    "type": "string"
+                },
                 "baseUrl": {
                     "type": "string"
                 },
@@ -374,20 +378,6 @@ const docTemplate = `{
                 }
             }
         },
-        "cohere.ChatHistory": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
         "cohere.Config": {
             "type": "object",
             "required": [
@@ -406,33 +396,48 @@ const docTemplate = `{
                     "$ref": "#/definitions/cohere.Params"
                 },
                 "model": {
+                    "description": "https://docs.cohere.com/docs/models#command",
                     "type": "string"
                 }
             }
         },
         "cohere.Params": {
             "type": "object",
+            "required": [
+                "temperature"
+            ],
             "properties": {
-                "chat_history": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/cohere.ChatHistory"
-                    }
-                },
-                "citiation_quality": {
-                    "type": "string"
-                },
                 "connectors": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "conversation_id": {
+                "frequency_penalty": {
+                    "type": "number",
+                    "maximum": 1,
+                    "minimum": 0
+                },
+                "k": {
+                    "type": "integer",
+                    "maximum": 500,
+                    "minimum": 0
+                },
+                "max_tokens": {
+                    "type": "integer"
+                },
+                "p": {
+                    "type": "number",
+                    "maximum": 0.99,
+                    "minimum": 0.01
+                },
+                "preamble": {
                     "type": "string"
                 },
-                "preamble_override": {
-                    "type": "string"
+                "presence_penalty": {
+                    "type": "number",
+                    "maximum": 1,
+                    "minimum": 0
                 },
                 "prompt_truncation": {
                     "type": "string"
@@ -440,9 +445,15 @@ const docTemplate = `{
                 "search_queries_only": {
                     "type": "boolean"
                 },
-                "stream": {
-                    "description": "unsupported right now",
-                    "type": "boolean"
+                "seed": {
+                    "type": "integer"
+                },
+                "stop_sequences": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "temperature": {
                     "type": "number"
@@ -910,13 +921,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "promptTokens": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "responseTokens": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "totalTokens": {
-                    "type": "number"
+                    "type": "integer"
                 }
             }
         }

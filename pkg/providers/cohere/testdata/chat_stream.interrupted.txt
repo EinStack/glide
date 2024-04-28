@@ -1,0 +1,6 @@
+{"is_finished":false,"event_type":"stream-start","generation_id":"8d246a38-7d24-4dd9-ba78-97be8479db54"}
+{"is_finished":false,"event_type":"text-generation","text":"The"}
+{"is_finished":false,"event_type":"text-generation","text":" capital"}
+{"is_finished":false,"event_type":"text-generation","text":" of"}
+{"is_finished":false,"event_type":"text-generation","text":" Greenland"}
+{"is_finished":false,"event_type":"text-generation","text":" is"}

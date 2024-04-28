@@ -25,8 +25,8 @@ import (
 type Gateway struct {
 	// configProvider holds all configurations
 	configProvider *config.Provider
-	// telemetry holds logger, meter, and tracer
-	telemetry *telemetry.Telemetry
+	// tel holds logger, meter, and tracer
+	tel *telemetry.Telemetry
 	// serverManager controls API over different protocols
 	serverManager *api.ServerManager
 	// signalChannel is used to receive termination signals from the OS.
@@ -43,8 +43,8 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 		return nil, err
 	}
 
-	tel.Logger.Info("🐦Glide is starting up", zap.String("version", version.FullVersion))
-	tel.Logger.Debug("✅ config loaded successfully:\n" + configProvider.GetStr())
+	tel.L().Info("🐦Glide is starting up", zap.String("version", version.FullVersion))
+	tel.L().Debug("✅ Config loaded successfully:\n" + configProvider.GetStr())
 
 	routerManager, err := routers.NewManager(&cfg.Routers, tel)
 	if err != nil {
@@ -58,7 +58,7 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 
 	return &Gateway{
 		configProvider: configProvider,
-		telemetry:      tel,
+		tel:            tel,
 		serverManager:  serverManager,
 		signalC:        make(chan os.Signal, 3), // equal to number of signal types we expect to receive
 		shutdownC:      make(chan struct{}),
@@ -78,13 +78,13 @@ LOOP:
 		select {
 		// TODO: Watch for config updates
 		case sig := <-gw.signalC:
-			gw.telemetry.Logger.Info("received signal from os", zap.String("signal", sig.String()))
+			gw.tel.L().Info("received signal from os", zap.String("signal", sig.String()))
 			break LOOP
 		case <-gw.shutdownC:
-			gw.telemetry.Logger.Info("received shutdown request")
+			gw.tel.L().Info("received shutdown request")
 			break LOOP
 		case <-ctx.Done():
-			gw.telemetry.Logger.Info("context done, terminating process")
+			gw.tel.L().Info("context done, terminating process")
 			// Call shutdown with background context as the passed in context has been canceled
 			return gw.shutdown(context.Background()) //nolint:contextcheck
 		}

@@ -19,8 +19,10 @@ var (
 	ErrNoModelAvailable = errors.New("could not handle request because all providers are not available")
 )
 
+type RouterID = string
+
 type LangRouter struct {
-	routerID          string
+	routerID          RouterID
 	Config            *LangRouterConfig
 	chatModels        []*providers.LanguageModel
 	chatStreamModels  []*providers.LanguageModel
@@ -28,6 +30,7 @@ type LangRouter struct {
 	chatStreamRouting routing.LangModelRouting
 	retry             *retry.ExpRetry
 	tel               *telemetry.Telemetry
+	logger            *zap.Logger
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
@@ -50,12 +53,13 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		chatRouting:       chatRouting,
 		chatStreamRouting: chatStreamRouting,
 		tel:               tel,
+		logger:            tel.L().With(zap.String("routerID", cfg.ID)),
 	}
 
 	return router, err
 }
 
-func (r *LangRouter) ID() string {
+func (r *LangRouter) ID() RouterID {
 	return r.routerID
 }
 
@@ -89,9 +93,8 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 			resp, err := langModel.Chat(ctx, req)
 			if err != nil {
-				r.tel.L().Warn(
+				r.logger.Warn(
 					"Lang model failed processing chat request",
-					zap.String("routerID", r.ID()),
 					zap.String("modelID", langModel.ID()),
 					zap.String("provider", langModel.Provider()),
 					zap.Error(err),
@@ -107,7 +110,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.tel.L().Warn("No healthy model found to serve chat request, wait and retry", zap.String("routerID", r.ID()))
+		r.logger.Warn("No healthy model found to serve chat request, wait and retry")
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
@@ -117,21 +120,25 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 	}
 
 	// if we reach this part, then we are in trouble
-	r.tel.L().Error("No model was available to handle chat request", zap.String("routerID", r.ID()))
+	r.logger.Error("No model was available to handle chat request")
 
 	return nil, ErrNoModelAvailable
 }
 
 func (r *LangRouter) ChatStream(
 	ctx context.Context,
-	req *schemas.ChatRequest,
-	respC chan<- *schemas.ChatStreamResult,
+	req *schemas.ChatStreamRequest,
+	respC chan<- *schemas.ChatStreamMessage,
 ) {
 	if len(r.chatStreamModels) == 0 {
-		respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-			Reason:  "noModels",
-			Message: ErrNoModels.Error(),
-		})
+		respC <- schemas.NewChatStreamError(
+			req.ID,
+			r.routerID,
+			schemas.NoModelConfigured,
+			ErrNoModels.Error(),
+			req.Metadata,
+			&schemas.ErrorReason,
+		)
 
 		return
 	}
@@ -153,9 +160,8 @@ func (r *LangRouter) ChatStream(
 			langModel := model.(providers.LangModel)
 			modelRespC, err := langModel.ChatStream(ctx, req)
 			if err != nil {
-				r.tel.L().Error(
+				r.logger.Error(
 					"Lang model failed to create streaming chat request",
-					zap.String("routerID", r.ID()),
 					zap.String("modelID", langModel.ID()),
 					zap.String("provider", langModel.Provider()),
 					zap.Error(err),
@@ -167,9 +173,8 @@ func (r *LangRouter) ChatStream(
 			for chunkResult := range modelRespC {
 				err = chunkResult.Error()
 				if err != nil {
-					r.tel.L().Warn(
+					r.logger.Warn(
 						"Lang model failed processing streaming chat request",
-						zap.String("routerID", r.ID()),
 						zap.String("modelID", langModel.ID()),
 						zap.String("provider", langModel.Provider()),
 						zap.Error(err),
@@ -178,15 +183,26 @@ func (r *LangRouter) ChatStream(
 					// It's challenging to hide an error in case of streaming chat as consumer apps
 					//  may have already used all chunks we streamed this far (e.g. showed them to their users like OpenAI UI does),
 					//  so we cannot easily restart that process from scratch
-					respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-						Reason:  "modelUnavailable",
-						Message: err.Error(),
-					})
+					respC <- schemas.NewChatStreamError(
+						req.ID,
+						r.routerID,
+						schemas.ModelUnavailable,
+						err.Error(),
+						req.Metadata,
+						nil,
+					)
 
 					continue NextModel
 				}
 
-				respC <- schemas.NewChatStreamResult(chunkResult.Chunk())
+				chunk := chunkResult.Chunk()
+
+				respC <- schemas.NewChatStreamChunk(
+					req.ID,
+					r.routerID,
+					req.Metadata,
+					chunk,
+				)
 			}
 
 			return
@@ -194,31 +210,36 @@ func (r *LangRouter) ChatStream(
 
 		// no providers were available to handle the request,
 		//  so we have to wait a bit with a hope there is some available next time
-		r.tel.L().Warn(
-			"No healthy model found to serve streaming chat request, wait and retry",
-			zap.String("routerID", r.ID()),
-		)
+		r.logger.Warn("No healthy model found to serve streaming chat request, wait and retry")
 
 		err := retryIterator.WaitNext(ctx)
 		if err != nil {
 			// something has cancelled the context
-			respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-				Reason:  "other",
-				Message: err.Error(),
-			})
+			respC <- schemas.NewChatStreamError(
+				req.ID,
+				r.routerID,
+				schemas.UnknownError,
+				err.Error(),
+				req.Metadata,
+				nil,
+			)
 
 			return
 		}
 	}
 
 	// if we reach this part, then we are in trouble
-	r.tel.L().Error(
-		"No model was available to handle streaming chat request. Try to configure more fallback models to avoid this",
-		zap.String("routerID", r.ID()),
+	r.logger.Error(
+		"No model was available to handle streaming chat request. " +
+			"Try to configure more fallback models to avoid this",
 	)
 
-	respC <- schemas.NewChatStreamErrorResult(&schemas.ChatStreamError{
-		Reason:  "allModelsUnavailable",
-		Message: ErrNoModelAvailable.Error(),
-	})
+	respC <- schemas.NewChatStreamError(
+		req.ID,
+		r.routerID,
+		schemas.AllModelsUnavailable,
+		ErrNoModelAvailable.Error(),
+		req.Metadata,
+		&schemas.ErrorReason,
+	)
 }

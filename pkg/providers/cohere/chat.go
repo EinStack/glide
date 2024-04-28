@@ -15,59 +15,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type ChatHistory struct {
-	Role    string `json:"role"`
-	Message string `json:"message"`
-	User    string `json:"user,omitempty"`
-}
-
-// ChatRequest is a request to complete a chat completion..
-type ChatRequest struct {
-	Model             string        `json:"model"`
-	Message           string        `json:"message"`
-	Temperature       float64       `json:"temperature,omitempty"`
-	PreambleOverride  string        `json:"preamble_override,omitempty"`
-	ChatHistory       []ChatHistory `json:"chat_history,omitempty"`
-	ConversationID    string        `json:"conversation_id,omitempty"`
-	PromptTruncation  string        `json:"prompt_truncation,omitempty"`
-	Connectors        []string      `json:"connectors,omitempty"`
-	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
-	CitiationQuality  string        `json:"citiation_quality,omitempty"`
-
-	// Stream            bool                `json:"stream,omitempty"`
-}
-
-type Connectors struct {
-	ID              string            `json:"id"`
-	UserAccessToken string            `json:"user_access_token"`
-	ContOnFail      string            `json:"continue_on_failure"`
-	Options         map[string]string `json:"options"`
-}
-
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
 		Model:             cfg.Model,
 		Temperature:       cfg.DefaultParams.Temperature,
-		PreambleOverride:  cfg.DefaultParams.PreambleOverride,
-		ChatHistory:       cfg.DefaultParams.ChatHistory,
-		ConversationID:    cfg.DefaultParams.ConversationID,
+		Preamble:          cfg.DefaultParams.Preamble,
 		PromptTruncation:  cfg.DefaultParams.PromptTruncation,
 		Connectors:        cfg.DefaultParams.Connectors,
 		SearchQueriesOnly: cfg.DefaultParams.SearchQueriesOnly,
-		CitiationQuality:  cfg.DefaultParams.CitiationQuality,
+		Stream:            false,
 	}
 }
 
 // Chat sends a chat request to the specified cohere model.
 func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	chatRequest := c.createRequestSchema(request)
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
 	if err != nil {
@@ -81,26 +45,27 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
+func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
 	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
+	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
 	chatRequest.Message = request.Message.Content
 
 	// Build the Cohere specific ChatHistory
 	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatHistory, len(request.MessageHistory))
-		for i, message := range request.MessageHistory {
-			chatRequest.ChatHistory[i] = ChatHistory{
-				// Copy the necessary fields from message to ChatHistory
-				// For example, if ChatHistory has a field called "Text", you can do:
-				Role:    message.Role,
-				Message: message.Content,
-				User:    "",
-			}
+		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
+
+		for _, message := range request.MessageHistory {
+			chatRequest.ChatHistory = append(
+				chatRequest.ChatHistory,
+				ChatMessage{
+					Role:    message.Role,
+					Content: message.Content,
+				},
+			)
 		}
 	}
 
-	return chatRequest
+	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -119,7 +84,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	req.Header.Set("Content-Type", "application/json")
 
 	// TODO: this could leak information from messages which may not be a desired thing to have
-	c.telemetry.Logger.Debug(
+	c.tel.Logger.Debug(
 		"cohere chat request",
 		zap.String("chat_url", c.chatURL),
 		zap.Any("payload", payload),
@@ -135,18 +100,18 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
+			c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		}
 
-		c.telemetry.Logger.Error(
+		c.tel.Logger.Error(
 			"cohere chat request failed",
 			zap.Int("status_code", resp.StatusCode),
-			zap.String("response", string(bodyBytes)),
+			zap.ByteString("response", bodyBytes),
 			zap.Any("headers", resp.Header),
 		)
 
 		if resp.StatusCode != http.StatusOK {
-			return c.handleErrorResponse(resp)
+			return nil, c.errMapper.Map(resp)
 		}
 
 		// Server & client errors result in the same error to keep gateway resilient
@@ -156,16 +121,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
-		return nil, err
-	}
-
-	// Parse the response JSON
-	var responseJSON map[string]interface{}
-
-	err = json.Unmarshal(bodyBytes, &responseJSON)
-	if err != nil {
-		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to read cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -174,7 +130,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 	err = json.Unmarshal(bodyBytes, &cohereCompletion)
 	if err != nil {
-		c.telemetry.Logger.Error("failed to parse cohere chat response", zap.Error(err))
+		c.tel.Logger.Error("failed to parse cohere chat response", zap.Error(err))
 		return nil, err
 	}
 
@@ -191,7 +147,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    "model", // TODO: Does this need to change?
+				Role:    "model",
 				Content: cohereCompletion.Text,
 				Name:    "",
 			},
@@ -204,41 +160,4 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	return &response, nil
-}
-
-func (c *Client) handleErrorResponse(resp *http.Response) (*schemas.ChatResponse, error) {
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c.telemetry.Logger.Error("failed to read cohere chat response", zap.Error(err))
-		return nil, err
-	}
-
-	c.telemetry.Logger.Error(
-		"cohere chat request failed",
-		zap.Int("status_code", resp.StatusCode),
-		zap.String("response", string(bodyBytes)),
-		zap.Any("headers", resp.Header),
-	)
-
-	if resp.StatusCode == http.StatusTooManyRequests {
-		cooldownDelay, err := c.getCooldownDelay(resp)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-		}
-
-		return nil, clients.NewRateLimitError(&cooldownDelay)
-	}
-
-	return nil, clients.ErrProviderUnavailable
-}
-
-func (c *Client) getCooldownDelay(resp *http.Response) (time.Duration, error) {
-	retryAfter := resp.Header.Get("Retry-After")
-
-	cooldownDelay, err := time.ParseDuration(retryAfter)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
-	}
-
-	return cooldownDelay, nil
 }

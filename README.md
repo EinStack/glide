@@ -17,19 +17,16 @@ We take all problems of managing and communicating with external providers out o
 so you can dive into tackling your core challenges.
 
 > [!Important]
-> Give us a star⭐ to support the project and watch👀 our repositories not to miss any update. Appriciate your interest 🙏
+> Glide is under active development right now 🛠️
+> 
+> Give us a star⭐ to support the project and watch👀 our repositories not to miss any update. Appreciate your interest 🙏
 
 Glide sits between your application and model providers to seamlessly handle various LLMOps tasks like
 model failover, caching, key management, etc. 
 
 <img src="docs/images/marketecture.svg" />
 
-Take a look at the develop branch.
-
 Check out our [documentation](https://glide.einstack.ai)!
-
-> [!Warning]
-> Glide is under active development right now 🛠️
 
 ## Features
 
@@ -42,16 +39,16 @@ Check out our [documentation](https://glide.einstack.ai)!
 
 ### Large Language Models
 
-|                                                     | Provider      | Support Status  |
-|-----------------------------------------------------|---------------|-----------------|
-| <img src="docs/images/anthropic.svg" width="18" />  | Anthropic     | 👍  Supported  |
-| <img src="docs/images/azure.svg" width="18" />      | Azure OpenAI  | 👍  Supported  |
-| <img src="docs/images/aws-icon.png" width="18" />  | AWS Bedrock (Titan)    | 👍  Supported  |
-| <img src="docs/images/cohere.png" width="18" />     | Cohere        | 👍  Supported |
-| <img src="docs/images/bard.svg" width="18" />       | Google Gemini | 🏗️ Coming Soon |
-| <img src="docs/images/octo.png" width="18" />     | OctoML        | 👍  Supported  |
-| <img src="docs/images/ollama.png" width="18" />     | Ollama        | 👍  Supported  |
-| <img src="docs/images/openai.svg" width="18" />     | OpenAI        | 👍  Supported  |
+| Provider                                                              | Supported Capabilities                    |
+|-----------------------------------------------------------------------|-------------------------------------------|
+| <img src="docs/images/openai.svg" width="18" /> OpenAI                | ✅ Chat <br/> ✅ Streaming Chat             |
+| <img src="docs/images/anthropic.svg" width="18" /> Anthropic          | ✅ Chat<br/>🏗️ Streaming Chat (coming soon) |
+| <img src="docs/images/azure.svg" width="18" /> Azure OpenAI           | ✅ Chat<br/> ✅ Streaming Chat   |
+| <img src="docs/images/aws-icon.png" width="18" /> AWS Bedrock (Titan) | ✅ Chat                                    |
+| <img src="docs/images/cohere.png" width="18" /> Cohere                | ✅ Chat<br/> ✅ Streaming Chat   |
+| <img src="docs/images/bard.svg" width="18" /> Google Gemini           | 🏗️ Chat (coming soon)                    |
+| <img src="docs/images/octo.png" width="18" /> OctoML                  | ✅ Chat                                    |
+| <img src="docs/images/ollama.png" width="18" /> Ollama                | ✅ Chat                                    |
 
 ## Get Started
 
@@ -213,8 +210,6 @@ To let you work with Glide's API with ease, we are going to provide you with SDK
 
 - Python (coming soon)
 - NodeJS (coming soon)
-- Golang (coming soon)
-- Rust (coming soon)
 
 ## Core Concepts
 

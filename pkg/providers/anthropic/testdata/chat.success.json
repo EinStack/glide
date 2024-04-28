@@ -1,7 +1,7 @@
 {
   "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
   "type": "message",
-  "model": "claude-2.1",
+  "model": "claude-instant-1.2",
   "role": "assistant",
   "content": [
     {
@@ -10,5 +10,9 @@
     }
   ],
   "stop_reason": "end_turn",
-  "stop_sequence": null
+  "stop_sequence": null,
+  "usage":{
+    "input_tokens": 24,
+    "output_tokens": 13
+  }
 }
