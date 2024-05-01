@@ -3,17 +3,25 @@ package routers
 import (
 	"testing"
 
-	"glide/pkg/providers/cohere"
+	"github.com/EinStack/glide/pkg/providers/cohere"
+
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers/routing"
+
+	"github.com/EinStack/glide/pkg/routers/retry"
+
+	"github.com/EinStack/glide/pkg/routers/latency"
+
+	"github.com/EinStack/glide/pkg/routers/health"
+
+	"github.com/EinStack/glide/pkg/providers/openai"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
+
+	"github.com/EinStack/glide/pkg/providers"
 
 	"github.com/stretchr/testify/require"
-	"glide/pkg/providers"
-	"glide/pkg/providers/clients"
-	"glide/pkg/providers/openai"
-	"glide/pkg/routers/health"
-	"glide/pkg/routers/latency"
-	"glide/pkg/routers/retry"
-	"glide/pkg/routers/routing"
-	"glide/pkg/telemetry"
 )
 
 func TestRouterConfig_BuildModels(t *testing.T) {

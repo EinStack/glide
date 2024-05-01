@@ -5,13 +5,15 @@ import (
 	"io"
 	"time"
 
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 
-	"glide/pkg/routers/health"
+	"github.com/EinStack/glide/pkg/routers/health"
 
-	"glide/pkg/api/schemas"
-	"glide/pkg/providers/clients"
-	"glide/pkg/routers/latency"
+	"github.com/EinStack/glide/pkg/routers/latency"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 // LangProvider defines an interface a provider should fulfill to be able to serve language chat requests

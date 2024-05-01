@@ -1,7 +1,7 @@
 package azureopenai
 
 import (
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 // Params defines OpenAI-specific model params with the specific validation of values

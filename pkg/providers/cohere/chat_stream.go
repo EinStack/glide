@@ -8,12 +8,13 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"go.uber.org/zap"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 // SupportedEventType Cohere has other types too:

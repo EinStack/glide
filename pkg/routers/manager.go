@@ -3,7 +3,7 @@ package routers
 import (
 	"errors"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 )
 
 var ErrRouterNotFound = errors.New("no router found with given ID")

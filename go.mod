@@ -1,4 +1,4 @@
-module glide
+module github.com/EinStack/glide
 
 go 1.22.1
 

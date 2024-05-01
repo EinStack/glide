@@ -3,7 +3,7 @@ package latency
 import (
 	"time"
 
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 // Config defines setting for moving average latency calculations

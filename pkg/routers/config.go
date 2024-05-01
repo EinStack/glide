@@ -3,10 +3,13 @@ package routers
 import (
 	"fmt"
 
-	"glide/pkg/providers"
-	"glide/pkg/routers/retry"
-	"glide/pkg/routers/routing"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers/routing"
+
+	"github.com/EinStack/glide/pkg/routers/retry"
+
+	"github.com/EinStack/glide/pkg/providers"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )

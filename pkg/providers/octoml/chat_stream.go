@@ -3,8 +3,9 @@ package octoml
 import (
 	"context"
 
-	"glide/pkg/api/schemas"
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 func (c *Client) SupportChatStream() bool {

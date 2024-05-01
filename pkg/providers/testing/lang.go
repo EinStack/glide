@@ -4,8 +4,9 @@ import (
 	"context"
 	"io"
 
-	"glide/pkg/api/schemas"
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 // RespMock mocks a chat response or a streaming chat chunk

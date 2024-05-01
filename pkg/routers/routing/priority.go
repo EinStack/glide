@@ -3,7 +3,7 @@ package routing
 import (
 	"sync/atomic"
 
-	"glide/pkg/providers"
+	"github.com/EinStack/glide/pkg/providers"
 )
 
 const (

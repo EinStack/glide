@@ -5,13 +5,15 @@ import (
 	"errors"
 	"sync"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 	"go.uber.org/zap"
+
+	"github.com/EinStack/glide/pkg/routers"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-	"glide/pkg/api/schemas"
-	"glide/pkg/routers"
 )
 
 type Handler = func(c *fiber.Ctx) error

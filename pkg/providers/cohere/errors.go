@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 	"go.uber.org/zap"
 )
 

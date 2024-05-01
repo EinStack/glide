@@ -8,9 +8,10 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/providers/openai"
+	"github.com/EinStack/glide/pkg/providers/openai"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
+
 	"go.uber.org/zap"
 )
 

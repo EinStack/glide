@@ -1,6 +1,6 @@
 package http
 
-import "glide/pkg/routers"
+import "github.com/EinStack/glide/pkg/routers"
 
 type ErrorSchema struct {
 	Message string `json:"message"`

@@ -4,14 +4,16 @@ import (
 	"context"
 	"errors"
 
-	"glide/pkg/routers/retry"
+	"github.com/EinStack/glide/pkg/routers/retry"
 	"go.uber.org/zap"
 
-	"glide/pkg/providers"
+	"github.com/EinStack/glide/pkg/providers"
 
-	"glide/pkg/api/schemas"
-	"glide/pkg/routers/routing"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers/routing"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 var (
