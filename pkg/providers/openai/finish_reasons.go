@@ -1,8 +1,9 @@
 package openai
 
 import (
-	"glide/pkg/api/schemas"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 	"go.uber.org/zap"
 )
 

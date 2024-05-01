@@ -4,20 +4,27 @@ import (
 	"errors"
 	"fmt"
 
-	"glide/pkg/routers/latency"
+	"github.com/EinStack/glide/pkg/routers/latency"
 
-	"glide/pkg/providers/bedrock"
-	"glide/pkg/providers/clients"
-	"glide/pkg/providers/ollama"
+	"github.com/EinStack/glide/pkg/providers/ollama"
 
-	"glide/pkg/routers/health"
+	"github.com/EinStack/glide/pkg/providers/clients"
 
-	"glide/pkg/providers/anthropic"
-	"glide/pkg/providers/azureopenai"
-	"glide/pkg/providers/cohere"
-	"glide/pkg/providers/octoml"
-	"glide/pkg/providers/openai"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/providers/bedrock"
+
+	"github.com/EinStack/glide/pkg/routers/health"
+
+	"github.com/EinStack/glide/pkg/providers/openai"
+
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/octoml"
+
+	"github.com/EinStack/glide/pkg/providers/cohere"
+
+	"github.com/EinStack/glide/pkg/providers/azureopenai"
+
+	"github.com/EinStack/glide/pkg/providers/anthropic"
 )
 
 var ErrProviderNotFound = errors.New("provider not found")

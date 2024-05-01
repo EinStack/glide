@@ -5,18 +5,25 @@ import (
 	"testing"
 	"time"
 
-	"glide/pkg/routers/latency"
+	"github.com/EinStack/glide/pkg/routers/latency"
 
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
+
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers/routing"
+
+	"github.com/EinStack/glide/pkg/routers/retry"
+
+	"github.com/EinStack/glide/pkg/routers/health"
+
+	ptesting "github.com/EinStack/glide/pkg/providers/testing"
+
+	"github.com/EinStack/glide/pkg/providers"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 
 	"github.com/stretchr/testify/require"
-	"glide/pkg/api/schemas"
-	"glide/pkg/providers"
-	ptesting "glide/pkg/providers/testing"
-	"glide/pkg/routers/health"
-	"glide/pkg/routers/retry"
-	"glide/pkg/routers/routing"
-	"glide/pkg/telemetry"
 )
 
 func TestLangRouter_Chat_PickFistHealthy(t *testing.T) {

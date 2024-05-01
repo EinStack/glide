@@ -3,10 +3,11 @@ package testing
 import (
 	"time"
 
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 
-	"glide/pkg/providers"
-	"glide/pkg/routers/latency"
+	"github.com/EinStack/glide/pkg/routers/latency"
+
+	"github.com/EinStack/glide/pkg/providers"
 )
 
 // LangModelMock

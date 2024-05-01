@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 )
 
 const (

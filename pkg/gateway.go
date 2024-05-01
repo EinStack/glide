@@ -7,16 +7,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	"glide/pkg/version"
+	"github.com/EinStack/glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/version"
 
-	"glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/config"
 
-	"glide/pkg/config"
+	"github.com/EinStack/glide/pkg/telemetry"
 
-	"glide/pkg/telemetry"
 	"go.uber.org/zap"
 
-	"glide/pkg/api"
+	"github.com/EinStack/glide/pkg/api"
+
 	"go.uber.org/multierr"
 )
 

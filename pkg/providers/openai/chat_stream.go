@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/EinStack/glide/pkg/providers/clients"
 	"github.com/r3labs/sse/v2"
-	"glide/pkg/providers/clients"
 	"go.uber.org/zap"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 var StreamDoneMarker = []byte("[DONE]")

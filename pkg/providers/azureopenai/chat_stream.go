@@ -8,14 +8,16 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/openai"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 	"github.com/r3labs/sse/v2"
-	"glide/pkg/providers/clients"
-	"glide/pkg/providers/openai"
-	"glide/pkg/telemetry"
 
 	"go.uber.org/zap"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 // TODO: Think about reducing the number of copy-pasted code btw OpenAI and Azure providers

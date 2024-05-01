@@ -3,7 +3,7 @@ package routing
 import (
 	"errors"
 
-	"glide/pkg/providers"
+	"github.com/EinStack/glide/pkg/providers"
 )
 
 var ErrNoHealthyModels = errors.New("no healthy models found")

@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
+
 	"go.uber.org/zap"
 )
 

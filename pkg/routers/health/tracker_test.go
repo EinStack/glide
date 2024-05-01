@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/EinStack/glide/pkg/providers/clients"
 	"github.com/stretchr/testify/require"
-	"glide/pkg/providers/clients"
 )
 
 func TestHealthTracker_HealthyByDefault(t *testing.T) {

@@ -10,11 +10,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
+
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/stretchr/testify/require"
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
 )
 
 func TestOpenAIClient_ChatStreamSupported(t *testing.T) {

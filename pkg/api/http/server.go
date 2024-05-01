@@ -8,16 +8,17 @@ import (
 
 	"github.com/gofiber/swagger"
 
-	"glide/docs"
+	"github.com/EinStack/glide/docs"
 
 	"github.com/gofiber/contrib/fiberzap/v2"
 
+	_ "github.com/EinStack/glide/docs" // importing docs package to include them into the binary
+
 	"github.com/gofiber/fiber/v2"
-	_ "glide/docs" // importing docs package to include them into the binary
 
-	"glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/routers"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 )
 
 type Server struct {

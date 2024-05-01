@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"glide/pkg/providers/openai"
+	"github.com/EinStack/glide/pkg/providers/openai"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 )
 
 const (

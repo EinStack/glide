@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 
 	"github.com/stretchr/testify/require"
 )

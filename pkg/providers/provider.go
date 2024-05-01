@@ -1,7 +1,7 @@
 package providers
 
 import (
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 // ModelProvider exposes provider context

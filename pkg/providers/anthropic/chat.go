@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 	"go.uber.org/zap"
 )
 
