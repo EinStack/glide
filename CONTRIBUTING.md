@@ -34,13 +34,32 @@ You can outline gaps and let other people contribute their ideas on possible sol
 ### Dev Commands
 
 Many useful commands are in [the root makefile](Makefile). 
-We use make as a convenient interface to automate a bunch of commands like codebase linting, running tests, running dev binary, etc.
-Be sure to take a look at all available commands.
+
+> [!Warning]
+> Windows doesn't come with `make` installed. You need to install it via [Chocolatey](https://chocolatey.org/), for example:
+> ```powershell
+> choco install make
+> ```
+
+We use make as a convenient interface to automate a bunch of commands like:
+- codebase linting via `make lint`
+- running tests via `make test`
+- running dev binary `make run`
+- etc.
+
+Be sure to take a look at all available commands via running `make` (from the project root directory).
 
 ### CI Checks
 
 All important checks are automated on the level of pull request checks. 
 Be sure to keep your PRs green, before moving the PR to the review stage.
+
+#### build:dry-run
+
+The Glide repository has a special `build:dry-run` label that allows to run the release workflow without actually publishing Glide artefacts. 
+This is helpful for:
+- testing image building
+- making sure any changes to the release workflow works fine
 
 ## Improve Our Documentation
 
@@ -72,4 +91,5 @@ That's perfectly fine!
 
 Feel free to connect with us in [Discord](https://discord.gg/rsBzprY7uT) and ask any question you have.
 Remember, there are no dumb questions, but there can be missing opportunities to make your life easier if you don't speak up about things you struggle with.
+
 

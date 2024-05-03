@@ -5,19 +5,66 @@ on:
     tags:
       - "*"
 
+  pull_request:
+    types:
+      - synchronize
+      - labeled
+
 permissions:
   contents: write
   packages: write
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yaml
-  vuln:
-    uses: ./.github/workflows/vuln.yaml
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      dry-run: ${{ steps.build-context.outputs.dry-run }}
+      version: ${{ steps.build-context.outputs.version }}
+      commit: ${{ steps.build-context.outputs.commit }}
+      build_date: ${{ steps.build-context.outputs.build_date }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set build context
+        id: build-context
+        run: |
+          LABELS="${{ toJson(github.event.pull_request.labels.*.name) }}"
+          DRY_RUN="false"
+          
+          if [[ $LABELS == *"build:dry-run"* ]]; then
+            DRY_RUN="true"
+          fi
+                    
+          VERSION="${{ github.ref_name }}"
+          
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            PR_ID=$(echo "${{ github.ref }}" | cut -d '/' -f 3)
+            VERSION="dev.$PR_ID"
+          fi
+          
+          COMMIT=$(git rev-parse --short "$GITHUB_SHA")
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "Dry Run: $DRY_RUN"
+          echo "Version: $VERSION"
+          echo "Commit: $COMMIT"
+          echo "Build Date: $BUILD_DATE"
+          
+          echo "dry-run=$DRY_RUN" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+
+#  lint:
+#    uses: ./.github/workflows/lint.yaml
+#  vuln:
+#    uses: ./.github/workflows/vuln.yaml
   release:
+    if: "startsWith(github.ref, 'refs/tags/') || needs.setup.outputs.dry-run == 'true'"
     needs:
-      - lint
-      - vuln
+      - setup
+#      - lint
+#      - vuln
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
@@ -37,19 +84,30 @@ jobs:
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
-          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
-  images:
+      - name: Prepare GoReleaser extra args
+        run: |
+          ARGS=""
+          if [[ "${{ needs.setup.outputs.dry-run }}" == "true" ]]; then
+            ARGS="$ARGS --skip=validate --skip=publish"
+          fi
+          echo "GORELEASER_EXTRA_ARGS=$ARGS" >> $GITHUB_ENV
+
+#      - name: Run GoReleaser
+#        uses: goreleaser/goreleaser-action@v5
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: release --clean ${{ env.GORELEASER_EXTRA_ARGS }}
+#        env:
+#          GORELEASER_DRY_RUN: ${{ env.GORELEASER_DRY_RUN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
+#          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+#          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+#          BREW_TAP_PRIVATE_KEY: ${{ secrets.BREW_TAP_PRIVATE_KEY }}
+
+  images-linux:
+    if: "startsWith(github.ref, 'refs/tags/') || needs.setup.outputs.dry-run == 'true'"
     strategy:
       matrix:
         image:
@@ -59,6 +117,7 @@ jobs:
           - redhat
     runs-on: ubuntu-latest
     needs:
+      - setup
       - release
     steps:
       - name: checkout
@@ -75,13 +134,71 @@ jobs:
       - name: build ${{ matrix.image }} image
         working-directory: ./images
         env:
-          BUILD_TIME: ${{needs.build_time.outputs.BUILD_TIME}}
-        run: VERSION=${{ github.ref_name }} COMMIT=$(git rev-parse --short "$GITHUB_SHA") make ${{ matrix.image }}
+          VERSION: ${{ needs.setup.outputs.version }}
+          COMMIT: ${{ needs.setup.outputs.commit }}
+          BUILD_DATE: ${{ needs.setup.outputs.build_date }}
+        run: VERSION="${{ env.VERSION }}" COMMIT="${{ env.COMMIT }}" BUILD_DATE="${{ env.BUILD_DATE }}" make ${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to Github Container Registry
+        if: "needs.setup.outputs.dry-run != 'true'"
         working-directory: ./images
-        run: VERSION=${{ github.ref_name }} make publish-ghcr-${{ matrix.image }}
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+        run: VERSION="${{ env.VERSION }}" make publish-ghcr-${{ matrix.image }}
 
       - name: publish ${{ matrix.image }} image to DockerHub
+        if: "needs.setup.outputs.dry-run != 'true'"
         working-directory: ./images
-        run: VERSION=${{ github.ref_name }} make publish-dockerhub-${{ matrix.image }}
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+        run: VERSION="${{ env.VERSION }}" make publish-dockerhub-${{ matrix.image }}
+
+  images-win:
+    if: "startsWith(github.ref, 'refs/tags/') || needs.setup.outputs.dry-run == 'true'"
+    strategy:
+      matrix:
+        image:
+#          - nanoserver
+          - windows-server
+    needs:
+      - setup
+      - release
+    runs-on: windows-2019
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: login into Github Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: login into Docker
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u einstack --password-stdin
+
+      - name: Set up Make
+        run: choco install make
+
+      - name: build ${{ matrix.image }} image
+        working-directory: ./images
+        shell: powershell
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+          COMMIT: ${{ needs.setup.outputs.commit }}
+          BUILD_DATE: ${{ needs.setup.outputs.build_date }}
+        run: make VERSION="${{ env.VERSION }}" COMMIT="${{ needs.setup.outputs.commit }}" BUILD_DATE="${{ needs.setup.outputs.build_date }}" ${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to Github Container Registry
+        if: "needs.setup.outputs.dry-run != 'true'"
+        working-directory: ./images
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+        run: make VERSION="${{ env.VERSION }}" publish-ghcr-${{ matrix.image }}
+
+      - name: publish ${{ matrix.image }} image to DockerHub
+        if: "needs.setup.outputs.dry-run != 'true'"
+        working-directory: ./images
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+        run: make VERSION="${{ env.VERSION }}" publish-dockerhub-${{ matrix.image }}
