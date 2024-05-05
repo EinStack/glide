@@ -1,14 +1,14 @@
-name: Discord PR Notifications
+name: Pull Request Activity Notifications
 
 on:
   pull_request:
     types: [opened, closed, reopened]
 
 jobs:
-  notify_discord:
+  activity_notifications:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract PR context
+      - name: Gather PR context
         id: context
         uses: actions/github-script@v4
         with:
@@ -22,21 +22,31 @@ jobs:
             
             console.log(`Action: ${action}`);
             console.log(`PR Title: ${prTitle}`);
-            console.log(`PR Creator: ${prCreator}`);
-            console.log(`Repository Name: ${repositoryName}`);
+            console.log(`PR Author: ${prCreator}`);
+            console.log(`Project: ${repositoryName}`);
             
-            return { title: title, creator: author, repository: projectName, action: action }
+            return { title: title, author: author, project: projectName, action: action }
 
-      - name: Send Discord Notification
+      - name: Send Discord Notification for opened PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
         uses: discord/action@v1
         with:
-          webhook_id: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_TOKEN }}
-          content: >
-            ${{ if eq(steps.context.outputs.action, 'opened') }} 
-              "🛠️[New Pull Request] ${steps.context.outputs.title}\nProject: ${steps.context.outputs.repository}\nAuthor: ${steps.context.outputs.creator}\nLink: ${{ github.event.pull_request.html_url }}"
-            ${{ else if eq(steps.context.outputs.action, 'closed') }}
-              "✅[Pull Request Closed] ${steps.context.outputs.title}\nProject: ${steps.context.outputs.repository}\nAuthor: ${steps.context.outputs.creator}\nLink: ${{ github.event.pull_request.html_url }}"
-            ${{ else if eq(steps.context.outputs.action, 'reopened') }}
-              "🛠️[Pull Request Reopened] ${steps.context.outputs.title}\nProject: ${steps.context.outputs.repository}\nAuthor: ${steps.context.outputs.creator}\nLink: ${{ github.event.pull_request.html_url }}""
-            ${{ endif }}
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          content: "✨️[New Pull Request] ${steps.context.outputs.title}\nProject: ${steps.context.outputs.project}\nAuthor: ${steps.context.outputs.author}\nLink: ${{ github.event.pull_request.html_url }}"
+
+      - name: Send Discord Notification for closed PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+        uses: discord/action@v1
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          content: "✅[Pull Request Closed] ${steps.context.outputs.title}\nProject: ${steps.context.outputs.project}\nAuthor: ${steps.context.outputs.author}\nLink: ${{ github.event.pull_request.html_url }}"
+
+      - name: Send Discord Notification for reopened PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'reopened' }}
+        uses: discord/action@v1
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          content: "🛠️[Pull Request Reopened] ${steps.context.outputs.title}\nProject: ${steps.context.outputs.project}\nAuthor: ${steps.context.outputs.author}\nLink: ${{ github.event.pull_request.html_url }}"
