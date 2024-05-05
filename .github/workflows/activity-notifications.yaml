@@ -38,7 +38,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
         with:
-          args: "✨️[New Pull Request] ${{ steps.context.outputs.title }}\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+          args: "✨️[New Pull Request]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
 
       - name: Send Discord Notification for closed PR
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == false }}
@@ -46,7 +46,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
         with:
-          args: "🚫[Pull Request Closed] ${{ steps.context.outputs.title }}\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+          args: "🚫[Pull Request Closed]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
 
       - name: Send Discord Notification for merged PR
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == true }}
@@ -54,7 +54,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
         with:
-          args: "✅[Pull Request Merged] ${{ steps.context.outputs.title }}\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+          args: "✅[Pull Request Merged]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
 
       - name: Send Discord Notification for reopened PR
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'reopened' }}
@@ -62,4 +62,4 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
         with:
-          args: "🛠️[Pull Request Reopened] ${{ steps.context.outputs.title }}\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+          args: "🛠️[Pull Request Reopened]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
