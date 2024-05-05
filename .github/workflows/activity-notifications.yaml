@@ -39,7 +39,7 @@ jobs:
           args: "✨️[New Pull Request]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
 
       - name: Send Discord Notification for closed PR
-        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == false }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == 'false' }}
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
@@ -47,7 +47,7 @@ jobs:
           args: "🚫[Pull Request Closed]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
 
       - name: Send Discord Notification for merged PR
-        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == true }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == 'true' }}
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
