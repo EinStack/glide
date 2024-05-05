@@ -442,7 +442,7 @@ definitions:
     properties:
       message:
         $ref: '#/definitions/schemas.ChatMessage'
-      messageHistory:
+      message_history:
         items:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
@@ -455,19 +455,19 @@ definitions:
     properties:
       cached:
         type: boolean
-      created:
+      created_at:
         type: integer
       id:
         type: string
-      model:
-        type: string
       model_id:
         type: string
-      modelResponse:
+      model_name:
+        type: string
+      model_response:
         $ref: '#/definitions/schemas.ModelResponse'
       provider:
         type: string
-      router:
+      router_id:
         type: string
     type: object
   schemas.Error:
@@ -481,11 +481,11 @@ definitions:
     properties:
       message:
         $ref: '#/definitions/schemas.ChatMessage'
-      responseId:
+      metadata:
         additionalProperties:
           type: string
         type: object
-      tokenCount:
+      token_usage:
         $ref: '#/definitions/schemas.TokenUsage'
     type: object
   schemas.OverrideChatRequest:
@@ -500,11 +500,11 @@ definitions:
     type: object
   schemas.TokenUsage:
     properties:
-      promptTokens:
+      prompt_tokens:
         type: integer
-      responseTokens:
+      response_tokens:
         type: integer
-      totalTokens:
+      total_tokens:
         type: integer
     type: object
 externalDocs:

@@ -837,7 +837,7 @@ const docTemplate = `{
                 "message": {
                     "$ref": "#/definitions/schemas.ChatMessage"
                 },
-                "messageHistory": {
+                "message_history": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/schemas.ChatMessage"
@@ -854,25 +854,25 @@ const docTemplate = `{
                 "cached": {
                     "type": "boolean"
                 },
-                "created": {
+                "created_at": {
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
-                "model": {
-                    "type": "string"
-                },
-                "modelResponse": {
-                    "$ref": "#/definitions/schemas.ModelResponse"
-                },
                 "model_id": {
                     "type": "string"
+                },
+                "model_name": {
+                    "type": "string"
+                },
+                "model_response": {
+                    "$ref": "#/definitions/schemas.ModelResponse"
                 },
                 "provider": {
                     "type": "string"
                 },
-                "router": {
+                "router_id": {
                     "type": "string"
                 }
             }
@@ -894,13 +894,13 @@ const docTemplate = `{
                 "message": {
                     "$ref": "#/definitions/schemas.ChatMessage"
                 },
-                "responseId": {
+                "metadata": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
-                "tokenCount": {
+                "token_usage": {
                     "$ref": "#/definitions/schemas.TokenUsage"
                 }
             }
@@ -923,13 +923,13 @@ const docTemplate = `{
         "schemas.TokenUsage": {
             "type": "object",
             "properties": {
-                "promptTokens": {
+                "prompt_tokens": {
                     "type": "integer"
                 },
-                "responseTokens": {
+                "response_tokens": {
                     "type": "integer"
                 },
-                "totalTokens": {
+                "total_tokens": {
                     "type": "integer"
                 }
             }
