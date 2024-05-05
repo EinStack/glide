@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"os"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/contrib/exporters/autoexport"
@@ -30,11 +31,15 @@ func (t Telemetry) L() *zap.Logger {
 }
 
 func DefaultConfig() *Config {
+	instance := os.Getenv("POD_NAME")
+	if instance == "" {
+		instance = uuid.New().String()
+	}
 	return &Config{
 		LogConfig: DefaultLogConfig(),
 		Resource: map[string]string{
 			string(semconv.ServiceNameKey):       "glide",
-			string(semconv.ServiceInstanceIDKey): uuid.New().String(),
+			string(semconv.ServiceInstanceIDKey): instance,
 		},
 	}
 }
