@@ -459,7 +459,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		require.Nil(t, result.Chunk)
 		require.NotNil(t, result.Error)
 
-		errs = append(errs, result.Error.ErrCode)
+		errs = append(errs, result.Error.Name)
 	}
 
 	require.Equal(t, []string{schemas.ModelUnavailable, schemas.ModelUnavailable, schemas.AllModelsUnavailable}, errs)

@@ -50,7 +50,7 @@ var ErrUnsupportedMediaType = NewError(
 var ErrRouteNotFound = NewError(
 	fiber.StatusNotFound,
 	RouteNotFound,
-	"requested route is not found",
+	"requested route is not found or method is not allowed",
 )
 
 var ErrRouterNotFound = NewError(fiber.StatusNotFound, RouterNotFound, "router is not found")
@@ -70,6 +70,10 @@ func NewPayloadParseErr(err error) Error {
 }
 
 func FromErr(err error) Error {
+	if apiErr, ok := err.(*Error); ok {
+		return *apiErr
+	}
+
 	if apiErr, ok := err.(Error); ok {
 		return apiErr
 	}
