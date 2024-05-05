@@ -187,11 +187,6 @@ definitions:
     required:
     - temperature
     type: object
-  http.ErrorSchema:
-    properties:
-      message:
-        type: string
-    type: object
   http.HealthSchema:
     properties:
       healthy:
@@ -475,6 +470,13 @@ definitions:
       router:
         type: string
     type: object
+  schemas.Error:
+    properties:
+      message:
+        type: string
+      name:
+        type: string
+    type: object
   schemas.ModelResponse:
     properties:
       message:
@@ -541,7 +543,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieve list of configured language routers and their configurations
+      description: Retrieve list of configured active language routers and their configurations
       operationId: glide-language-routers
       produces:
       - application/json
@@ -581,11 +583,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorSchema'
+            $ref: '#/definitions/schemas.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorSchema'
+            $ref: '#/definitions/schemas.Error'
       summary: Language Chat
       tags:
       - Language
@@ -628,7 +630,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorSchema'
+            $ref: '#/definitions/schemas.Error'
         "426":
           description: Upgrade Required
       summary: Language Chat

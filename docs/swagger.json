@@ -45,7 +45,7 @@
         },
         "/v1/language/": {
             "get": {
-                "description": "Retrieve list of configured language routers and their configurations",
+                "description": "Retrieve list of configured active language routers and their configurations",
                 "consumes": [
                     "application/json"
                 ],
@@ -109,13 +109,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     }
                 }
@@ -176,7 +176,7 @@
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     },
                     "426": {
@@ -454,14 +454,6 @@
                 },
                 "temperature": {
                     "type": "number"
-                }
-            }
-        },
-        "http.ErrorSchema": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
                 }
             }
         },
@@ -878,6 +870,17 @@
                     "type": "string"
                 },
                 "router": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

@@ -48,7 +48,7 @@ const docTemplate = `{
         },
         "/v1/language/": {
             "get": {
-                "description": "Retrieve list of configured language routers and their configurations",
+                "description": "Retrieve list of configured active language routers and their configurations",
                 "consumes": [
                     "application/json"
                 ],
@@ -112,13 +112,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     }
                 }
@@ -179,7 +179,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     },
                     "426": {
@@ -457,14 +457,6 @@ const docTemplate = `{
                 },
                 "temperature": {
                     "type": "number"
-                }
-            }
-        },
-        "http.ErrorSchema": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
                 }
             }
         },
@@ -881,6 +873,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "router": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

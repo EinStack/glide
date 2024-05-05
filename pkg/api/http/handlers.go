@@ -31,8 +31,8 @@ type Handler = func(c *fiber.Ctx) error
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	schemas.ChatResponse
-//	@Failure		400	{object}	http.ErrorSchema
-//	@Failure		404	{object}	http.ErrorSchema
+//	@Failure		400	{object}	schemas.Error
+//	@Failure		404	{object}	schemas.Error
 //	@Router			/v1/language/{router}/chat [POST]
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
@@ -104,7 +104,7 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 //	@Accept			json
 //	@Success		101
 //	@Failure		426
-//	@Failure		404	{object}	http.ErrorSchema
+//	@Failure		404	{object}	schemas.Error
 //	@Router			/v1/language/{router}/chatStream [GET]
 func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.RouterManager) Handler {
 	// TODO: expose websocket connection configs https://github.com/gofiber/contrib/tree/main/websocket
@@ -167,7 +167,7 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 //
 //	@id				glide-language-routers
 //	@Summary		Language Router List
-//	@Description	Retrieve list of configured language routers and their configurations
+//	@Description	Retrieve list of configured active language routers and their configurations
 //	@tags			Language
 //	@Accept			json
 //	@Produce		json
