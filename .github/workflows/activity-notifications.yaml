@@ -14,23 +14,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const core = require('@actions/core');
+            
             const pr = context.payload.pull_request;
             const author = pr.user.login;
-            const projectName = context.payload.repository.full_name;
+            const project = context.payload.repository.full_name;
             const action = context.payload.action;
             const wasMerged = pr.merged;
             
             console.log(`Action: ${action}`);
             console.log(`PR Author: ${author}`);
-            console.log(`Project: ${projectName}`);
+            console.log(`Project: ${project}`);
             console.log(`Was Merged?: ${wasMerged}`);
             
-            process.env['GITHUB_OUTPUT'] = JSON.stringify({
-              author: author, 
-              project: projectName, 
-              action: action, 
-              wasMerged: wasMerged,
-            });
+            core.setOutput('author', author);
+            core.setOutput('project', project);
+            core.setOutput('action', action);
+            core.setOutput('wasMerged', wasMerged);
 
       - name: Send Discord Notification for opened PR
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
