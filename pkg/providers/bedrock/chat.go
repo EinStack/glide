@@ -110,7 +110,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: c.config.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
+			Metadata: map[string]string{
 				"system_fingerprint": "none",
 			},
 			Message: schemas.ChatMessage{

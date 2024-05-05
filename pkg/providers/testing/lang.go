@@ -19,7 +19,7 @@ func (m *RespMock) Resp() *schemas.ChatResponse {
 	return &schemas.ChatResponse{
 		ID: "rsp0001",
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
+			Metadata: map[string]string{
 				"ID": "0001",
 			},
 			Message: schemas.ChatMessage{

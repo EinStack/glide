@@ -148,7 +148,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: anthropicResponse.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{},
+			Metadata: map[string]string{},
 			Message: schemas.ChatMessage{
 				Role:    completion.Type,
 				Content: completion.Text,
