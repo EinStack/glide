@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"go.opentelemetry.io/contrib/exporters/autoexport"
+	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -55,7 +56,8 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 		sdktrace.WithBatcher(spanExporter),
 	)
 	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{},
+		propagation.Baggage{}, b3.New()))
 
 	metricsReader, err := autoexport.NewMetricReader(context.Background())
 	if err != nil {
