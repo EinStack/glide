@@ -6,22 +6,14 @@ type (
 	Metadata     = map[string]any
 	EventType    = string
 	FinishReason = string
-	ErrorCode    = string
 )
 
 var (
-	Complete        FinishReason = "complete"
-	MaxTokens       FinishReason = "max_tokens"
-	ContentFiltered FinishReason = "content_filtered"
-	ErrorReason     FinishReason = "error"
-	OtherReason     FinishReason = "other"
-)
-
-var (
-	NoModelConfigured    ErrorCode = "no_model_configured"
-	ModelUnavailable     ErrorCode = "model_unavailable"
-	AllModelsUnavailable ErrorCode = "all_models_unavailable"
-	UnknownError         ErrorCode = "unknown_error"
+	ReasonComplete        FinishReason = "complete"
+	ReasonMaxTokens       FinishReason = "max_tokens"
+	ReasonContentFiltered FinishReason = "content_filtered"
+	ReasonError           FinishReason = "error"
+	ReasonOther           FinishReason = "other"
 )
 
 type StreamRequestID = string
@@ -70,7 +62,7 @@ type ChatStreamChunk struct {
 }
 
 type ChatStreamError struct {
-	ErrCode      ErrorCode     `json:"errCode"`
+	ErrCode      ErrorName     `json:"errCode"`
 	Message      string        `json:"message"`
 	FinishReason *FinishReason `json:"finishReason,omitempty"`
 }
@@ -93,7 +85,7 @@ func NewChatStreamChunk(
 func NewChatStreamError(
 	reqID StreamRequestID,
 	routerID string,
-	errCode ErrorCode,
+	errCode ErrorName,
 	errMsg string,
 	reqMetadata *Metadata,
 	finishReason *FinishReason,

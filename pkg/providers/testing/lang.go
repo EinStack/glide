@@ -12,7 +12,7 @@ import (
 // RespMock mocks a chat response or a streaming chat chunk
 type RespMock struct {
 	Msg string
-	Err *error
+	Err error
 }
 
 func (m *RespMock) Resp() *schemas.ChatResponse {
@@ -81,7 +81,7 @@ func (m *RespStreamMock) Recv() (*schemas.ChatStreamChunk, error) {
 	m.idx++
 
 	if chunk.Err != nil {
-		return nil, *chunk.Err
+		return nil, chunk.Err
 	}
 
 	return chunk.RespChunk(), nil
@@ -130,7 +130,7 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 	c.idx++
 
 	if response.Err != nil {
-		return nil, *response.Err
+		return nil, response.Err
 	}
 
 	return response.Resp(), nil

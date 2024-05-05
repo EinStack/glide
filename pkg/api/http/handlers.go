@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	"github.com/EinStack/glide/pkg/telemetry"
@@ -38,9 +37,7 @@ type Handler = func(c *fiber.Ctx) error
 func LangChatHandler(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
 		if !c.Is("json") {
-			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
-				Message: "Glide accepts only JSON payloads",
-			})
+			return c.Status(fiber.StatusBadRequest).JSON(schemas.ErrUnsupportedMediaType)
 		}
 
 		// Unmarshal request body
@@ -48,29 +45,25 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 
 		err := c.BodyParser(&req)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(ErrorSchema{
-				Message: err.Error(),
-			})
+			return c.Status(fiber.StatusBadRequest).JSON(schemas.NewPayloadParseErr(err))
 		}
 
 		// Get router ID from path
 		routerID := c.Params("router")
-		router, err := routerManager.GetLangRouter(routerID)
 
-		if errors.Is(err, routers.ErrRouterNotFound) {
-			// Return not found error
-			return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
-				Message: err.Error(),
-			})
+		router, err := routerManager.GetLangRouter(routerID)
+		if err != nil {
+			httpErr := schemas.FromErr(err)
+
+			return c.Status(httpErr.Status).JSON(httpErr)
 		}
 
 		// Chat with router
 		resp, err := router.Chat(c.Context(), req)
 		if err != nil {
-			// Return internal server error
-			return c.Status(fiber.StatusInternalServerError).JSON(ErrorSchema{
-				Message: err.Error(),
-			})
+			httpErr := schemas.FromErr(err)
+
+			return c.Status(httpErr.Status).JSON(httpErr)
 		}
 
 		// Return chat response
@@ -85,9 +78,9 @@ func LangStreamRouterValidator(routerManager *routers.RouterManager) Handler {
 
 			_, err := routerManager.GetLangRouter(routerID)
 			if err != nil {
-				return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
-					Message: err.Error(),
-				})
+				httpErr := schemas.FromErr(err)
+
+				return c.Status(httpErr.Status).JSON(httpErr)
 			}
 
 			return c.Next()
@@ -208,7 +201,5 @@ func HealthHandler(c *fiber.Ctx) error {
 }
 
 func NotFoundHandler(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusNotFound).JSON(ErrorSchema{
-		Message: "The route is not found",
-	})
+	return c.Status(fiber.StatusNotFound).JSON(schemas.ErrRouteNotFound)
 }
