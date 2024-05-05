@@ -21,9 +21,9 @@ jobs:
             const action = context.payload.action;
             
             console.log(`Action: ${action}`);
-            console.log(`PR Title: ${prTitle}`);
-            console.log(`PR Author: ${prCreator}`);
-            console.log(`Project: ${repositoryName}`);
+            console.log(`PR Title: ${title}`);
+            console.log(`PR Author: ${author}`);
+            console.log(`Project: ${projectName}`);
             
             return { title: title, author: author, project: projectName, action: action }
 
