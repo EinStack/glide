@@ -73,3 +73,24 @@ That's perfectly fine!
 Feel free to connect with us in [Discord](https://discord.gg/rsBzprY7uT) and ask any question you have.
 Remember, there are no dumb questions, but there can be missing opportunities to make your life easier if you don't speak up about things you struggle with.
 
+
+
+## Project Management
+
+EinStack uses Github functionality to do all sorts of management and planning of Glide functionality:
+
+- We use Github Projects to manage [the Glide's roadmap](https://github.com/orgs/EinStack/projects/1/views/4)
+- We use Github issues to manage epics (e.g. bigger functionality that would not fit one task or pull request) and the corresponding tasks
+- Github issue labels to indicate epic priority and other horizontal properties of the functionality like type, area, etc
+- Github milestones to assign epics to upcoming releases which may be connected to Glide incremental releases or solve some specific use case (e.g. RAG)
+
+<img src="docs/images/einstack-project-management.png" width="400px" alt="Glide Project Management" />
+
+### How to add a new epic?
+
+You can do that by:
+- creating a new Github issue
+- assigning the `type:epic` to it
+- adding it to [the Glide Roadmap project](https://github.com/orgs/EinStack/projects/1/views/4) (the backlog status)
+
+Be sure to let everyone know about this in the EinStack Discord (#general channel is fine).
