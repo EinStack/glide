@@ -35,6 +35,7 @@ func DefaultConfig() *Config {
 	if instance == "" {
 		instance = uuid.New().String()
 	}
+
 	return &Config{
 		LogConfig: DefaultLogConfig(),
 		Resource: map[string]string{
