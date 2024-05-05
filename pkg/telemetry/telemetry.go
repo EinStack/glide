@@ -43,10 +43,12 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	spanExporter, err := autoexport.NewSpanExporter(context.Background())
 	if err != nil {
 		return nil, err
 	}
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithResource(Resource),
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
@@ -59,6 +61,7 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	provider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(
 			metricsReader,
