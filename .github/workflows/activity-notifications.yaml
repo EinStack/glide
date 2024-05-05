@@ -14,8 +14,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require('@actions/core');
-            
             const pr = context.payload.pull_request;
             const author = pr.user.login;
             const project = context.payload.repository.full_name;
