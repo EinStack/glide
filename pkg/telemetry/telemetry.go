@@ -1,10 +1,25 @@
 package telemetry
 
-import "go.uber.org/zap"
+import (
+	"context"
+
+	"go.opentelemetry.io/contrib/exporters/autoexport"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+	"go.uber.org/zap"
+)
+
+var Resource = resource.NewWithAttributes(
+	semconv.SchemaURL,
+	semconv.ServiceName("glide"),
+)
 
 type Config struct {
 	LogConfig *LogConfig `yaml:"logging" validate:"required"`
-	// TODO: add OTEL config
 }
 
 type Telemetry struct {
@@ -28,6 +43,30 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	if err != nil {
 		return nil, err
 	}
+	spanExporter, err := autoexport.NewSpanExporter(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithResource(Resource),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithBatcher(spanExporter),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	metricsReader, err := autoexport.NewMetricReader(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	provider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(
+			metricsReader,
+		),
+		sdkmetric.WithResource(Resource),
+	)
+
+	otel.SetMeterProvider(provider)
 
 	return &Telemetry{
 		Config: cfg,
