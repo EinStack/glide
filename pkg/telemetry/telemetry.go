@@ -44,7 +44,9 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	resourceAttr := make([]attribute.KeyValue, 0, len(cfg.Resource))
+
 	for k, v := range cfg.Resource {
 		resourceAttr = append(resourceAttr, attribute.String(k, v))
 	}
