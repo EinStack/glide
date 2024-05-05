@@ -1,0 +1,63 @@
+name: Pull Request Activity Notifications
+
+on:
+  pull_request:
+    types: [opened, closed, reopened]
+
+jobs:
+  activity_notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gather PR context
+        id: context
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const author = pr.user.login;
+            const project = context.payload.repository.full_name;
+            const action = context.payload.action;
+            const wasMerged = pr.merged;
+            
+            console.log(`Action: ${action}`);
+            console.log(`PR Author: ${author}`);
+            console.log(`Project: ${project}`);
+            console.log(`Was Merged?: ${wasMerged}`);
+            
+            core.setOutput('author', author);
+            core.setOutput('project', project);
+            core.setOutput('action', action);
+            core.setOutput('wasMerged', wasMerged);
+
+      - name: Send Discord Notification for opened PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
+        with:
+          args: "✨️[New Pull Request]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+
+      - name: Send Discord Notification for closed PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == 'false' }}
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
+        with:
+          args: "🚫[Pull Request Closed]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+
+      - name: Send Discord Notification for merged PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && steps.context.outputs.wasMerged == 'true' }}
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
+        with:
+          args: "✅[Pull Request Merged]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
+
+      - name: Send Discord Notification for reopened PR
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'reopened' }}
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.ACTIVITY_DISCORD_WEBHOOK_URL }}
+        with:
+          args: "🛠️[Pull Request Reopened]\nProject: ${{ steps.context.outputs.project }}\nAuthor: ${{ steps.context.outputs.author }}\nLink: ${{ github.event.pull_request.html_url }}"
