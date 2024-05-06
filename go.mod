@@ -19,6 +19,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/swag v1.16.3
 	go.opentelemetry.io/contrib/exporters/autoexport v0.51.0
+	go.opentelemetry.io/contrib/propagators/b3 v1.26.0
 	go.opentelemetry.io/otel v1.26.0
 	go.opentelemetry.io/otel/sdk v1.26.0
 	go.opentelemetry.io/otel/sdk/metric v1.26.0
