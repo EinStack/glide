@@ -2,10 +2,13 @@ package telemetry
 
 import (
 	"context"
+	"os"
 
+	"github.com/google/uuid"
 	"go.opentelemetry.io/contrib/exporters/autoexport"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -14,19 +17,14 @@ import (
 	"go.uber.org/zap"
 )
 
-var Resource = resource.NewWithAttributes(
-	semconv.SchemaURL,
-	semconv.ServiceName("glide"),
-)
-
 type Config struct {
-	LogConfig *LogConfig `yaml:"logging" validate:"required"`
+	LogConfig *LogConfig        `yaml:"logging" validate:"required"`
+	Resource  map[string]string `yaml:"resource"`
 }
 
 type Telemetry struct {
 	Config *Config
 	Logger *zap.Logger
-	// TODO: add OTEL meter, tracer
 }
 
 func (t Telemetry) L() *zap.Logger {
@@ -34,8 +32,17 @@ func (t Telemetry) L() *zap.Logger {
 }
 
 func DefaultConfig() *Config {
+	instance := os.Getenv("POD_NAME")
+	if instance == "" {
+		instance = uuid.New().String()
+	}
+
 	return &Config{
 		LogConfig: DefaultLogConfig(),
+		Resource: map[string]string{
+			string(semconv.ServiceNameKey):       "glide",
+			string(semconv.ServiceInstanceIDKey): instance,
+		},
 	}
 }
 
@@ -45,13 +52,24 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 		return nil, err
 	}
 
+	resourceAttr := make([]attribute.KeyValue, 0, len(cfg.Resource))
+
+	for k, v := range cfg.Resource {
+		resourceAttr = append(resourceAttr, attribute.String(k, v))
+	}
+
+	resource := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		resourceAttr...,
+	)
+
 	spanExporter, err := autoexport.NewSpanExporter(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
 	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithResource(Resource),
+		sdktrace.WithResource(resource),
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(spanExporter),
 	)
@@ -68,7 +86,7 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 		sdkmetric.WithReader(
 			metricsReader,
 		),
-		sdkmetric.WithResource(Resource),
+		sdkmetric.WithResource(resource),
 	)
 
 	otel.SetMeterProvider(provider)
