@@ -30,10 +30,10 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-var _ error = &Error{}
+var _ error = (*Error)(nil)
 
 // Error returns the error message.
-func (e Error) Error() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("Error (%s): %s", e.Name, e.Message)
 }
 
@@ -72,10 +72,6 @@ func NewPayloadParseErr(err error) Error {
 func FromErr(err error) Error {
 	if apiErr, ok := err.(*Error); ok {
 		return *apiErr
-	}
-
-	if apiErr, ok := err.(Error); ok {
-		return apiErr
 	}
 
 	return NewError(

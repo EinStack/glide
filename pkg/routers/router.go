@@ -121,7 +121,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 	// if we reach this part, then we are in trouble
 	r.logger.Error("No model was available to handle chat request")
 
-	return nil, schemas.ErrNoModelAvailable
+	return nil, &schemas.ErrNoModelAvailable
 }
 
 func (r *LangRouter) ChatStream(

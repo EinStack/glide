@@ -4,15 +4,12 @@ import (
 	"context"
 	"sync"
 
-	"github.com/EinStack/glide/pkg/telemetry"
-	"go.uber.org/zap"
-
-	"github.com/EinStack/glide/pkg/routers"
-
 	"github.com/EinStack/glide/pkg/api/schemas"
-
+	"github.com/EinStack/glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/telemetry"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type Handler = func(c *fiber.Ctx) error
@@ -171,18 +168,18 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 //	@tags			Language
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	http.RouterListSchema
+//	@Success		200	{object}	schemas.RouterListSchema
 //	@Router			/v1/language/ [GET]
 func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 	return func(c *fiber.Ctx) error {
 		configuredRouters := routerManager.GetLangRouters()
-		cfgs := make([]*routers.LangRouterConfig, 0, len(configuredRouters))
+		cfgs := make([]interface{}, 0, len(configuredRouters)) // opaque by design
 
 		for _, router := range configuredRouters {
 			cfgs = append(cfgs, router.Config)
 		}
 
-		return c.Status(fiber.StatusOK).JSON(RouterListSchema{Routers: cfgs})
+		return c.Status(fiber.StatusOK).JSON(schemas.RouterListSchema{Routers: cfgs})
 	}
 }
 
@@ -194,10 +191,10 @@ func LangRoutersHandler(routerManager *routers.RouterManager) Handler {
 //	@tags		Operations
 //	@Accept		json
 //	@Produce	json
-//	@Success	200	{object}	http.HealthSchema
+//	@Success	200	{object}	schemas.HealthSchema
 //	@Router		/v1/health/ [get]
 func HealthHandler(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(HealthSchema{Healthy: true})
+	return c.Status(fiber.StatusOK).JSON(schemas.HealthSchema{Healthy: true})
 }
 
 func NotFoundHandler(c *fiber.Ctx) error {

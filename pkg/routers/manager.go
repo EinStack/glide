@@ -45,5 +45,5 @@ func (r *RouterManager) GetLangRouter(routerID string) (*LangRouter, error) {
 		return router, nil
 	}
 
-	return nil, schemas.ErrRouterNotFound
+	return nil, &schemas.ErrRouterNotFound
 }
