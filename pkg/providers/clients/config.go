@@ -10,7 +10,7 @@ type ClientConfig struct {
 }
 
 func DefaultClientConfig() *ClientConfig {
-	defaultTimeout := 1000 * time.Second
+	defaultTimeout := 10 * time.Second
 
 	return &ClientConfig{
 		Timeout: &defaultTimeout,
