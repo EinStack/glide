@@ -771,7 +771,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "min_delay": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
