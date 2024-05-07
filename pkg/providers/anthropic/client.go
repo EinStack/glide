@@ -47,10 +47,9 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
 			Timeout: *clientConfig.Timeout,
-			// TODO: use values from the config
 			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxIdleConnsPerHost: 2,
+				MaxIdleConns:        *clientConfig.MaxIdleConns,
+				MaxIdleConnsPerHost: *clientConfig.MaxIdleConnsPerHost,
 			},
 		},
 		tel: tel,
