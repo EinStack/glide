@@ -126,6 +126,10 @@ definitions:
     type: object
   clients.ClientConfig:
     properties:
+      max_idle_connections:
+        type: integer
+      max_idle_connections_per_host:
+        type: integer
       timeout:
         type: string
     type: object
