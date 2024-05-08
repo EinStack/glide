@@ -373,6 +373,12 @@ const docTemplate = `{
         "clients.ClientConfig": {
             "type": "object",
             "properties": {
+                "max_idle_connections": {
+                    "type": "integer"
+                },
+                "max_idle_connections_per_host": {
+                    "type": "integer"
+                },
                 "timeout": {
                     "type": "string"
                 }
