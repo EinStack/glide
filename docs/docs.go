@@ -765,13 +765,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "max_delay": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "max_retries": {
                     "type": "integer"
                 },
                 "min_delay": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },

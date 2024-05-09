@@ -1,15 +1,19 @@
 package clients
 
-import "time"
+import (
+	"time"
+
+	"github.com/EinStack/glide/pkg/config/fields"
+)
 
 type ClientConfig struct {
-	Timeout *time.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,string"`
+	Timeout *fields.Duration `yaml:"timeout,omitempty" json:"timeout" swaggertype:"primitive,string"`
 }
 
 func DefaultClientConfig() *ClientConfig {
 	defaultTimeout := 10 * time.Second
 
 	return &ClientConfig{
-		Timeout: &defaultTimeout,
+		Timeout: (*fields.Duration)(&defaultTimeout),
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -53,7 +54,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		finishReasonMapper:  NewFinishReasonMapper(tel),
 		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
-			Timeout: *clientConfig.Timeout,
+			Timeout: time.Duration(*clientConfig.Timeout),
 			// TODO: use values from the config
 			Transport: &http.Transport{
 				MaxIdleConns:        100,

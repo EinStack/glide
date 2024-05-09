@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/EinStack/glide/pkg/providers/openai"
 
@@ -51,7 +52,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
 			// TODO: use values from the config
-			Timeout: *clientConfig.Timeout,
+			Timeout: time.Duration(*clientConfig.Timeout),
 			Transport: &http.Transport{
 				MaxIdleConns:        100,
 				MaxIdleConnsPerHost: 2,

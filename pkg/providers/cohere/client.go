@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/EinStack/glide/pkg/telemetry"
 
@@ -44,7 +45,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
 		httpClient: &http.Client{
-			Timeout: *clientConfig.Timeout,
+			Timeout: time.Duration(*clientConfig.Timeout),
 			// TODO: use values from the config
 			Transport: &http.Transport{
 				MaxIdleConns:        100,

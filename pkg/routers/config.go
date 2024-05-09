@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/EinStack/glide/pkg/telemetry"
 
@@ -164,12 +165,13 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 
 func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 	retryConfig := c.Retry
-
-	return retry.NewExpRetry(
+	maxDelay := time.Duration(*retryConfig.MaxDelay)
+	
+    return retry.NewExpRetry(
 		retryConfig.MaxRetries,
 		retryConfig.BaseMultiplier,
-		retryConfig.MinDelay,
-		retryConfig.MaxDelay,
+		time.Duration(retryConfig.MinDelay),
+		&maxDelay,
 	)
 }
 
