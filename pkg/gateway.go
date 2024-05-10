@@ -9,6 +9,8 @@ import (
 
 	"github.com/EinStack/glide/pkg/routers"
 	"github.com/EinStack/glide/pkg/version"
+	"go.opentelemetry.io/contrib/instrumentation/host"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 
 	"github.com/EinStack/glide/pkg/config"
 
@@ -68,6 +70,17 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
+	// Instrument the gateway process
+	err := host.Start()
+	if err != nil {
+		return err
+	}
+
+	err = runtime.Start()
+	if err != nil {
+		return err
+	}
+
 	gw.configProvider.Start()
 	gw.serverManager.Start() //nolint:contextcheck
 
