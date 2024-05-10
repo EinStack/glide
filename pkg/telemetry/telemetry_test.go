@@ -21,12 +21,12 @@ func TestDefaults_noopExporters(t *testing.T) {
 		t.Fatal(err)
 	}
 	// ensures we have a noop metric.ManualReader
-	mr.(*metric.ManualReader).Shutdown(context.Background())
+	_ = mr.(*metric.ManualReader).Shutdown(context.Background())
 
 	se, err := newSpanExporter()
 	if err != nil {
 		t.Fatal(err)
 	}
 	// ensures we have a noopSpanExporter
-	se.(noopSpanExporter).Shutdown(context.Background())
+	_ = se.(noopSpanExporter).Shutdown(context.Background())
 }

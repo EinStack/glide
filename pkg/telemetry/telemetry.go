@@ -113,7 +113,7 @@ func NewTelemetryMock() *Telemetry {
 
 func newMetricReader() (sdkmetric.Reader, error) {
 	return autoexport.NewMetricReader(context.Background(),
-		autoexport.WithFallbackMetricReader(func(ctx context.Context) (sdkmetric.Reader, error) {
+		autoexport.WithFallbackMetricReader(func(_ context.Context) (sdkmetric.Reader, error) {
 			return metric.NewManualReader(), nil
 		}),
 	)
@@ -121,7 +121,7 @@ func newMetricReader() (sdkmetric.Reader, error) {
 
 func newSpanExporter() (sdktrace.SpanExporter, error) {
 	return autoexport.NewSpanExporter(context.Background(), autoexport.WithFallbackSpanExporter(
-		func(ctx context.Context) (sdktrace.SpanExporter, error) {
+		func(_ context.Context) (sdktrace.SpanExporter, error) {
 			return noopSpanExporter{}, nil
 		},
 	))
