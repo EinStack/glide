@@ -10,8 +10,10 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.uber.org/zap"
@@ -63,7 +65,7 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 		resourceAttr...,
 	)
 
-	spanExporter, err := autoexport.NewSpanExporter(context.Background())
+	spanExporter, err := newSpanExporter()
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +79,7 @@ func NewTelemetry(cfg *Config) (*Telemetry, error) {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{},
 		propagation.Baggage{}, b3.New()))
 
-	metricsReader, err := autoexport.NewMetricReader(context.Background())
+	metricsReader, err := newMetricReader()
 	if err != nil {
 		return nil, err
 	}
@@ -107,4 +109,32 @@ func NewTelemetryMock() *Telemetry {
 		Config: DefaultConfig(),
 		Logger: NewLoggerMock(),
 	}
+}
+
+func newMetricReader() (sdkmetric.Reader, error) {
+	return autoexport.NewMetricReader(context.Background(),
+		autoexport.WithFallbackMetricReader(func(ctx context.Context) (sdkmetric.Reader, error) {
+			return metric.NewManualReader(), nil
+		}),
+	)
+}
+
+func newSpanExporter() (sdktrace.SpanExporter, error) {
+	return autoexport.NewSpanExporter(context.Background(), autoexport.WithFallbackSpanExporter(
+		func(ctx context.Context) (sdktrace.SpanExporter, error) {
+			return noopSpanExporter{}, nil
+		},
+	))
+}
+
+type noopSpanExporter struct{}
+
+var _ trace.SpanExporter = noopSpanExporter{}
+
+func (e noopSpanExporter) ExportSpans(ctx context.Context, spans []trace.ReadOnlySpan) error {
+	return nil
+}
+
+func (e noopSpanExporter) Shutdown(ctx context.Context) error {
+	return nil
 }
