@@ -131,10 +131,10 @@ type noopSpanExporter struct{}
 
 var _ trace.SpanExporter = noopSpanExporter{}
 
-func (e noopSpanExporter) ExportSpans(ctx context.Context, spans []trace.ReadOnlySpan) error {
+func (e noopSpanExporter) ExportSpans(_ context.Context, _ []trace.ReadOnlySpan) error {
 	return nil
 }
 
-func (e noopSpanExporter) Shutdown(ctx context.Context) error {
+func (e noopSpanExporter) Shutdown(_ context.Context) error {
 	return nil
 }
