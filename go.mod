@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.5.6
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.2
+	github.com/gofiber/contrib/otelfiber v1.0.10
 	github.com/gofiber/contrib/websocket v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/gofiber/swagger v1.0.0
@@ -57,7 +58,6 @@ require (
 	github.com/go-openapi/swag v0.22.7 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/gofiber/contrib/otelfiber v1.0.10 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
