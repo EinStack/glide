@@ -9,17 +9,14 @@ import (
 type ErrorName = string
 
 var (
-	// General API errors
-	UnsupportedMediaType ErrorName = "http.unsupported_media_type"
-	RouteNotFound        ErrorName = "http.not_found"
-	PayloadParseError    ErrorName = "http.payload_parse_error"
-	UnknownError         ErrorName = "http.unknown_error"
-
-	// Router-specific errors
-	RouterNotFound       ErrorName = "routers.not_found"
-	NoModelConfigured    ErrorName = "routers.no_model_configured"
-	ModelUnavailable     ErrorName = "routers.model_unavailable"
-	AllModelsUnavailable ErrorName = "routers.all_models_unavailable"
+	UnsupportedMediaType ErrorName = "unsupported_media_type"
+	RouteNotFound        ErrorName = "route_not_found"
+	PayloadParseError    ErrorName = "payload_parse_error"
+	RouterNotFound       ErrorName = "router_not_found"
+	NoModelConfigured    ErrorName = "no_model_configured"
+	ModelUnavailable     ErrorName = "model_unavailable"
+	AllModelsUnavailable ErrorName = "all_models_unavailable"
+	UnknownError         ErrorName = "unknown_error"
 )
 
 // Error / Error contains more context than the built-in error type,
