@@ -3,12 +3,12 @@ package schemas
 // ChatRequest defines Glide's Chat Request Schema unified across all language models
 type ChatRequest struct {
 	Message        ChatMessage          `json:"message" validate:"required"`
-	MessageHistory []ChatMessage        `json:"messageHistory"`
-	Override       *OverrideChatRequest `json:"override,omitempty"`
+	MessageHistory []ChatMessage        `json:"message_history"`
+	OverrideParams *OverrideChatRequest `json:"override_params,omitempty"`
 }
 
 type OverrideChatRequest struct {
-	Model   string      `json:"model_id" validate:"required"`
+	ModelID string      `json:"model_id" validate:"required"`
 	Message ChatMessage `json:"message" validate:"required"`
 }
 
@@ -25,27 +25,27 @@ func NewChatFromStr(message string) *ChatRequest {
 // ChatResponse defines Glide's Chat Response Schema unified across all language models
 type ChatResponse struct {
 	ID            string        `json:"id,omitempty"`
-	Created       int           `json:"created,omitempty"`
-	Provider      string        `json:"provider,omitempty"`
-	RouterID      string        `json:"router,omitempty"`
+	Created       int           `json:"created_at,omitempty"`
+	Provider      string        `json:"provider_id,omitempty"`
+	RouterID      string        `json:"router_id,omitempty"`
 	ModelID       string        `json:"model_id,omitempty"`
-	ModelName     string        `json:"model,omitempty"`
+	ModelName     string        `json:"model_name,omitempty"`
 	Cached        bool          `json:"cached,omitempty"`
-	ModelResponse ModelResponse `json:"modelResponse,omitempty"`
+	ModelResponse ModelResponse `json:"model_response,omitempty"`
 }
 
 // ModelResponse is the unified response from the provider.
 
 type ModelResponse struct {
-	SystemID   map[string]string `json:"responseId,omitempty"`
+	Metadata   map[string]string `json:"metadata,omitempty"`
 	Message    ChatMessage       `json:"message"`
-	TokenUsage TokenUsage        `json:"tokenCount"`
+	TokenUsage TokenUsage        `json:"token_usage"`
 }
 
 type TokenUsage struct {
-	PromptTokens   int `json:"promptTokens"`
-	ResponseTokens int `json:"responseTokens"`
-	TotalTokens    int `json:"totalTokens"`
+	PromptTokens   int `json:"prompt_tokens"`
+	ResponseTokens int `json:"response_tokens"`
+	TotalTokens    int `json:"total_tokens"`
 }
 
 // ChatMessage is a message in a chat request.
