@@ -83,10 +83,10 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 			langModel := model.(providers.LangModel)
 
 			// Check if there is an override in the request
-			if req.Override != nil {
+			if req.OverrideParams != nil {
 				// Override the message if the language model ID matches the override model ID
-				if langModel.ID() == req.Override.ModelID {
-					req.Message = req.Override.Message
+				if langModel.ID() == req.OverrideParams.ModelID {
+					req.Message = req.OverrideParams.Message
 				}
 			}
 

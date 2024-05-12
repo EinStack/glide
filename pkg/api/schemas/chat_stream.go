@@ -23,7 +23,7 @@ type ChatStreamRequest struct {
 	ID             StreamRequestID      `json:"id" validate:"required"`
 	Message        ChatMessage          `json:"message" validate:"required"`
 	MessageHistory []ChatMessage        `json:"message_history" validate:"required"`
-	Override       *OverrideChatRequest `json:"override_message,omitempty"`
+	OverrideParams *OverrideChatRequest `json:"override_params,omitempty"`
 	Metadata       *Metadata            `json:"metadata,omitempty"`
 }
 
@@ -54,7 +54,7 @@ type ChatStreamMessage struct {
 // ChatStreamChunk defines a message for a chunk of streaming chat response
 type ChatStreamChunk struct {
 	ModelID       string             `json:"model_id"`
-	Provider      string             `json:"provider_name"`
+	Provider      string             `json:"provider_id"`
 	ModelName     string             `json:"model_name"`
 	Cached        bool               `json:"cached"`
 	ModelResponse ModelChunkResponse `json:"model_response"`

@@ -4,7 +4,7 @@ package schemas
 type ChatRequest struct {
 	Message        ChatMessage          `json:"message" validate:"required"`
 	MessageHistory []ChatMessage        `json:"message_history"`
-	Override       *OverrideChatRequest `json:"override,omitempty"`
+	OverrideParams *OverrideChatRequest `json:"override_params,omitempty"`
 }
 
 type OverrideChatRequest struct {
@@ -26,7 +26,7 @@ func NewChatFromStr(message string) *ChatRequest {
 type ChatResponse struct {
 	ID            string        `json:"id,omitempty"`
 	Created       int           `json:"created_at,omitempty"`
-	Provider      string        `json:"provider,omitempty"`
+	Provider      string        `json:"provider_id,omitempty"`
 	RouterID      string        `json:"router_id,omitempty"`
 	ModelID       string        `json:"model_id,omitempty"`
 	ModelName     string        `json:"model_name,omitempty"`
