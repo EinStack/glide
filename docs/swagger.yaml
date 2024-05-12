@@ -26,7 +26,7 @@ definitions:
         items:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
-      override:
+      override_params:
         $ref: '#/definitions/schemas.OverrideChatRequest'
     required:
     - message
@@ -45,7 +45,7 @@ definitions:
         type: string
       model_response:
         $ref: '#/definitions/schemas.ModelResponse'
-      provider:
+      provider_id:
         type: string
       router_id:
         type: string

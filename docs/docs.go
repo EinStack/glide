@@ -226,7 +226,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
                 },
-                "override": {
+                "override_params": {
                     "$ref": "#/definitions/schemas.OverrideChatRequest"
                 }
             }
@@ -252,7 +252,7 @@ const docTemplate = `{
                 "model_response": {
                     "$ref": "#/definitions/schemas.ModelResponse"
                 },
-                "provider": {
+                "provider_id": {
                     "type": "string"
                 },
                 "router_id": {
