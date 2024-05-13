@@ -36,18 +36,18 @@ func (m *FinishReasonMapper) Map(finishReason *string) *schemas.FinishReason {
 
 	switch strings.ToLower(*finishReason) {
 	case CompleteReason:
-		reason = &schemas.Complete
+		reason = &schemas.ReasonComplete
 	case MaxTokensReason:
-		reason = &schemas.MaxTokens
+		reason = &schemas.ReasonMaxTokens
 	case FilteredReason:
-		reason = &schemas.ContentFiltered
+		reason = &schemas.ReasonContentFiltered
 	default:
 		m.tel.Logger.Warn(
 			"Unknown finish reason, other is going to used",
 			zap.String("unknown_reason", *finishReason),
 		)
 
-		reason = &schemas.OtherReason
+		reason = &schemas.ReasonOther
 	}
 
 	return reason

@@ -1,430 +1,5 @@
 basePath: /
 definitions:
-  anthropic.Config:
-    properties:
-      apiVersion:
-        type: string
-      baseUrl:
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/anthropic.Params'
-      model:
-        type: string
-    required:
-    - apiVersion
-    - baseUrl
-    - chatEndpoint
-    - model
-    type: object
-  anthropic.Params:
-    properties:
-      max_tokens:
-        type: integer
-      metadata:
-        type: string
-      stop:
-        items:
-          type: string
-        type: array
-      system:
-        type: string
-      temperature:
-        type: number
-      top_k:
-        type: integer
-      top_p:
-        type: number
-    type: object
-  azureopenai.Config:
-    properties:
-      apiVersion:
-        description: The API version to use for this operation. This follows the YYYY-MM-DD
-          format (e.g 2023-05-15)
-        type: string
-      baseUrl:
-        description: The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/azureopenai.Params'
-      model:
-        description: This is your deployment name. You're required to first deploy
-          a model before you can make calls (e.g. glide-gpt-35)
-        type: string
-    required:
-    - apiVersion
-    - baseUrl
-    - model
-    type: object
-  azureopenai.Params:
-    properties:
-      frequency_penalty:
-        type: integer
-      logit_bias:
-        additionalProperties:
-          type: number
-        type: object
-      max_tokens:
-        type: integer
-      "n":
-        type: integer
-      presence_penalty:
-        type: integer
-      response_format:
-        description: 'TODO: should this be a part of the chat request API?'
-      seed:
-        type: integer
-      stop:
-        items:
-          type: string
-        type: array
-      temperature:
-        type: number
-      tool_choice: {}
-      tools:
-        items:
-          type: string
-        type: array
-      top_p:
-        type: number
-      user:
-        type: string
-    type: object
-  bedrock.Config:
-    properties:
-      awsRegion:
-        type: string
-      baseUrl:
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/bedrock.Params'
-      model:
-        type: string
-    required:
-    - awsRegion
-    - baseUrl
-    - chatEndpoint
-    - model
-    type: object
-  bedrock.Params:
-    properties:
-      max_tokens:
-        type: integer
-      stop:
-        items:
-          type: string
-        type: array
-      temperature:
-        type: number
-      top_p:
-        type: number
-    type: object
-  clients.ClientConfig:
-    properties:
-      timeout:
-        type: string
-    type: object
-  cohere.Config:
-    properties:
-      baseUrl:
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/cohere.Params'
-      model:
-        description: https://docs.cohere.com/docs/models#command
-        type: string
-    required:
-    - baseUrl
-    - chatEndpoint
-    - model
-    type: object
-  cohere.Params:
-    properties:
-      connectors:
-        items:
-          type: string
-        type: array
-      frequency_penalty:
-        maximum: 1
-        minimum: 0
-        type: number
-      k:
-        maximum: 500
-        minimum: 0
-        type: integer
-      max_tokens:
-        type: integer
-      p:
-        maximum: 0.99
-        minimum: 0.01
-        type: number
-      preamble:
-        type: string
-      presence_penalty:
-        maximum: 1
-        minimum: 0
-        type: number
-      prompt_truncation:
-        type: string
-      search_queries_only:
-        type: boolean
-      seed:
-        type: integer
-      stop_sequences:
-        items:
-          type: string
-        maxItems: 5
-        type: array
-      temperature:
-        type: number
-    required:
-    - temperature
-    type: object
-  http.ErrorSchema:
-    properties:
-      message:
-        type: string
-    type: object
-  http.HealthSchema:
-    properties:
-      healthy:
-        type: boolean
-    type: object
-  http.RouterListSchema:
-    properties:
-      routers:
-        items:
-          $ref: '#/definitions/routers.LangRouterConfig'
-        type: array
-    type: object
-  latency.Config:
-    properties:
-      decay:
-        description: Weight of new latency measurements
-        type: number
-      update_interval:
-        description: How often gateway should probe models with not the lowest response
-          latency
-        type: string
-      warmup_samples:
-        description: The number of latency probes required to init moving average
-        type: integer
-    type: object
-  octoml.Config:
-    properties:
-      baseUrl:
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/octoml.Params'
-      model:
-        type: string
-    required:
-    - baseUrl
-    - chatEndpoint
-    - model
-    type: object
-  octoml.Params:
-    properties:
-      frequency_penalty:
-        type: integer
-      max_tokens:
-        type: integer
-      presence_penalty:
-        type: integer
-      stop:
-        items:
-          type: string
-        type: array
-      temperature:
-        type: number
-      top_p:
-        type: number
-    type: object
-  ollama.Config:
-    properties:
-      baseUrl:
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/ollama.Params'
-      model:
-        type: string
-    required:
-    - baseUrl
-    - chatEndpoint
-    - model
-    type: object
-  ollama.Params:
-    properties:
-      microstat:
-        type: integer
-      microstat_eta:
-        type: number
-      microstat_tau:
-        type: number
-      num_ctx:
-        type: integer
-      num_gpu:
-        type: integer
-      num_gqa:
-        type: integer
-      num_predict:
-        type: integer
-      num_thread:
-        type: integer
-      repeat_last_n:
-        type: integer
-      seed:
-        type: integer
-      stop:
-        items:
-          type: string
-        type: array
-      stream:
-        type: boolean
-      temperature:
-        type: number
-      tfs_z:
-        type: number
-      top_k:
-        type: integer
-      top_p:
-        type: number
-    type: object
-  openai.Config:
-    properties:
-      baseUrl:
-        type: string
-      chatEndpoint:
-        type: string
-      defaultParams:
-        $ref: '#/definitions/openai.Params'
-      model:
-        type: string
-    required:
-    - baseUrl
-    - chatEndpoint
-    - model
-    type: object
-  openai.Params:
-    properties:
-      frequency_penalty:
-        type: integer
-      logit_bias:
-        additionalProperties:
-          type: number
-        type: object
-      max_tokens:
-        type: integer
-      "n":
-        type: integer
-      presence_penalty:
-        type: integer
-      response_format:
-        description: 'TODO: should this be a part of the chat request API?'
-      seed:
-        type: integer
-      stop:
-        items:
-          type: string
-        type: array
-      temperature:
-        type: number
-      tool_choice: {}
-      tools:
-        items:
-          type: string
-        type: array
-      top_p:
-        type: number
-      user:
-        type: string
-    type: object
-  providers.LangModelConfig:
-    properties:
-      anthropic:
-        $ref: '#/definitions/anthropic.Config'
-      azureopenai:
-        $ref: '#/definitions/azureopenai.Config'
-      bedrock:
-        $ref: '#/definitions/bedrock.Config'
-      client:
-        $ref: '#/definitions/clients.ClientConfig'
-      cohere:
-        $ref: '#/definitions/cohere.Config'
-      enabled:
-        description: Is the model enabled?
-        type: boolean
-      error_budget:
-        type: string
-      id:
-        description: Model instance ID (unique in scope of the router)
-        type: string
-      latency:
-        $ref: '#/definitions/latency.Config'
-      octoml:
-        $ref: '#/definitions/octoml.Config'
-      ollama:
-        $ref: '#/definitions/ollama.Config'
-      openai:
-        allOf:
-        - $ref: '#/definitions/openai.Config'
-        description: Add other providers like
-      weight:
-        type: integer
-    required:
-    - enabled
-    - id
-    type: object
-  retry.ExpRetryConfig:
-    properties:
-      base_multiplier:
-        type: integer
-      max_delay:
-        type: string
-      max_retries:
-        type: integer
-      min_delay:
-        type: string
-    type: object
-  routers.LangRouterConfig:
-    properties:
-      enabled:
-        description: Is router enabled?
-        type: boolean
-      models:
-        description: the list of models that could handle requests
-        items:
-          $ref: '#/definitions/providers.LangModelConfig'
-        minItems: 1
-        type: array
-      retry:
-        allOf:
-        - $ref: '#/definitions/retry.ExpRetryConfig'
-        description: retry when no healthy model is available to router
-      routers:
-        description: Unique router ID
-        type: string
-      strategy:
-        description: strategy on picking the next model to serve the request
-        type: string
-    required:
-    - enabled
-    - models
-    - retry
-    - routers
-    - strategy
-    type: object
   schemas.ChatMessage:
     properties:
       content:
@@ -447,11 +22,11 @@ definitions:
     properties:
       message:
         $ref: '#/definitions/schemas.ChatMessage'
-      messageHistory:
+      message_history:
         items:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
-      override:
+      override_params:
         $ref: '#/definitions/schemas.OverrideChatRequest'
     required:
     - message
@@ -460,30 +35,42 @@ definitions:
     properties:
       cached:
         type: boolean
-      created:
+      created_at:
         type: integer
       id:
         type: string
-      model:
-        type: string
       model_id:
         type: string
-      modelResponse:
+      model_name:
+        type: string
+      model_response:
         $ref: '#/definitions/schemas.ModelResponse'
-      provider:
+      provider_id:
         type: string
-      router:
+      router_id:
         type: string
+    type: object
+  schemas.Error:
+    properties:
+      message:
+        type: string
+      name:
+        type: string
+    type: object
+  schemas.HealthSchema:
+    properties:
+      healthy:
+        type: boolean
     type: object
   schemas.ModelResponse:
     properties:
       message:
         $ref: '#/definitions/schemas.ChatMessage'
-      responseId:
+      metadata:
         additionalProperties:
           type: string
         type: object
-      tokenCount:
+      token_usage:
         $ref: '#/definitions/schemas.TokenUsage'
     type: object
   schemas.OverrideChatRequest:
@@ -496,13 +83,19 @@ definitions:
     - message
     - model_id
     type: object
+  schemas.RouterListSchema:
+    properties:
+      routers:
+        items: {}
+        type: array
+    type: object
   schemas.TokenUsage:
     properties:
-      promptTokens:
+      prompt_tokens:
         type: integer
-      responseTokens:
+      response_tokens:
         type: integer
-      totalTokens:
+      total_tokens:
         type: integer
     type: object
 externalDocs:
@@ -533,7 +126,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.HealthSchema'
+            $ref: '#/definitions/schemas.HealthSchema'
       summary: Gateway Health
       tags:
       - Operations
@@ -541,7 +134,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieve list of configured language routers and their configurations
+      description: Retrieve list of configured active language routers and their configurations
       operationId: glide-language-routers
       produces:
       - application/json
@@ -549,7 +142,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.RouterListSchema'
+            $ref: '#/definitions/schemas.RouterListSchema'
       summary: Language Router List
       tags:
       - Language
@@ -581,11 +174,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorSchema'
+            $ref: '#/definitions/schemas.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorSchema'
+            $ref: '#/definitions/schemas.Error'
       summary: Language Chat
       tags:
       - Language
@@ -628,7 +221,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorSchema'
+            $ref: '#/definitions/schemas.Error'
         "426":
           description: Upgrade Required
       summary: Language Chat

@@ -16,10 +16,7 @@ import (
 	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
-var (
-	ErrNoModels         = errors.New("no models configured for router")
-	ErrNoModelAvailable = errors.New("could not handle request because all providers are not available")
-)
+var ErrNoModels = errors.New("no models configured for router")
 
 type RouterID = string
 
@@ -86,10 +83,10 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 			langModel := model.(providers.LangModel)
 
 			// Check if there is an override in the request
-			if req.Override != nil {
+			if req.OverrideParams != nil {
 				// Override the message if the language model ID matches the override model ID
-				if langModel.ID() == req.Override.Model {
-					req.Message = req.Override.Message
+				if langModel.ID() == req.OverrideParams.ModelID {
+					req.Message = req.OverrideParams.Message
 				}
 			}
 
@@ -124,7 +121,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 	// if we reach this part, then we are in trouble
 	r.logger.Error("No model was available to handle chat request")
 
-	return nil, ErrNoModelAvailable
+	return nil, &schemas.ErrNoModelAvailable
 }
 
 func (r *LangRouter) ChatStream(
@@ -139,7 +136,7 @@ func (r *LangRouter) ChatStream(
 			schemas.NoModelConfigured,
 			ErrNoModels.Error(),
 			req.Metadata,
-			&schemas.ErrorReason,
+			&schemas.ReasonError,
 		)
 
 		return
@@ -239,9 +236,9 @@ func (r *LangRouter) ChatStream(
 	respC <- schemas.NewChatStreamError(
 		req.ID,
 		r.routerID,
-		schemas.AllModelsUnavailable,
-		ErrNoModelAvailable.Error(),
+		schemas.ErrNoModelAvailable.Name,
+		schemas.ErrNoModelAvailable.Message,
 		req.Metadata,
-		&schemas.ErrorReason,
+		&schemas.ReasonError,
 	)
 }

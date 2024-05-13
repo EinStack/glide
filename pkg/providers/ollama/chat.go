@@ -188,7 +188,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: ollamaCompletion.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
+			Metadata: map[string]string{
 				"system_fingerprint": "",
 			},
 			Message: schemas.ChatMessage{
