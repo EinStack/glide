@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 func TestClientConfig_DefaultConfig(t *testing.T) {
@@ -19,8 +21,10 @@ func TestClientConfig_JSONMarshal(t *testing.T) {
 	defaultConfig := DefaultClientConfig()
 
 	expectedJSON := `{
-        "timeout": "10s"
-    }`
+        "timeout": "10s",
+		"max_idle_connections": 100,
+		"max_idle_connections_per_host": 2	
+	}`
 
 	marshaledJSON, err := json.MarshalIndent(defaultConfig, "", "\t")
 
@@ -37,7 +41,7 @@ func TestDefaultClientConfig(t *testing.T) {
 	require.NotNil(t, config.MaxIdleConnsPerHost, "MaxIdleConnsPerHost must not be nil")
 
 	// Check default timeout
-	expectedTimeout := 10 * time.Second
+	expectedTimeout := fields.Duration(10 * time.Second)
 	require.Equal(t, expectedTimeout, *config.Timeout)
 
 	// Check MaxIdleConns
