@@ -11,6 +11,7 @@ import (
 	"github.com/EinStack/glide/docs"
 
 	"github.com/gofiber/contrib/fiberzap/v2"
+	"github.com/gofiber/contrib/otelfiber"
 
 	_ "github.com/EinStack/glide/docs" // importing docs package to include them into the binary
 
@@ -30,6 +31,7 @@ type Server struct {
 
 func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *routers.RouterManager) (*Server, error) {
 	srv := config.ToServer()
+	srv.Use(otelfiber.Middleware())
 
 	return &Server{
 		config:        config,

@@ -135,7 +135,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: chatCompletion.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
+			Metadata: map[string]string{
 				"system_fingerprint": chatCompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{

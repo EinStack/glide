@@ -40,7 +40,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.HealthSchema"
+                            "$ref": "#/definitions/schemas.HealthSchema"
                         }
                     }
                 }
@@ -48,7 +48,7 @@ const docTemplate = `{
         },
         "/v1/language/": {
             "get": {
-                "description": "Retrieve list of configured language routers and their configurations",
+                "description": "Retrieve list of configured active language routers and their configurations",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,7 +64,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.RouterListSchema"
+                            "$ref": "#/definitions/schemas.RouterListSchema"
                         }
                     }
                 }
@@ -112,13 +112,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     }
                 }
@@ -179,7 +179,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorSchema"
+                            "$ref": "#/definitions/schemas.Error"
                         }
                     },
                     "426": {
@@ -190,637 +190,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "anthropic.Config": {
-            "type": "object",
-            "required": [
-                "apiVersion",
-                "baseUrl",
-                "chatEndpoint",
-                "model"
-            ],
-            "properties": {
-                "apiVersion": {
-                    "type": "string"
-                },
-                "baseUrl": {
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/anthropic.Params"
-                },
-                "model": {
-                    "type": "string"
-                }
-            }
-        },
-        "anthropic.Params": {
-            "type": "object",
-            "properties": {
-                "max_tokens": {
-                    "type": "integer"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "stop": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "system": {
-                    "type": "string"
-                },
-                "temperature": {
-                    "type": "number"
-                },
-                "top_k": {
-                    "type": "integer"
-                },
-                "top_p": {
-                    "type": "number"
-                }
-            }
-        },
-        "azureopenai.Config": {
-            "type": "object",
-            "required": [
-                "apiVersion",
-                "baseUrl",
-                "model"
-            ],
-            "properties": {
-                "apiVersion": {
-                    "description": "The API version to use for this operation. This follows the YYYY-MM-DD format (e.g 2023-05-15)",
-                    "type": "string"
-                },
-                "baseUrl": {
-                    "description": "The name of your Azure OpenAI Resource (e.g https://glide-test.openai.azure.com/)",
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/azureopenai.Params"
-                },
-                "model": {
-                    "description": "This is your deployment name. You're required to first deploy a model before you can make calls (e.g. glide-gpt-35)",
-                    "type": "string"
-                }
-            }
-        },
-        "azureopenai.Params": {
-            "type": "object",
-            "properties": {
-                "frequency_penalty": {
-                    "type": "integer"
-                },
-                "logit_bias": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "number"
-                    }
-                },
-                "max_tokens": {
-                    "type": "integer"
-                },
-                "n": {
-                    "type": "integer"
-                },
-                "presence_penalty": {
-                    "type": "integer"
-                },
-                "response_format": {
-                    "description": "TODO: should this be a part of the chat request API?"
-                },
-                "seed": {
-                    "type": "integer"
-                },
-                "stop": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "temperature": {
-                    "type": "number"
-                },
-                "tool_choice": {},
-                "tools": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "top_p": {
-                    "type": "number"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
-        "bedrock.Config": {
-            "type": "object",
-            "required": [
-                "awsRegion",
-                "baseUrl",
-                "chatEndpoint",
-                "model"
-            ],
-            "properties": {
-                "awsRegion": {
-                    "type": "string"
-                },
-                "baseUrl": {
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/bedrock.Params"
-                },
-                "model": {
-                    "type": "string"
-                }
-            }
-        },
-        "bedrock.Params": {
-            "type": "object",
-            "properties": {
-                "max_tokens": {
-                    "type": "integer"
-                },
-                "stop": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "temperature": {
-                    "type": "number"
-                },
-                "top_p": {
-                    "type": "number"
-                }
-            }
-        },
-        "clients.ClientConfig": {
-            "type": "object",
-            "properties": {
-                "max_idle_connections": {
-                    "type": "integer"
-                },
-                "max_idle_connections_per_host": {
-                    "type": "integer"
-                },
-                "timeout": {
-                    "type": "string"
-                }
-            }
-        },
-        "cohere.Config": {
-            "type": "object",
-            "required": [
-                "baseUrl",
-                "chatEndpoint",
-                "model"
-            ],
-            "properties": {
-                "baseUrl": {
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/cohere.Params"
-                },
-                "model": {
-                    "description": "https://docs.cohere.com/docs/models#command",
-                    "type": "string"
-                }
-            }
-        },
-        "cohere.Params": {
-            "type": "object",
-            "required": [
-                "temperature"
-            ],
-            "properties": {
-                "connectors": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "frequency_penalty": {
-                    "type": "number",
-                    "maximum": 1,
-                    "minimum": 0
-                },
-                "k": {
-                    "type": "integer",
-                    "maximum": 500,
-                    "minimum": 0
-                },
-                "max_tokens": {
-                    "type": "integer"
-                },
-                "p": {
-                    "type": "number",
-                    "maximum": 0.99,
-                    "minimum": 0.01
-                },
-                "preamble": {
-                    "type": "string"
-                },
-                "presence_penalty": {
-                    "type": "number",
-                    "maximum": 1,
-                    "minimum": 0
-                },
-                "prompt_truncation": {
-                    "type": "string"
-                },
-                "search_queries_only": {
-                    "type": "boolean"
-                },
-                "seed": {
-                    "type": "integer"
-                },
-                "stop_sequences": {
-                    "type": "array",
-                    "maxItems": 5,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "temperature": {
-                    "type": "number"
-                }
-            }
-        },
-        "http.ErrorSchema": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.HealthSchema": {
-            "type": "object",
-            "properties": {
-                "healthy": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "http.RouterListSchema": {
-            "type": "object",
-            "properties": {
-                "routers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/routers.LangRouterConfig"
-                    }
-                }
-            }
-        },
-        "latency.Config": {
-            "type": "object",
-            "properties": {
-                "decay": {
-                    "description": "Weight of new latency measurements",
-                    "type": "number"
-                },
-                "update_interval": {
-                    "description": "How often gateway should probe models with not the lowest response latency",
-                    "type": "string"
-                },
-                "warmup_samples": {
-                    "description": "The number of latency probes required to init moving average",
-                    "type": "integer"
-                }
-            }
-        },
-        "octoml.Config": {
-            "type": "object",
-            "required": [
-                "baseUrl",
-                "chatEndpoint",
-                "model"
-            ],
-            "properties": {
-                "baseUrl": {
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/octoml.Params"
-                },
-                "model": {
-                    "type": "string"
-                }
-            }
-        },
-        "octoml.Params": {
-            "type": "object",
-            "properties": {
-                "frequency_penalty": {
-                    "type": "integer"
-                },
-                "max_tokens": {
-                    "type": "integer"
-                },
-                "presence_penalty": {
-                    "type": "integer"
-                },
-                "stop": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "temperature": {
-                    "type": "number"
-                },
-                "top_p": {
-                    "type": "number"
-                }
-            }
-        },
-        "ollama.Config": {
-            "type": "object",
-            "required": [
-                "baseUrl",
-                "chatEndpoint",
-                "model"
-            ],
-            "properties": {
-                "baseUrl": {
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/ollama.Params"
-                },
-                "model": {
-                    "type": "string"
-                }
-            }
-        },
-        "ollama.Params": {
-            "type": "object",
-            "properties": {
-                "microstat": {
-                    "type": "integer"
-                },
-                "microstat_eta": {
-                    "type": "number"
-                },
-                "microstat_tau": {
-                    "type": "number"
-                },
-                "num_ctx": {
-                    "type": "integer"
-                },
-                "num_gpu": {
-                    "type": "integer"
-                },
-                "num_gqa": {
-                    "type": "integer"
-                },
-                "num_predict": {
-                    "type": "integer"
-                },
-                "num_thread": {
-                    "type": "integer"
-                },
-                "repeat_last_n": {
-                    "type": "integer"
-                },
-                "seed": {
-                    "type": "integer"
-                },
-                "stop": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "stream": {
-                    "type": "boolean"
-                },
-                "temperature": {
-                    "type": "number"
-                },
-                "tfs_z": {
-                    "type": "number"
-                },
-                "top_k": {
-                    "type": "integer"
-                },
-                "top_p": {
-                    "type": "number"
-                }
-            }
-        },
-        "openai.Config": {
-            "type": "object",
-            "required": [
-                "baseUrl",
-                "chatEndpoint",
-                "model"
-            ],
-            "properties": {
-                "baseUrl": {
-                    "type": "string"
-                },
-                "chatEndpoint": {
-                    "type": "string"
-                },
-                "defaultParams": {
-                    "$ref": "#/definitions/openai.Params"
-                },
-                "model": {
-                    "type": "string"
-                }
-            }
-        },
-        "openai.Params": {
-            "type": "object",
-            "properties": {
-                "frequency_penalty": {
-                    "type": "integer"
-                },
-                "logit_bias": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "number"
-                    }
-                },
-                "max_tokens": {
-                    "type": "integer"
-                },
-                "n": {
-                    "type": "integer"
-                },
-                "presence_penalty": {
-                    "type": "integer"
-                },
-                "response_format": {
-                    "description": "TODO: should this be a part of the chat request API?"
-                },
-                "seed": {
-                    "type": "integer"
-                },
-                "stop": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "temperature": {
-                    "type": "number"
-                },
-                "tool_choice": {},
-                "tools": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "top_p": {
-                    "type": "number"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
-        "providers.LangModelConfig": {
-            "type": "object",
-            "required": [
-                "enabled",
-                "id"
-            ],
-            "properties": {
-                "anthropic": {
-                    "$ref": "#/definitions/anthropic.Config"
-                },
-                "azureopenai": {
-                    "$ref": "#/definitions/azureopenai.Config"
-                },
-                "bedrock": {
-                    "$ref": "#/definitions/bedrock.Config"
-                },
-                "client": {
-                    "$ref": "#/definitions/clients.ClientConfig"
-                },
-                "cohere": {
-                    "$ref": "#/definitions/cohere.Config"
-                },
-                "enabled": {
-                    "description": "Is the model enabled?",
-                    "type": "boolean"
-                },
-                "error_budget": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "Model instance ID (unique in scope of the router)",
-                    "type": "string"
-                },
-                "latency": {
-                    "$ref": "#/definitions/latency.Config"
-                },
-                "octoml": {
-                    "$ref": "#/definitions/octoml.Config"
-                },
-                "ollama": {
-                    "$ref": "#/definitions/ollama.Config"
-                },
-                "openai": {
-                    "description": "Add other providers like",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/openai.Config"
-                        }
-                    ]
-                },
-                "weight": {
-                    "type": "integer"
-                }
-            }
-        },
-        "retry.ExpRetryConfig": {
-            "type": "object",
-            "properties": {
-                "base_multiplier": {
-                    "type": "integer"
-                },
-                "max_delay": {
-                    "type": "integer"
-                },
-                "max_retries": {
-                    "type": "integer"
-                },
-                "min_delay": {
-                    "type": "integer"
-                }
-            }
-        },
-        "routers.LangRouterConfig": {
-            "type": "object",
-            "required": [
-                "enabled",
-                "models",
-                "retry",
-                "routers",
-                "strategy"
-            ],
-            "properties": {
-                "enabled": {
-                    "description": "Is router enabled?",
-                    "type": "boolean"
-                },
-                "models": {
-                    "description": "the list of models that could handle requests",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/providers.LangModelConfig"
-                    }
-                },
-                "retry": {
-                    "description": "retry when no healthy model is available to router",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/retry.ExpRetryConfig"
-                        }
-                    ]
-                },
-                "routers": {
-                    "description": "Unique router ID",
-                    "type": "string"
-                },
-                "strategy": {
-                    "description": "strategy on picking the next model to serve the request",
-                    "type": "string"
-                }
-            }
-        },
         "schemas.ChatMessage": {
             "type": "object",
             "required": [
@@ -851,13 +220,13 @@ const docTemplate = `{
                 "message": {
                     "$ref": "#/definitions/schemas.ChatMessage"
                 },
-                "messageHistory": {
+                "message_history": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/schemas.ChatMessage"
                     }
                 },
-                "override": {
+                "override_params": {
                     "$ref": "#/definitions/schemas.OverrideChatRequest"
                 }
             }
@@ -868,26 +237,45 @@ const docTemplate = `{
                 "cached": {
                     "type": "boolean"
                 },
-                "created": {
+                "created_at": {
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
-                "model": {
-                    "type": "string"
-                },
-                "modelResponse": {
-                    "$ref": "#/definitions/schemas.ModelResponse"
-                },
                 "model_id": {
                     "type": "string"
                 },
-                "provider": {
+                "model_name": {
                     "type": "string"
                 },
-                "router": {
+                "model_response": {
+                    "$ref": "#/definitions/schemas.ModelResponse"
+                },
+                "provider_id": {
                     "type": "string"
+                },
+                "router_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.HealthSchema": {
+            "type": "object",
+            "properties": {
+                "healthy": {
+                    "type": "boolean"
                 }
             }
         },
@@ -897,13 +285,13 @@ const docTemplate = `{
                 "message": {
                     "$ref": "#/definitions/schemas.ChatMessage"
                 },
-                "responseId": {
+                "metadata": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
-                "tokenCount": {
+                "token_usage": {
                     "$ref": "#/definitions/schemas.TokenUsage"
                 }
             }
@@ -923,16 +311,25 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.RouterListSchema": {
+            "type": "object",
+            "properties": {
+                "routers": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
         "schemas.TokenUsage": {
             "type": "object",
             "properties": {
-                "promptTokens": {
+                "prompt_tokens": {
                     "type": "integer"
                 },
-                "responseTokens": {
+                "response_tokens": {
                     "type": "integer"
                 },
-                "totalTokens": {
+                "total_tokens": {
                     "type": "integer"
                 }
             }
