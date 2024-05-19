@@ -42,11 +42,11 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
-	BaseURL       string        `yaml:"baseUrl" json:"baseUrl" validate:"required"`
-	ChatEndpoint  string        `yaml:"chatEndpoint" json:"chatEndpoint" validate:"required"`
+	BaseURL       string        `yaml:"base_url" json:"base_url" validate:"required"`
+	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
 	Model         string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
-	DefaultParams *Params       `yaml:"defaultParams,omitempty" json:"defaultParams"`
+	DefaultParams *Params       `yaml:"default_params,omitempty" json:"default_params"`
 }
 
 // DefaultConfig for OpenAI models
