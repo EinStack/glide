@@ -116,6 +116,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Parse the response JSON
 	var chatCompletion ChatCompletion
 
+	c.logger.Debug(
+		"Raw chat response",
+		zap.ByteString("resp", bodyBytes),
+	)
+
 	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
 		c.logger.Error(
