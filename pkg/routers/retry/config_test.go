@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,8 +14,7 @@ func TestRetryConfig_DefaultConfig(t *testing.T) {
 }
 
 func TestRetryConfig_JSONMarshal(t *testing.T) {
-    
-    defaultConfig := DefaultExpRetryConfig()    
+	defaultConfig := DefaultExpRetryConfig()
 
 	expectedJSON := `{
 		"max_retries": 3,
@@ -26,6 +24,6 @@ func TestRetryConfig_JSONMarshal(t *testing.T) {
 	}`
 
 	marshaledJSON, err := json.MarshalIndent(defaultConfig, "", "\t")
-	assert.NoError(t, err)
-	assert.JSONEq(t, expectedJSON, string(marshaledJSON))
+	require.NoError(t, err)
+	require.JSONEq(t, expectedJSON, string(marshaledJSON))
 }

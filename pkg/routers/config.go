@@ -166,8 +166,8 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 	retryConfig := c.Retry
 	maxDelay := time.Duration(*retryConfig.MaxDelay)
-	
-    return retry.NewExpRetry(
+
+	return retry.NewExpRetry(
 		retryConfig.MaxRetries,
 		retryConfig.BaseMultiplier,
 		time.Duration(retryConfig.MinDelay),

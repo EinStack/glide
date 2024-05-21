@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/EinStack/glide/pkg/config/fields"
@@ -28,8 +27,8 @@ func TestClientConfig_JSONMarshal(t *testing.T) {
 
 	marshaledJSON, err := json.MarshalIndent(defaultConfig, "", "\t")
 
-	assert.NoError(t, err)
-	assert.JSONEq(t, expectedJSON, string(marshaledJSON))
+	require.NoError(t, err)
+	require.JSONEq(t, expectedJSON, string(marshaledJSON))
 }
 
 func TestDefaultClientConfig(t *testing.T) {

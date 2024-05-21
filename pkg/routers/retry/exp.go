@@ -3,7 +3,6 @@ package retry
 import (
 	"context"
 	"time"
-
 )
 
 // ExpRetry increase wait time exponentially with try number (delay = minDelay * baseMultiplier ^ attempt)
