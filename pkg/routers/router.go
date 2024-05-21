@@ -59,7 +59,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		chatStreamRouting: chatStreamRouting,
 		tel:               tel,
 		logger:            tel.L().With(zap.String("routerID", cfg.ID)),
-		cache:             cache.NewMemoryCache(3600, 1000), // Initialize cache
+		cache:             cache.NewMemoryCache(),
 	}
 
 	return router, err

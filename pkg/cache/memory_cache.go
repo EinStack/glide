@@ -18,7 +18,7 @@ type MemoryCache struct {
 	mux   sync.Mutex
 }
 
-func NewMemoryCache(ttl int, maxSize int) *MemoryCache {
+func NewMemoryCache() *MemoryCache {
 	return &MemoryCache{
 		cache: make(map[string]CacheEntry),
 	}
