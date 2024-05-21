@@ -35,7 +35,7 @@ type LangRouter struct {
 	retry             *retry.ExpRetry
 	tel               *telemetry.Telemetry
 	logger            *zap.Logger
-	cache             *cache.MemoryCache // Add cache field
+	cache             *cache.MemoryCache
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
