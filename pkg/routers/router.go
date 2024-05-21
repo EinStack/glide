@@ -3,7 +3,9 @@ package routers
 import (
 	"context"
 	"errors"
+	"log"
 
+	"github.com/EinStack/glide/pkg/cache"
 	"github.com/EinStack/glide/pkg/routers/retry"
 	"go.uber.org/zap"
 
@@ -33,6 +35,7 @@ type LangRouter struct {
 	retry             *retry.ExpRetry
 	tel               *telemetry.Telemetry
 	logger            *zap.Logger
+	cache             *cache.MemoryCache // Add cache field
 }
 
 func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter, error) {
@@ -56,6 +59,7 @@ func NewLangRouter(cfg *LangRouterConfig, tel *telemetry.Telemetry) (*LangRouter
 		chatStreamRouting: chatStreamRouting,
 		tel:               tel,
 		logger:            tel.L().With(zap.String("routerID", cfg.ID)),
+		cache:             cache.NewMemoryCache(3600, 1000), // Initialize cache
 	}
 
 	return router, err
@@ -68,6 +72,13 @@ func (r *LangRouter) ID() RouterID {
 func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schemas.ChatResponse, error) {
 	if len(r.chatModels) == 0 {
 		return nil, ErrNoModels
+	}
+
+	// Generate cache key
+	cacheKey := req.Message.Content
+	if cachedResponse, found := r.cache.Get(cacheKey); found {
+		log.Println("found cached response and returning: ", cachedResponse)
+		return &cachedResponse, nil
 	}
 
 	retryIterator := r.retry.Iterator()
@@ -107,11 +118,12 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 			resp.RouterID = r.routerID
 
+			// Store response in cache
+			r.cache.Set(cacheKey, *resp)
+
 			return resp, nil
 		}
 
-		// no providers were available to handle the request,
-		//  so we have to wait a bit with a hope there is some available next time
 		r.logger.Warn("No healthy model found to serve chat request, wait and retry")
 
 		err := retryIterator.WaitNext(ctx)
@@ -121,7 +133,6 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 		}
 	}
 
-	// if we reach this part, then we are in trouble
 	r.logger.Error("No model was available to handle chat request")
 
 	return nil, ErrNoModelAvailable
