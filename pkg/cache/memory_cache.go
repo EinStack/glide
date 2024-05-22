@@ -1,51 +1,27 @@
 package cache
 
-import (
-	"fmt"
-	"sync"
-	"time"
-
-	"github.com/EinStack/glide/pkg/api/schemas"
-)
-
-type CacheEntry struct {
-	Response  schemas.ChatResponse
-	Timestamp time.Time
-}
+import "sync"
 
 type MemoryCache struct {
-	cache map[string]CacheEntry
-	mux   sync.Mutex
+	cache map[string]interface{}
+	lock  sync.RWMutex
 }
 
 func NewMemoryCache() *MemoryCache {
 	return &MemoryCache{
-		cache: make(map[string]CacheEntry),
+		cache: make(map[string]interface{}),
 	}
 }
 
-func (m *MemoryCache) Get(key string) (schemas.ChatResponse, bool) {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-	entry, exists := m.cache[key]
-	if !exists {
-		return schemas.ChatResponse{}, false
-	}
-	return entry.Response, true
+func (m *MemoryCache) Get(key string) (interface{}, bool) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	val, found := m.cache[key]
+	return val, found
 }
 
-func (m *MemoryCache) Set(key string, response schemas.ChatResponse) {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-	m.cache[key] = CacheEntry{
-		Response:  response,
-		Timestamp: time.Now(),
-	}
-}
-
-func (m *MemoryCache) All() {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-
-	fmt.Println("%v", m.cache)
+func (m *MemoryCache) Set(key string, value interface{}) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	m.cache[key] = value
 }

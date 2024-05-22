@@ -24,6 +24,20 @@ var (
 	UnknownError         ErrorCode = "unknown_error"
 )
 
+type StreamingCacheEntry struct {
+	Key            string
+	Query          string
+	ResponseChunks []string
+	Complete       bool
+}
+
+type StreamingCacheEntryChunk struct {
+	Key      string
+	Index    int
+	Content  ChatStreamChunk
+	Complete bool
+}
+
 type StreamRequestID = string
 
 // ChatStreamRequest defines a message that requests a new streaming chat
