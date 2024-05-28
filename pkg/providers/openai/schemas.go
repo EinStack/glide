@@ -22,6 +22,11 @@ type ChatRequest struct {
 	ResponseFormat   interface{}           `json:"response_format,omitempty"`
 }
 
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	r.Messages = params.Messages
+	// TODO(185): set other params
+}
+
 // ChatCompletion
 // Ref: https://platform.openai.com/docs/api-reference/chat/object
 type ChatCompletion struct {

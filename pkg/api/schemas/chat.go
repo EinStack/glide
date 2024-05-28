@@ -35,8 +35,8 @@ type ChatParams struct {
 	// TODO(185): set other params
 }
 
-// ChatParams returns a specific chat request params account for model-specific overrides.
-func (r *ChatRequest) ChatParams(modelID string, modelName string) *ChatParams {
+// Params returns a specific chat request params account for model-specific overrides.
+func (r *ChatRequest) Params(modelID string, modelName string) *ChatParams {
 	params := &ChatParams{
 		Messages: make([]ChatMessage, 0, len(r.MessageHistory)+1),
 	}

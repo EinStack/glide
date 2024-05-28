@@ -82,15 +82,10 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 			langModel := model.(providers.LangModel)
 
-			// Check if there is an override in the request
-			if req.OverrideParams != nil {
-				// Override the message if the language model ID matches the override model ID
-				if langModel.ID() == req.OverrideParams.ModelID {
-					req.Message = req.OverrideParams.Message
-				}
-			}
+			chatParams := req.Params(langModel.ID())
 
-			resp, err := langModel.Chat(ctx, req)
+			resp, err := langModel.Chat(ctx, chatParams)
+
 			if err != nil {
 				r.logger.Warn(
 					"Lang model failed processing chat request",
