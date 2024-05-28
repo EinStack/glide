@@ -1,7 +1,6 @@
 package cohere
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -13,11 +12,6 @@ import (
 
 const (
 	providerName = "cohere"
-)
-
-// ErrEmptyResponse is returned when the Cohere API returns an empty response.
-var (
-	ErrEmptyResponse = errors.New("empty response")
 )
 
 // Client is a client for accessing Cohere API

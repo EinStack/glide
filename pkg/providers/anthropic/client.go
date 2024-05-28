@@ -1,7 +1,6 @@
 package anthropic
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -13,11 +12,6 @@ import (
 
 const (
 	providerName = "anthropic"
-)
-
-// ErrEmptyResponse is returned when the OpenAI API returns an empty response.
-var (
-	ErrEmptyResponse = errors.New("empty response")
 )
 
 // Client is a client for accessing OpenAI API

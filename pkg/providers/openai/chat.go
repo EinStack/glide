@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/EinStack/glide/pkg/providers/clients"
 	"io"
 	"net/http"
 
@@ -118,7 +119,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	modelChoice := chatCompletion.Choices[0]
 
 	if len(modelChoice.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
+		return nil, clients.ErrEmptyResponse
 	}
 
 	// Map response to ChatResponse schema

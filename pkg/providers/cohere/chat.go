@@ -40,7 +40,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	}
 
 	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
+		return nil, clients.ErrEmptyResponse
 	}
 
 	return chatResponse, nil

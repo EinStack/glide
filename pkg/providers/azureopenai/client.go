@@ -1,7 +1,6 @@
 package azureopenai
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -15,11 +14,6 @@ import (
 
 const (
 	providerName = "azureopenai"
-)
-
-// ErrEmptyResponse is returned when the OpenAI API returns an empty response.
-var (
-	ErrEmptyResponse = errors.New("empty response")
 )
 
 // Client is a client for accessing Azure OpenAI API
