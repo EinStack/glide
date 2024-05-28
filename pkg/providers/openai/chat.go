@@ -40,6 +40,7 @@ func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schem
 	chatRequest.Stream = false
 
 	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+
 	if err != nil {
 		return nil, err
 	}

@@ -108,6 +108,7 @@ func (m *LanguageModel) Chat(ctx context.Context, request *schemas.ChatRequest) 
 
 func (m *LanguageModel) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (<-chan *clients.ChatStreamResult, error) {
 	stream, err := m.client.ChatStream(ctx, req)
+
 	if err != nil {
 		m.healthTracker.TrackErr(err)
 

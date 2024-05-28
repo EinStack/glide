@@ -148,9 +148,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    "model",
+				Role:    "assistant",
 				Content: cohereCompletion.Text,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   cohereCompletion.TokenCount.PromptTokens,

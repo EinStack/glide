@@ -18,31 +18,26 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an ollama-specific request schema
 type ChatRequest struct {
-	Model        string        `json:"model"`
-	Messages     []ChatMessage `json:"messages"`
-	Microstat    int           `json:"microstat,omitempty"`
-	MicrostatEta float64       `json:"microstat_eta,omitempty"`
-	MicrostatTau float64       `json:"microstat_tau,omitempty"`
-	NumCtx       int           `json:"num_ctx,omitempty"`
-	NumGqa       int           `json:"num_gqa,omitempty"`
-	NumGpu       int           `json:"num_gpu,omitempty"`
-	NumThread    int           `json:"num_thread,omitempty"`
-	RepeatLastN  int           `json:"repeat_last_n,omitempty"`
-	Temperature  float64       `json:"temperature,omitempty"`
-	Seed         int           `json:"seed,omitempty"`
-	StopWords    []string      `json:"stop,omitempty"`
-	Tfsz         float64       `json:"tfs_z,omitempty"`
-	NumPredict   int           `json:"num_predict,omitempty"`
-	TopK         int           `json:"top_k,omitempty"`
-	TopP         float64       `json:"top_p,omitempty"`
-	Stream       bool          `json:"stream"`
+	Model        string                `json:"model"`
+	Messages     []schemas.ChatMessage `json:"messages"`
+	Microstat    int                   `json:"microstat,omitempty"`
+	MicrostatEta float64               `json:"microstat_eta,omitempty"`
+	MicrostatTau float64               `json:"microstat_tau,omitempty"`
+	NumCtx       int                   `json:"num_ctx,omitempty"`
+	NumGqa       int                   `json:"num_gqa,omitempty"`
+	NumGpu       int                   `json:"num_gpu,omitempty"`
+	NumThread    int                   `json:"num_thread,omitempty"`
+	RepeatLastN  int                   `json:"repeat_last_n,omitempty"`
+	Temperature  float64               `json:"temperature,omitempty"`
+	Seed         int                   `json:"seed,omitempty"`
+	StopWords    []string              `json:"stop,omitempty"`
+	Tfsz         float64               `json:"tfs_z,omitempty"`
+	NumPredict   int                   `json:"num_predict,omitempty"`
+	TopK         int                   `json:"top_k,omitempty"`
+	TopP         float64               `json:"top_p,omitempty"`
+	Stream       bool                  `json:"stream"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
@@ -64,7 +59,6 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		NumPredict:   cfg.DefaultParams.NumPredict,
 		TopP:         cfg.DefaultParams.TopP,
 		TopK:         cfg.DefaultParams.TopK,
-		Stream:       cfg.DefaultParams.Stream,
 	}
 }
 

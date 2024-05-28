@@ -16,11 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an Bedrock-specific request schema
 type ChatRequest struct {
 	Messages             string               `json:"inputText"`
@@ -116,7 +111,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 			Message: schemas.ChatMessage{
 				Role:    "assistant",
 				Content: bedrockCompletion.Results[0].OutputText,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   bedrockCompletion.Results[0].TokenCount,

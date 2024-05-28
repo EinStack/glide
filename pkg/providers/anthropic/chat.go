@@ -13,23 +13,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an Anthropic-specific request schema
 type ChatRequest struct {
-	Model         string        `json:"model"`
-	Messages      []ChatMessage `json:"messages"`
-	System        string        `json:"system,omitempty"`
-	Temperature   float64       `json:"temperature,omitempty"`
-	TopP          float64       `json:"top_p,omitempty"`
-	TopK          int           `json:"top_k,omitempty"`
-	MaxTokens     int           `json:"max_tokens,omitempty"`
-	Stream        bool          `json:"stream,omitempty"`
-	Metadata      *string       `json:"metadata,omitempty"`
-	StopSequences []string      `json:"stop_sequences,omitempty"`
+	Model         string                `json:"model"`
+	Messages      []schemas.ChatMessage `json:"messages"`
+	System        string                `json:"system,omitempty"`
+	Temperature   float64               `json:"temperature,omitempty"`
+	TopP          float64               `json:"top_p,omitempty"`
+	TopK          int                   `json:"top_k,omitempty"`
+	MaxTokens     int                   `json:"max_tokens,omitempty"`
+	Stream        bool                  `json:"stream,omitempty"`
+	Metadata      *string               `json:"metadata,omitempty"`
+	StopSequences []string              `json:"stop_sequences,omitempty"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives

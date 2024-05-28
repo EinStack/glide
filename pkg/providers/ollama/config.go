@@ -18,7 +18,6 @@ type Params struct {
 	Tfsz         float64  `yaml:"tfs_z,omitempty" json:"tfs_z"`
 	NumPredict   int      `yaml:"num_predict,omitempty" json:"num_predict"`
 	TopK         int      `yaml:"top_k,omitempty" json:"top_k"`
-	Stream       bool     `yaml:"stream,omitempty" json:"stream"`
 }
 
 func DefaultParams() Params {
@@ -27,7 +26,6 @@ func DefaultParams() Params {
 		NumCtx:      2048,
 		TopP:        0.9,
 		TopK:        40,
-		Stream:      false,
 	}
 }
 

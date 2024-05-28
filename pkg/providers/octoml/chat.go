@@ -15,22 +15,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an octoml-specific request schema
 type ChatRequest struct {
-	Model            string        `json:"model"`
-	Messages         []ChatMessage `json:"messages"`
-	Temperature      float64       `json:"temperature,omitempty"`
-	TopP             float64       `json:"top_p,omitempty"`
-	MaxTokens        int           `json:"max_tokens,omitempty"`
-	StopWords        []string      `json:"stop,omitempty"`
-	Stream           bool          `json:"stream,omitempty"`
-	FrequencyPenalty int           `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int           `json:"presence_penalty,omitempty"`
+	Model            string                `json:"model"`
+	Messages         []schemas.ChatMessage `json:"messages"`
+	Temperature      float64               `json:"temperature,omitempty"`
+	TopP             float64               `json:"top_p,omitempty"`
+	MaxTokens        int                   `json:"max_tokens,omitempty"`
+	StopWords        []string              `json:"stop,omitempty"`
+	Stream           bool                  `json:"stream,omitempty"`
+	FrequencyPenalty int                   `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int                   `json:"presence_penalty,omitempty"`
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
