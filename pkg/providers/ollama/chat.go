@@ -48,7 +48,7 @@ func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:        cfg.Model,
+		Model:        cfg.ModelName,
 		Temperature:  cfg.DefaultParams.Temperature,
 		Microstat:    cfg.DefaultParams.Microstat,
 		MicrostatEta: cfg.DefaultParams.MicrostatEta,
@@ -77,7 +77,6 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	chatReq.Stream = false
 
 	chatResponse, err := c.doChatRequest(ctx, &chatReq)
-
 	if err != nil {
 		return nil, fmt.Errorf("chat request failed: %w", err)
 	}
@@ -132,7 +131,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 			// Parse the value to get the duration
 			cooldownDelay, err := time.ParseDuration(retryAfter)
-
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
 			}

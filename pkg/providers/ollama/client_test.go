@@ -51,7 +51,7 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 
 	clientCfg := clients.DefaultClientConfig()
 
-	providerCfg.Model = "llama2"
+	providerCfg.ModelName = "llama2"
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)

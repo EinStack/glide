@@ -158,7 +158,6 @@ func (c *Client) SupportChatStream() bool {
 func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients.ChatStream, error) {
 	// Create a new chat request
 	httpRequest, err := c.makeStreamReq(ctx, params)
-
 	if err != nil {
 		return nil, err
 	}

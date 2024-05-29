@@ -82,10 +82,9 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 			langModel := model.(providers.LangModel)
 
-			chatParams := req.Params(langModel.ID())
+			chatParams := req.Params(langModel.ID(), langModel.ModelName())
 
 			resp, err := langModel.Chat(ctx, chatParams)
-
 			if err != nil {
 				r.logger.Warn(
 					"Lang model failed processing chat request",
@@ -152,9 +151,9 @@ func (r *LangRouter) ChatStream(
 			}
 
 			langModel := model.(providers.LangModel)
+			params := req.Params(langModel.ID(), langModel.ModelName())
 
-			modelRespC, err := langModel.ChatStream(ctx, req)
-
+			modelRespC, err := langModel.ChatStream(ctx, params)
 			if err != nil {
 				r.logger.Error(
 					"Lang model failed to create streaming chat request",

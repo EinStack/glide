@@ -40,7 +40,7 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type Config struct {
 	BaseURL       string  `yaml:"base_url" json:"base_url" validate:"required"`
 	ChatEndpoint  string  `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
-	Model         string  `yaml:"model" json:"model" validate:"required"`
+	ModelName     string  `yaml:"model" json:"model" validate:"required"`
 	DefaultParams *Params `yaml:"default_params,omitempty" json:"default_params"`
 }
 
@@ -51,7 +51,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "http://localhost:11434",
 		ChatEndpoint:  "/api/chat",
-		Model:         "",
+		ModelName:     "",
 		DefaultParams: &defaultParams,
 	}
 }

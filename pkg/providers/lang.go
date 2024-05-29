@@ -29,6 +29,7 @@ type LangProvider interface {
 type LangModel interface {
 	Model
 	Provider() string
+	ModelName() string
 	Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error)
 	ChatStream(ctx context.Context, params *schemas.ChatParams) (<-chan *clients.ChatStreamResult, error)
 }
@@ -108,7 +109,6 @@ func (m *LanguageModel) Chat(ctx context.Context, params *schemas.ChatParams) (*
 
 func (m *LanguageModel) ChatStream(ctx context.Context, params *schemas.ChatParams) (<-chan *clients.ChatStreamResult, error) {
 	stream, err := m.client.ChatStream(ctx, params)
-
 	if err != nil {
 		m.healthTracker.TrackErr(err)
 
@@ -173,6 +173,10 @@ func (m *LanguageModel) ChatStream(ctx context.Context, params *schemas.ChatPara
 
 func (m *LanguageModel) Provider() string {
 	return m.client.Provider()
+}
+
+func (m *LanguageModel) ModelName() string {
+	return m.client.ModelName()
 }
 
 func ChatLatency(model Model) *latency.MovingAverage {

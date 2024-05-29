@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gofiber/contrib/otelfiber"
 	"time"
+
+	"github.com/gofiber/contrib/otelfiber"
 
 	"github.com/gofiber/swagger"
 

@@ -33,7 +33,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 	chatURL := fmt.Sprintf(
 		"%s/openai/deployments/%s/chat/completions?api-version=%s",
 		providerConfig.BaseURL,
-		providerConfig.Model,
+		providerConfig.ModelName,
 		providerConfig.APIVersion,
 	)
 
@@ -59,4 +59,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 
 func (c *Client) Provider() string {
 	return providerName
+}
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
 }

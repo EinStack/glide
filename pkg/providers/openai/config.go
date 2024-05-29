@@ -44,7 +44,7 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type Config struct {
 	BaseURL       string        `yaml:"base_url" json:"base_url" validate:"required"`
 	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
+	ModelName     string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	DefaultParams *Params       `yaml:"default_params,omitempty" json:"default_params"`
 }
@@ -56,7 +56,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "https://api.openai.com/v1",
 		ChatEndpoint:  "/chat/completions",
-		Model:         "gpt-3.5-turbo",
+		ModelName:     "gpt-3.5-turbo",
 		DefaultParams: &defaultParams,
 	}
 }

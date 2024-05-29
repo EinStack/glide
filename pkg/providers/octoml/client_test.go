@@ -63,7 +63,7 @@ func TestOctoMLClient_ChatRequest(t *testing.T) {
 	response, err := client.Chat(ctx, &request)
 	require.NoError(t, err)
 
-	require.Equal(t, providerCfg.Model, response.ModelName)
+	require.Equal(t, providerCfg.ModelName, response.ModelName)
 	require.Equal(t, "cmpl-8ea213aece0747aca6d0608b02b57196", response.ID)
 }
 

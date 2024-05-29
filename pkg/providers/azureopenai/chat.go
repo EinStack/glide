@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/EinStack/glide/pkg/providers/clients"
 	"io"
 	"net/http"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/providers/openai"
 
@@ -46,7 +47,6 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	chatReq.Stream = false
 
 	chatResponse, err := c.doChatRequest(ctx, &chatReq)
-
 	if err != nil {
 		return nil, err
 	}

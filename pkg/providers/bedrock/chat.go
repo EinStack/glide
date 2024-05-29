@@ -58,7 +58,6 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	chatReq.ApplyParams(params)
 
 	chatResponse, err := c.doChatRequest(ctx, &chatReq)
-
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +72,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	result, err := c.bedrockClient.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
-		ModelId:     aws.String(c.config.Model),
+		ModelId:     aws.String(c.config.ModelName),
 		ContentType: aws.String("application/json"),
 		Body:        rawPayload,
 	})
-
 	if err != nil {
 		c.telemetry.Logger.Error("Error: Couldn't invoke model. Here's why: %v\n", zap.Error(err))
 		return nil, err
@@ -86,7 +84,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	var bedrockCompletion ChatCompletion
 
 	err = json.Unmarshal(result.Body, &bedrockCompletion)
-
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse bedrock chat response", zap.Error(err))
 
@@ -102,8 +99,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	response := schemas.ChatResponse{
 		ID:        uuid.NewString(),
 		Created:   int(time.Now().Unix()),
-		Provider:  "aws-bedrock",
-		ModelName: c.config.Model,
+		Provider:  providerName,
+		ModelName: c.config.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
 			Metadata: map[string]string{},

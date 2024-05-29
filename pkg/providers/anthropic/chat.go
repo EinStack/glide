@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/EinStack/glide/pkg/providers/clients"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
 	"go.uber.org/zap"
@@ -35,7 +36,7 @@ func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:         cfg.Model,
+		Model:         cfg.ModelName,
 		System:        cfg.DefaultParams.System,
 		Temperature:   cfg.DefaultParams.Temperature,
 		TopP:          cfg.DefaultParams.TopP,
@@ -59,7 +60,6 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	chatReq.Stream = false
 
 	chatResponse, err := c.doChatRequest(ctx, &chatReq)
-
 	if err != nil {
 		return nil, err
 	}

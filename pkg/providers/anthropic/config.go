@@ -39,7 +39,7 @@ type Config struct {
 	BaseURL       string        `yaml:"base_url" json:"base_url" validate:"required"`
 	APIVersion    string        `yaml:"api_version" json:"api_version" validate:"required"`
 	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
+	ModelName     string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	DefaultParams *Params       `yaml:"default_params,omitempty" json:"default_params"`
 }
@@ -52,7 +52,7 @@ func DefaultConfig() *Config {
 		BaseURL:       "https://api.anthropic.com/v1",
 		APIVersion:    "2023-06-01",
 		ChatEndpoint:  "/messages",
-		Model:         "claude-instant-1.2",
+		ModelName:     "claude-instant-1.2",
 		DefaultParams: &defaultParams,
 	}
 }

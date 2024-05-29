@@ -81,7 +81,7 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 
 	// Verify the default configuration values
 	require.Equal(t, "/chat/completions", providerCfg.ChatEndpoint)
-	require.Equal(t, "", providerCfg.Model)
+	require.Equal(t, "", providerCfg.ModelName)
 	require.Equal(t, "2023-05-15", providerCfg.APIVersion)
 	require.NotNil(t, providerCfg.DefaultParams)
 

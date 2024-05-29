@@ -64,3 +64,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 func (c *Client) Provider() string {
 	return providerName
 }
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
+}

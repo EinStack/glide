@@ -36,7 +36,7 @@ func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
+		Model:            cfg.ModelName,
 		Temperature:      cfg.DefaultParams.Temperature,
 		TopP:             cfg.DefaultParams.TopP,
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
@@ -56,7 +56,6 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	chatReq.Stream = false
 
 	chatResponse, err := c.doChatRequest(ctx, &chatReq)
-
 	if err != nil {
 		return nil, err
 	}
