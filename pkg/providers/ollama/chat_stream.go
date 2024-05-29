@@ -12,6 +12,6 @@ func (c *Client) SupportChatStream() bool {
 	return false
 }
 
-func (c *Client) ChatStream(_ context.Context, _ *schemas.ChatStreamRequest) (clients.ChatStream, error) {
+func (c *Client) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients.ChatStream, error) {
 	return nil, clients.ErrChatStreamNotImplemented
 }

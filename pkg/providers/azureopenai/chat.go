@@ -43,6 +43,8 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
 	chatReq.ApplyParams(params)
 
+	chatReq.Stream = false
+
 	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 
 	if err != nil {

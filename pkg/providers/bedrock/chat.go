@@ -16,10 +16,19 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
-// ChatRequest is an Bedrock-specific request schema
+// ChatRequest is a Bedrock-specific request schema
 type ChatRequest struct {
 	Messages             string               `json:"inputText"`
 	TextGenerationConfig TextGenerationConfig `json:"textGenerationConfig"`
+}
+
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	// message history not yet supported for AWS models
+	// TODO: do something about lack of message history. Maybe just concatenate all messages?
+	// 	in any case, this is not a way to go to ignore message history
+	message := params.Messages[len(params.Messages)-1]
+
+	r.Messages = fmt.Sprintf("Role: %s, Content: %s", message.Role, message.Content)
 }
 
 type TextGenerationConfig struct {
@@ -41,36 +50,20 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) string {
-	// message history not yet supported for AWS models
-	message := fmt.Sprintf("Role: %s, Content: %s", request.Message.Role, request.Message.Content)
-
-	return message
-}
-
 // Chat sends a chat request to the specified bedrock model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
 	return chatResponse, nil
-}
-
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
-
-	return chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -84,6 +77,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ContentType: aws.String("application/json"),
 		Body:        rawPayload,
 	})
+
 	if err != nil {
 		c.telemetry.Logger.Error("Error: Couldn't invoke model. Here's why: %v\n", zap.Error(err))
 		return nil, err
@@ -92,10 +86,17 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	var bedrockCompletion ChatCompletion
 
 	err = json.Unmarshal(result.Body, &bedrockCompletion)
+
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse bedrock chat response", zap.Error(err))
 
 		return nil, err
+	}
+
+	modelResult := bedrockCompletion.Results[0]
+
+	if len(modelResult.OutputText) == 0 {
+		return nil, ErrEmptyResponse
 	}
 
 	response := schemas.ChatResponse{
@@ -105,17 +106,16 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: c.config.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			Metadata: map[string]string{
-				"system_fingerprint": "none",
-			},
+			Metadata: map[string]string{},
 			Message: schemas.ChatMessage{
 				Role:    "assistant",
-				Content: bedrockCompletion.Results[0].OutputText,
+				Content: modelResult.OutputText,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   bedrockCompletion.Results[0].TokenCount,
+				// TODO: what would happen if there is a few responses? We need to sum that up
+				PromptTokens:   modelResult.TokenCount,
 				ResponseTokens: -1,
-				TotalTokens:    bedrockCompletion.Results[0].TokenCount,
+				TotalTokens:    modelResult.TokenCount,
 			},
 		},
 	}

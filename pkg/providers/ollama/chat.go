@@ -40,6 +40,11 @@ type ChatRequest struct {
 	Stream       bool                  `json:"stream"`
 }
 
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	r.Messages = params.Messages
+	// TODO(185): set other params
+}
+
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
@@ -62,42 +67,22 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessage {
-	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return messages
-}
-
 // Chat sends a chat request to the specified ollama model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatReq.Stream = false
+
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
+
 	if err != nil {
 		return nil, fmt.Errorf("chat request failed: %w", err)
 	}
 
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
 	return chatResponse, nil
-}
-
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
-
-	return chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -147,6 +132,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 
 			// Parse the value to get the duration
 			cooldownDelay, err := time.ParseDuration(retryAfter)
+
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse cooldown delay from headers: %w", err)
 			}
@@ -172,6 +158,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse ollama chat response", zap.Error(err))
 		return nil, err
+	}
+
+	if len(ollamaCompletion.Message.Content) == 0 {
+		return nil, clients.ErrEmptyResponse
 	}
 
 	// Map response to UnifiedChatResponse schema
