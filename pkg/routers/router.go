@@ -151,9 +151,9 @@ func (r *LangRouter) ChatStream(
 			}
 
 			langModel := model.(providers.LangModel)
-			params := req.Params(langModel.ID(), langModel.ModelName())
+			chatParams := req.Params(langModel.ID(), langModel.ModelName())
 
-			modelRespC, err := langModel.ChatStream(ctx, params)
+			modelRespC, err := langModel.ChatStream(ctx, chatParams)
 			if err != nil {
 				r.logger.Error(
 					"Lang model failed to create streaming chat request",
