@@ -24,20 +24,20 @@ func NewChatFromStr(message string) *ChatRequest {
 
 // ChatResponse defines Glide's Chat Response Schema unified across all language models
 type ChatResponse struct {
-	ID            string        `json:"id,omitempty"`
-	Created       int           `json:"created_at,omitempty"`
-	Provider      string        `json:"provider_id,omitempty"`
-	RouterID      string        `json:"router_id,omitempty"`
-	ModelID       string        `json:"model_id,omitempty"`
-	ModelName     string        `json:"model_name,omitempty"`
-	Cached        bool          `json:"cached,omitempty"`
-	ModelResponse ModelResponse `json:"model_response,omitempty"`
+	ID            string        `json:"id"`
+	Created       int           `json:"created_at"`
+	Provider      string        `json:"provider_id"`
+	RouterID      string        `json:"router_id"`
+	ModelID       string        `json:"model_id"`
+	ModelName     string        `json:"model_name"`
+	Cached        bool          `json:"cached"`
+	ModelResponse ModelResponse `json:"model_response"`
 }
 
 // ModelResponse is the unified response from the provider.
 
 type ModelResponse struct {
-	Metadata   map[string]string `json:"metadata,omitempty"`
+	Metadata   map[string]string `json:"metadata"`
 	Message    ChatMessage       `json:"message"`
 	TokenUsage TokenUsage        `json:"token_usage"`
 }
