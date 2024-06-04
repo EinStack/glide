@@ -119,7 +119,7 @@ func (c *ProviderMock) SupportChatStream() bool {
 	return c.supportStreaming
 }
 
-func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	if c.chatResps == nil {
 		return nil, clients.ErrProviderUnavailable
 	}
@@ -136,7 +136,7 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 	return response.Resp(), nil
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatStreamRequest) (clients.ChatStream, error) {
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients.ChatStream, error) {
 	if c.chatStreams == nil || c.idx >= len(*c.chatStreams) {
 		return nil, clients.ErrProviderUnavailable
 	}

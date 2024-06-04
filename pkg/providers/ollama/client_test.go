@@ -85,13 +85,12 @@ func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
 		telemetry:  telemetry.NewTelemetryMock(),
 	}
 
-	// Create a chat request payload
-	payload := &ChatRequest{
-		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
-	}
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "user",
+		Content: "What's the capital of the United Kingdom?",
+	}}}
 
-	// Call the chatRequest function
-	_, err := client.doChatRequest(context.Background(), payload)
+	_, err := client.Chat(context.Background(), &chatParams)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "provider is not available")
@@ -114,13 +113,12 @@ func TestOllamaClient_ChatRequest_SuccessfulResponse(t *testing.T) {
 		telemetry:  telemetry.NewTelemetryMock(),
 	}
 
-	// Create a chat request payload
-	payload := &ChatRequest{
-		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
-	}
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "user",
+		Content: "What's the capital of the United Kingdom?",
+	}}}
 
-	// Call the chatRequest function
-	response, err := client.doChatRequest(context.Background(), payload)
+	response, err := client.Chat(context.Background(), &chatParams)
 
 	require.NoError(t, err)
 	require.NotNil(t, response)
