@@ -55,12 +55,12 @@ func TestOctoMLClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "human",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 	require.NoError(t, err)
 
 	require.Equal(t, providerCfg.ModelName, response.ModelName)
@@ -88,15 +88,13 @@ func TestOctoMLClient_Chat_Error(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a chat request
-	request := schemas.ChatRequest{
-		Message: schemas.ChatMessage{
-			Role:    "human",
-			Content: "What's the biggest animal?",
-		},
-	}
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "human",
+		Content: "What's the biggest animal?",
+	}}}
 
 	// Call the Chat function
-	_, err = client.Chat(ctx, &request)
+	_, err = client.Chat(ctx, &chatParams)
 
 	// Check the error
 	require.Error(t, err)
@@ -122,9 +120,12 @@ func TestDoChatRequest_ErrorResponse(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a chat request payload
-	payload := schemas.NewChatFromStr("What's the dealio?")
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "user",
+		Content: "What's the dealeo?",
+	}}}
 
-	_, err = client.Chat(ctx, payload)
+	_, err = client.Chat(ctx, &chatParams)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "provider is not available")

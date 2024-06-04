@@ -56,12 +56,12 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "user",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	_, err = client.Chat(ctx, &request)
+	_, err = client.Chat(ctx, &chatParams)
 
 	// require.NoError(t, err)
 
