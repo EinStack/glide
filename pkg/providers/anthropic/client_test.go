@@ -56,12 +56,12 @@ func TestAnthropicClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "human",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 	require.NoError(t, err)
 
 	require.Equal(t, "msg_013Zva2CMHLNnXjNJJKqJ2EF", response.ID)
@@ -86,12 +86,12 @@ func TestAnthropicClient_BadChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "human",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 
 	// Assert that an error is returned
 	require.Error(t, err)

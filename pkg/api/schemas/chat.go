@@ -3,7 +3,7 @@ package schemas
 // ChatRequest defines Glide's Chat Request Schema unified across all language models
 type ChatRequest struct {
 	Message        ChatMessage                     `json:"message" validate:"required"`
-	MessageHistory []ChatMessage                   `json:"message_history"`
+	MessageHistory []ChatMessage                   `json:"message_history,omitempty"`
 	OverrideParams *map[string]ModelParamsOverride `json:"override_params,omitempty"`
 }
 
