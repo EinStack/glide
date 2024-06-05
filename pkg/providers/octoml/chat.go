@@ -29,8 +29,8 @@ type ChatRequest struct {
 }
 
 func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
-	r.Messages = params.Messages
 	// TODO(185): set other params
+	r.Messages = params.Messages
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives

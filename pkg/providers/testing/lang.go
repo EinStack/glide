@@ -97,11 +97,13 @@ type ProviderMock struct {
 	chatResps        *[]RespMock
 	chatStreams      *[]RespStreamMock
 	supportStreaming bool
+	modelName        *string
 }
 
-func NewProviderMock(responses []RespMock) *ProviderMock {
+func NewProviderMock(modelName *string, responses []RespMock) *ProviderMock {
 	return &ProviderMock{
 		idx:              0,
+		modelName:        modelName,
 		chatResps:        &responses,
 		supportStreaming: false,
 	}
@@ -151,4 +153,12 @@ func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatParams) (cli
 
 func (c *ProviderMock) Provider() string {
 	return "provider_mock"
+}
+
+func (c *ProviderMock) ModelName() string {
+	if c.modelName != nil {
+		return "model_mock"
+	}
+
+	return *c.modelName
 }

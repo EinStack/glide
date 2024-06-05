@@ -23,8 +23,8 @@ type ChatRequest struct {
 }
 
 func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
-	r.Messages = params.Messages
 	// TODO(185): set other params
+	r.Messages = params.Messages
 }
 
 // ChatCompletion

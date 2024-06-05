@@ -24,14 +24,14 @@ func TestLangRouter_Chat_PickFistHealthy(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Msg: "1"}, {Msg: "2"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Msg: "1"}, {Msg: "2"}}),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Msg: "1"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Msg: "1"}}),
 			budget,
 			*latConfig,
 			1,
@@ -71,21 +71,21 @@ func TestLangRouter_Chat_PickThirdHealthy(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "3"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "3"}}),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "4"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "4"}}),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"third",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Msg: "1"}, {Msg: "2"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Msg: "1"}, {Msg: "2"}}),
 			budget,
 			*latConfig,
 			1,
@@ -129,14 +129,14 @@ func TestLangRouter_Chat_SuccessOnRetry(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "2"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "2"}}),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "1"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Msg: "1"}}),
 			budget,
 			*latConfig,
 			1,
@@ -173,14 +173,14 @@ func TestLangRouter_Chat_UnhealthyModelInThePool(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: clients.ErrProviderUnavailable}, {Msg: "3"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: clients.ErrProviderUnavailable}, {Msg: "3"}}),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Msg: "1"}, {Msg: "2"}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Msg: "1"}, {Msg: "2"}}),
 			budget,
 			*latConfig,
 			1,
@@ -219,14 +219,14 @@ func TestLangRouter_Chat_AllModelsUnavailable(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Err: &schemas.ErrNoModelAvailable}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Err: &schemas.ErrNoModelAvailable}}),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewProviderMock([]ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Err: &schemas.ErrNoModelAvailable}}),
+			ptesting.NewProviderMock(nil, []ptesting.RespMock{{Err: &schemas.ErrNoModelAvailable}, {Err: &schemas.ErrNoModelAvailable}}),
 			budget,
 			*latConfig,
 			1,

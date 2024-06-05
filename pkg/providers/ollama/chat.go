@@ -41,8 +41,8 @@ type ChatRequest struct {
 }
 
 func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
-	r.Messages = params.Messages
 	// TODO(185): set other params
+	r.Messages = params.Messages
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
@@ -84,7 +84,7 @@ func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas
 	return chatResponse, nil
 }
 
-func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) { //nolint:cyclop
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -146,6 +146,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to read ollama chat response", zap.Error(err))
+
 		return nil, err
 	}
 
@@ -170,9 +171,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: ollamaCompletion.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			Metadata: map[string]string{
-				"system_fingerprint": "",
-			},
 			Message: schemas.ChatMessage{
 				Role:    ollamaCompletion.Message.Role,
 				Content: ollamaCompletion.Message.Content,

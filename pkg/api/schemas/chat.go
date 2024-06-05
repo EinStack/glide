@@ -44,13 +44,13 @@ func (r *ChatRequest) Params(modelID string, modelName string) *ChatParams {
 	reqMessage := r.Message
 
 	if override := r.ModelParams(modelName); override != nil {
-		reqMessage = override.Message
 		// TODO(185): set other params
+		reqMessage = override.Message
 	}
 
 	if override := r.ModelParams(modelID); override != nil {
-		reqMessage = override.Message
 		// TODO(185): set other params
+		reqMessage = override.Message
 	}
 
 	params.Messages = append(params.Messages, r.MessageHistory...)
