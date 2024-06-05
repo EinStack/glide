@@ -7,6 +7,7 @@ import (
 // ModelProvider exposes provider context
 type ModelProvider interface {
 	Provider() string
+	ModelName() string
 }
 
 // Model represent a configured external modality-agnostic model with its routing properties and status

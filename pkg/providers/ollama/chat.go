@@ -18,37 +18,37 @@ import (
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an ollama-specific request schema
 type ChatRequest struct {
-	Model        string        `json:"model"`
-	Messages     []ChatMessage `json:"messages"`
-	Microstat    int           `json:"microstat,omitempty"`
-	MicrostatEta float64       `json:"microstat_eta,omitempty"`
-	MicrostatTau float64       `json:"microstat_tau,omitempty"`
-	NumCtx       int           `json:"num_ctx,omitempty"`
-	NumGqa       int           `json:"num_gqa,omitempty"`
-	NumGpu       int           `json:"num_gpu,omitempty"`
-	NumThread    int           `json:"num_thread,omitempty"`
-	RepeatLastN  int           `json:"repeat_last_n,omitempty"`
-	Temperature  float64       `json:"temperature,omitempty"`
-	Seed         int           `json:"seed,omitempty"`
-	StopWords    []string      `json:"stop,omitempty"`
-	Tfsz         float64       `json:"tfs_z,omitempty"`
-	NumPredict   int           `json:"num_predict,omitempty"`
-	TopK         int           `json:"top_k,omitempty"`
-	TopP         float64       `json:"top_p,omitempty"`
-	Stream       bool          `json:"stream"`
+	Model        string                `json:"model"`
+	Messages     []schemas.ChatMessage `json:"messages"`
+	Microstat    int                   `json:"microstat,omitempty"`
+	MicrostatEta float64               `json:"microstat_eta,omitempty"`
+	MicrostatTau float64               `json:"microstat_tau,omitempty"`
+	NumCtx       int                   `json:"num_ctx,omitempty"`
+	NumGqa       int                   `json:"num_gqa,omitempty"`
+	NumGpu       int                   `json:"num_gpu,omitempty"`
+	NumThread    int                   `json:"num_thread,omitempty"`
+	RepeatLastN  int                   `json:"repeat_last_n,omitempty"`
+	Temperature  float64               `json:"temperature,omitempty"`
+	Seed         int                   `json:"seed,omitempty"`
+	StopWords    []string              `json:"stop,omitempty"`
+	Tfsz         float64               `json:"tfs_z,omitempty"`
+	NumPredict   int                   `json:"num_predict,omitempty"`
+	TopK         int                   `json:"top_k,omitempty"`
+	TopP         float64               `json:"top_p,omitempty"`
+	Stream       bool                  `json:"stream"`
+}
+
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	// TODO(185): set other params
+	r.Messages = params.Messages
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:        cfg.Model,
+		Model:        cfg.ModelName,
 		Temperature:  cfg.DefaultParams.Temperature,
 		Microstat:    cfg.DefaultParams.Microstat,
 		MicrostatEta: cfg.DefaultParams.MicrostatEta,
@@ -64,49 +64,27 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 		NumPredict:   cfg.DefaultParams.NumPredict,
 		TopP:         cfg.DefaultParams.TopP,
 		TopK:         cfg.DefaultParams.TopK,
-		Stream:       cfg.DefaultParams.Stream,
 	}
-}
-
-func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessage {
-	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return messages
 }
 
 // Chat sends a chat request to the specified ollama model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatReq.Stream = false
+
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 	if err != nil {
 		return nil, fmt.Errorf("chat request failed: %w", err)
-	}
-
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
 	}
 
 	return chatResponse, nil
 }
 
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
-
-	return chatRequest
-}
-
-func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) { //nolint:cyclop
 	// Build request payload
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -168,6 +146,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to read ollama chat response", zap.Error(err))
+
 		return nil, err
 	}
 
@@ -180,6 +159,10 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
+	if len(ollamaCompletion.Message.Content) == 0 {
+		return nil, clients.ErrEmptyResponse
+	}
+
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
 		ID:        uuid.NewString(),
@@ -188,9 +171,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: ollamaCompletion.Model,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			Metadata: map[string]string{
-				"system_fingerprint": "",
-			},
 			Message: schemas.ChatMessage{
 				Role:    ollamaCompletion.Message.Role,
 				Content: ollamaCompletion.Message.Content,

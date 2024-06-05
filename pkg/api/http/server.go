@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofiber/contrib/otelfiber"
+
 	"github.com/gofiber/swagger"
 
 	"github.com/EinStack/glide/docs"
 
-	"github.com/gofiber/contrib/fiberzap/v2"
-	"github.com/gofiber/contrib/otelfiber"
-
 	_ "github.com/EinStack/glide/docs" // importing docs package to include them into the binary
+	"github.com/gofiber/contrib/fiberzap/v2"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -31,7 +31,6 @@ type Server struct {
 
 func NewServer(config *ServerConfig, tel *telemetry.Telemetry, routerManager *routers.RouterManager) (*Server, error) {
 	srv := config.ToServer()
-	srv.Use(otelfiber.Middleware())
 
 	return &Server{
 		config:        config,
@@ -46,6 +45,8 @@ func (srv *Server) Run() error {
 	srv.server.Get("/swagger.json", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).Type("json").Send(docs.SwaggerJSON)
 	})
+
+	srv.server.Use(otelfiber.Middleware())
 
 	srv.server.Use(fiberzap.New(fiberzap.Config{
 		Logger: srv.telemetry.Logger,

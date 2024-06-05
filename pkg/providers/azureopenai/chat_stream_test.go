@@ -71,8 +71,12 @@ func TestAzureOpenAIClient_ChatStreamRequest(t *testing.T) {
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
 
-			req := schemas.NewChatStreamFromStr("What's the capital of the United Kingdom?")
-			stream, err := client.ChatStream(ctx, req)
+			chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+				Role:    "user",
+				Content: "What's the capital of the United Kingdom?",
+			}}}
+
+			stream, err := client.ChatStream(ctx, &chatParams)
 			require.NoError(t, err)
 
 			err = stream.Open()
@@ -135,9 +139,12 @@ func TestAzureOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
 
-			req := schemas.NewChatStreamFromStr("What's the capital of the United Kingdom?")
+			chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+				Role:    "user",
+				Content: "What's the biggest animal?",
+			}}}
 
-			stream, err := client.ChatStream(ctx, req)
+			stream, err := client.ChatStream(ctx, &chatParams)
 			require.NoError(t, err)
 
 			err = stream.Open()

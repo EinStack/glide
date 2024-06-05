@@ -97,19 +97,22 @@ type ProviderMock struct {
 	chatResps        *[]RespMock
 	chatStreams      *[]RespStreamMock
 	supportStreaming bool
+	modelName        *string
 }
 
-func NewProviderMock(responses []RespMock) *ProviderMock {
+func NewProviderMock(modelName *string, responses []RespMock) *ProviderMock {
 	return &ProviderMock{
 		idx:              0,
 		chatResps:        &responses,
 		supportStreaming: false,
+		modelName:        modelName,
 	}
 }
 
-func NewStreamProviderMock(chatStreams []RespStreamMock) *ProviderMock {
+func NewStreamProviderMock(modelName *string, chatStreams []RespStreamMock) *ProviderMock {
 	return &ProviderMock{
 		idx:              0,
+		modelName:        modelName,
 		chatStreams:      &chatStreams,
 		supportStreaming: true,
 	}
@@ -119,7 +122,7 @@ func (c *ProviderMock) SupportChatStream() bool {
 	return c.supportStreaming
 }
 
-func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	if c.chatResps == nil {
 		return nil, clients.ErrProviderUnavailable
 	}
@@ -136,7 +139,7 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatRequest) (*schemas
 	return response.Resp(), nil
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatStreamRequest) (clients.ChatStream, error) {
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients.ChatStream, error) {
 	if c.chatStreams == nil || c.idx >= len(*c.chatStreams) {
 		return nil, clients.ErrProviderUnavailable
 	}
@@ -151,4 +154,12 @@ func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatStreamReques
 
 func (c *ProviderMock) Provider() string {
 	return "provider_mock"
+}
+
+func (c *ProviderMock) ModelName() string {
+	if c.modelName == nil {
+		return "model_mock"
+	}
+
+	return *c.modelName
 }

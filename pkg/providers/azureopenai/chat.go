@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/EinStack/glide/pkg/providers/clients"
+
 	"github.com/EinStack/glide/pkg/providers/openai"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
@@ -36,37 +38,20 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 }
 
 // Chat sends a chat request to the specified azure openai model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatReq.Stream = false
+
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
 	return chatResponse, nil
-}
-
-// createRequestSchema creates a new ChatRequest object based on the given request.
-func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
-
-	chatRequest.Messages = make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -110,35 +95,37 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	// Parse the response JSON
-	var openAICompletion openai.ChatCompletion
+	var chatCompletion openai.ChatCompletion
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
 		c.tel.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
 
-	openAICompletion.SystemFingerprint = "" // Azure OpenAI doesn't return this
+	modelChoice := chatCompletion.Choices[0]
+
+	if len(modelChoice.Message.Content) == 0 {
+		return nil, clients.ErrEmptyResponse
+	}
 
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
-		ID:        openAICompletion.ID,
-		Created:   openAICompletion.Created,
+		ID:        chatCompletion.ID,
+		Created:   chatCompletion.Created,
 		Provider:  providerName,
-		ModelName: openAICompletion.ModelName,
+		ModelName: chatCompletion.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			Metadata: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
-			},
+			Metadata: map[string]string{},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
+				Role:    modelChoice.Message.Role,
+				Content: modelChoice.Message.Content,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   chatCompletion.Usage.PromptTokens,
+				ResponseTokens: chatCompletion.Usage.CompletionTokens,
+				TotalTokens:    chatCompletion.Usage.TotalTokens,
 			},
 		},
 	}

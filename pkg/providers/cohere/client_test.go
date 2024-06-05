@@ -55,12 +55,12 @@ func TestCohereClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "human",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 	require.NoError(t, err)
 
 	require.Equal(t, "ec9eb88b-2da5-462e-8f0f-0899d243aa2e", response.ID)

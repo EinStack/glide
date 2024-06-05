@@ -87,7 +87,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 
 		if !modelConfig.Enabled {
 			tel.L().Info(
-				"Model is disabled, skipping",
+				"ModelName is disabled, skipping",
 				zap.String("router", c.ID),
 				zap.String("model", modelConfig.ID),
 			)

@@ -9,33 +9,34 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/EinStack/glide/pkg/providers/clients"
+
 	"github.com/EinStack/glide/pkg/api/schemas"
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an Anthropic-specific request schema
 type ChatRequest struct {
-	Model         string        `json:"model"`
-	Messages      []ChatMessage `json:"messages"`
-	System        string        `json:"system,omitempty"`
-	Temperature   float64       `json:"temperature,omitempty"`
-	TopP          float64       `json:"top_p,omitempty"`
-	TopK          int           `json:"top_k,omitempty"`
-	MaxTokens     int           `json:"max_tokens,omitempty"`
-	Stream        bool          `json:"stream,omitempty"`
-	Metadata      *string       `json:"metadata,omitempty"`
-	StopSequences []string      `json:"stop_sequences,omitempty"`
+	Model         string                `json:"model"`
+	Messages      []schemas.ChatMessage `json:"messages"`
+	System        string                `json:"system,omitempty"`
+	Temperature   float64               `json:"temperature,omitempty"`
+	TopP          float64               `json:"top_p,omitempty"`
+	TopK          int                   `json:"top_k,omitempty"`
+	MaxTokens     int                   `json:"max_tokens,omitempty"`
+	Stream        bool                  `json:"stream,omitempty"`
+	Metadata      *string               `json:"metadata,omitempty"`
+	StopSequences []string              `json:"stop_sequences,omitempty"`
+}
+
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	r.Messages = params.Messages
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:         cfg.Model,
+		Model:         cfg.ModelName,
 		System:        cfg.DefaultParams.System,
 		Temperature:   cfg.DefaultParams.Temperature,
 		TopP:          cfg.DefaultParams.TopP,
@@ -47,40 +48,23 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessage {
-	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return messages
-}
-
 // Chat sends a chat request to the specified anthropic model.
 //
 //	Ref: https://docs.anthropic.com/claude/reference/messages_post
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatReq.Stream = false
+
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 	if err != nil {
 		return nil, err
 	}
 
 	return chatResponse, nil
-}
-
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
-
-	return chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -134,10 +118,15 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	if len(anthropicResponse.Content) == 0 {
-		return nil, ErrEmptyResponse
+		return nil, clients.ErrEmptyResponse
 	}
 
 	completion := anthropicResponse.Content[0]
+
+	if len(completion.Text) == 0 {
+		return nil, clients.ErrEmptyResponse
+	}
+
 	usage := anthropicResponse.Usage
 
 	// Map response to ChatResponse schema

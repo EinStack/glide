@@ -20,19 +20,19 @@ type StreamRequestID = string
 
 // ChatStreamRequest defines a message that requests a new streaming chat
 type ChatStreamRequest struct {
-	ID             StreamRequestID      `json:"id" validate:"required"`
-	Message        ChatMessage          `json:"message" validate:"required"`
-	MessageHistory []ChatMessage        `json:"message_history" validate:"required"`
-	OverrideParams *OverrideChatRequest `json:"override_params,omitempty"`
-	Metadata       *Metadata            `json:"metadata,omitempty"`
+	ID StreamRequestID `json:"id" validate:"required"`
+	*ChatRequest
+	OverrideParams *map[string]ModelParamsOverride `json:"override_params,omitempty"`
+	Metadata       *Metadata                       `json:"metadata,omitempty"`
 }
 
 func NewChatStreamFromStr(message string) *ChatStreamRequest {
 	return &ChatStreamRequest{
-		Message: ChatMessage{
-			"user",
-			message,
-			"glide",
+		ChatRequest: &ChatRequest{
+			Message: ChatMessage{
+				"user",
+				message,
+			},
 		},
 	}
 }

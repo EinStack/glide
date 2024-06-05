@@ -33,7 +33,7 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type Config struct {
 	BaseURL       string        `yaml:"base_url" json:"base_url" validate:"required"`
 	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
+	ModelName     string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	AccessKey     string        `yaml:"access_key" json:"-" validate:"required"`
 	SecretKey     string        `yaml:"secret_key" json:"-" validate:"required"`
@@ -48,7 +48,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "", // This needs to come from config. https://bedrock-runtime.{{AWS_Region}}.amazonaws.com/
 		ChatEndpoint:  "/model",
-		Model:         "amazon.titan-text-express-v1",
+		ModelName:     "amazon.titan-text-express-v1",
 		DefaultParams: &defaultParams,
 	}
 }

@@ -56,12 +56,12 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "user",
-		Content: "What's the biggest animal?",
-	}}
+		Content: "What's the capital of the United Kingdom?",
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 	require.NoError(t, err)
 
 	require.Equal(t, "chatcmpl-123", response.ID)
@@ -85,12 +85,12 @@ func TestOpenAIClient_RateLimit(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
-		Role:    "user",
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "human",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	_, err = client.Chat(ctx, &request)
+	_, err = client.Chat(ctx, &chatParams)
 
 	require.Error(t, err)
 	require.IsType(t, &clients.RateLimitError{}, err)

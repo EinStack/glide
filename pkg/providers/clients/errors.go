@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	ErrEmptyResponse            = errors.New("empty model response")
 	ErrProviderUnavailable      = errors.New("provider is not available")
 	ErrUnauthorized             = errors.New("API key is wrong or not set")
 	ErrChatStreamNotImplemented = errors.New("streaming chat API is not implemented for provider")

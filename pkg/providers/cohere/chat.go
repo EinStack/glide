@@ -19,7 +19,7 @@ import (
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:             cfg.Model,
+		Model:             cfg.ModelName,
 		Temperature:       cfg.DefaultParams.Temperature,
 		Preamble:          cfg.DefaultParams.Preamble,
 		PromptTruncation:  cfg.DefaultParams.PromptTruncation,
@@ -30,43 +30,18 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 }
 
 // Chat sends a chat request to the specified cohere model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
 	return chatResponse, nil
-}
-
-func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Message = request.Message.Content
-
-	// Build the Cohere specific ChatHistory
-	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
-
-		for _, message := range request.MessageHistory {
-			chatRequest.ChatHistory = append(
-				chatRequest.ChatHistory,
-				ChatMessage{
-					Role:    message.Role,
-					Content: message.Content,
-				},
-			)
-		}
-	}
-
-	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -135,12 +110,16 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
+	if len(cohereCompletion.Text) == 0 {
+		return nil, clients.ErrEmptyResponse
+	}
+
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
 		ID:        cohereCompletion.ResponseID,
 		Created:   int(time.Now().UTC().Unix()), // Cohere doesn't provide this
 		Provider:  providerName,
-		ModelName: c.config.Model,
+		ModelName: c.config.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
 			Metadata: map[string]string{
@@ -148,9 +127,8 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    "model",
+				Role:    "assistant",
 				Content: cohereCompletion.Text,
-				Name:    "",
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   cohereCompletion.TokenCount.PromptTokens,
