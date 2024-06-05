@@ -137,6 +137,7 @@ func LangStreamChatHandler(tel *telemetry.Telemetry, routerManager *routers.Rout
 			var chatRequest schemas.ChatStreamRequest
 
 			if err = c.ReadJSON(&chatRequest); err != nil {
+				// TODO: handle bad request schemas gracefully and return back validation errors
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 					tel.L().Warn("Streaming Chat connection is closed", zap.Error(err), zap.String("routerID", routerID))
 				}

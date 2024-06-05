@@ -120,7 +120,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 					"generated_at":       completionChunk.Created,
 				},
 				Message: schemas.ChatMessage{
-					Role:    responseChunk.Delta.Role,
+					Role:    "assistant", // doesn't present in all chunks
 					Content: responseChunk.Delta.Content,
 				},
 			},

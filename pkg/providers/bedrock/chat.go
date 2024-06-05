@@ -103,7 +103,6 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: c.config.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			Metadata: map[string]string{},
 			Message: schemas.ChatMessage{
 				Role:    "assistant",
 				Content: modelResult.OutputText,

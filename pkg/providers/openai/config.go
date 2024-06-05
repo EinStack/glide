@@ -56,7 +56,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "https://api.openai.com/v1",
 		ChatEndpoint:  "/chat/completions",
-		ModelName:     "gpt-3.5-turbo",
+		ModelName:     "gpt-4o",
 		DefaultParams: &defaultParams,
 	}
 }
