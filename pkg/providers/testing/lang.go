@@ -103,15 +103,16 @@ type ProviderMock struct {
 func NewProviderMock(modelName *string, responses []RespMock) *ProviderMock {
 	return &ProviderMock{
 		idx:              0,
-		modelName:        modelName,
 		chatResps:        &responses,
 		supportStreaming: false,
+		modelName:        modelName,
 	}
 }
 
-func NewStreamProviderMock(chatStreams []RespStreamMock) *ProviderMock {
+func NewStreamProviderMock(modelName *string, chatStreams []RespStreamMock) *ProviderMock {
 	return &ProviderMock{
 		idx:              0,
+		modelName:        modelName,
 		chatStreams:      &chatStreams,
 		supportStreaming: true,
 	}
@@ -156,7 +157,7 @@ func (c *ProviderMock) Provider() string {
 }
 
 func (c *ProviderMock) ModelName() string {
-	if c.modelName != nil {
+	if c.modelName == nil {
 		return "model_mock"
 	}
 

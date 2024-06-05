@@ -262,7 +262,7 @@ func TestLangRouter_ChatStream(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
+			ptesting.NewStreamProviderMock(nil, []ptesting.RespStreamMock{
 				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Msg: "Bill"},
 					{Msg: "Gates"},
@@ -277,7 +277,7 @@ func TestLangRouter_ChatStream(t *testing.T) {
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
+			ptesting.NewStreamProviderMock(nil, []ptesting.RespStreamMock{
 				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Msg: "Knock"},
 					{Msg: "Knock"},
@@ -338,14 +338,14 @@ func TestLangRouter_ChatStream_FailOnFirst(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewStreamProviderMock(nil),
+			ptesting.NewStreamProviderMock(nil, nil),
 			budget,
 			*latConfig,
 			1,
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
+			ptesting.NewStreamProviderMock(nil, []ptesting.RespStreamMock{
 				ptesting.NewRespStreamMock(
 					&[]ptesting.RespMock{
 						{Msg: "Knock"},
@@ -408,7 +408,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 	langModels := []*providers.LanguageModel{
 		providers.NewLangModel(
 			"first",
-			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
+			ptesting.NewStreamProviderMock(nil, []ptesting.RespStreamMock{
 				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Err: clients.ErrProviderUnavailable},
 				}),
@@ -419,7 +419,7 @@ func TestLangRouter_ChatStream_AllModelsUnavailable(t *testing.T) {
 		),
 		providers.NewLangModel(
 			"second",
-			ptesting.NewStreamProviderMock([]ptesting.RespStreamMock{
+			ptesting.NewStreamProviderMock(nil, []ptesting.RespStreamMock{
 				ptesting.NewRespStreamMock(&[]ptesting.RespMock{
 					{Err: clients.ErrProviderUnavailable},
 				}),
