@@ -57,7 +57,7 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	request := schemas.ChatRequest{Message: schemas.ChatMessage{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the biggest animal?",
 	}}
 
@@ -86,7 +86,7 @@ func TestOpenAIClient_RateLimit(t *testing.T) {
 	require.NoError(t, err)
 
 	request := schemas.ChatRequest{Message: schemas.ChatMessage{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the biggest animal?",
 	}}
 

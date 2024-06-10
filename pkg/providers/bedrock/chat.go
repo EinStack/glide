@@ -114,7 +114,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"system_fingerprint": "none",
 			},
 			Message: schemas.ChatMessage{
-				Role:    "assistant",
+				Role:    schemas.RoleAssistant,
 				Content: bedrockCompletion.Results[0].OutputText,
 				Name:    "",
 			},

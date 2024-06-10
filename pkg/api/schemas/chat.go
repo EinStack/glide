@@ -15,7 +15,7 @@ type OverrideChatRequest struct {
 func NewChatFromStr(message string) *ChatRequest {
 	return &ChatRequest{
 		Message: ChatMessage{
-			"user",
+			RoleUser,
 			message,
 			"glide",
 		},
@@ -48,10 +48,18 @@ type TokenUsage struct {
 	TotalTokens    int `json:"total_tokens"`
 }
 
+type Role string
+
+const (
+	RoleSystem    = "system"
+	RoleUser      = "user"
+	RoleAssistant = "assistant"
+)
+
 // ChatMessage is a message in a chat request.
 type ChatMessage struct {
 	// The role of the author of this message. One of system, user, or assistant.
-	Role string `json:"role" validate:"required"`
+	Role Role `json:"role" validate:"required one-of=system,user,assistant" default:"user"`
 	// The content of the message.
 	Content string `json:"content" validate:"required"`
 	// The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,

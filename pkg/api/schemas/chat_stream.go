@@ -30,7 +30,7 @@ type ChatStreamRequest struct {
 func NewChatStreamFromStr(message string) *ChatStreamRequest {
 	return &ChatStreamRequest{
 		Message: ChatMessage{
-			"user",
+			RoleUser,
 			message,
 			"glide",
 		},
