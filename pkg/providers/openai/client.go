@@ -1,7 +1,6 @@
 package openai
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,11 +14,6 @@ import (
 
 const (
 	providerName = "openai"
-)
-
-// ErrEmptyResponse is returned when the OpenAI API returns an empty response.
-var (
-	ErrEmptyResponse = errors.New("empty response")
 )
 
 // Client is a client for accessing OpenAI API
@@ -69,4 +63,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 
 func (c *Client) Provider() string {
 	return providerName
+}
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
 }

@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	providerName = "bedrock"
+	providerName = "aws/bedrock"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -38,7 +38,7 @@ type Client struct {
 
 // NewClient creates a new OpenAI client for the OpenAI API.
 func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry) (*Client, error) {
-	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint, providerConfig.Model, "/invoke")
+	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint, providerConfig.ModelName, "/invoke")
 	if err != nil {
 		return nil, err
 	}
@@ -71,4 +71,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 
 func (c *Client) Provider() string {
 	return providerName
+}
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
 }

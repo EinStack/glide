@@ -1,5 +1,7 @@
 package cohere
 
+import "github.com/EinStack/glide/pkg/api/schemas"
+
 // Cohere Chat Response
 type ChatCompletion struct {
 	Text          string                 `json:"text"`
@@ -85,30 +87,35 @@ type FinalResponse struct {
 	Meta         Meta       `json:"meta"`
 }
 
-type ChatMessage struct {
-	Role    string `json:"role"` // CHATBOT, SYSTEM, USER
-	Content string `json:"content"`
-}
-
 // ChatRequest is a request to complete a chat completion
 // Ref: https://docs.cohere.com/reference/chat
 type ChatRequest struct {
-	Model             string        `json:"model"`
-	Message           string        `json:"message"`
-	ChatHistory       []ChatMessage `json:"chat_history"`
-	Temperature       float64       `json:"temperature,omitempty"`
-	Preamble          string        `json:"preamble,omitempty"`
-	PromptTruncation  *string       `json:"prompt_truncation,omitempty"`
-	Connectors        []string      `json:"connectors,omitempty"`
-	SearchQueriesOnly bool          `json:"search_queries_only,omitempty"`
-	Stream            bool          `json:"stream,omitempty"`
-	Seed              *int          `json:"seed,omitempty"`
-	MaxTokens         *int          `json:"max_tokens,omitempty"`
-	K                 int           `json:"k"`
-	P                 float32       `json:"p"`
-	FrequencyPenalty  float32       `json:"frequency_penalty"`
-	PresencePenalty   float32       `json:"presence_penalty"`
-	StopSequences     []string      `json:"stop_sequences"`
+	Model             string                `json:"model"`
+	Message           string                `json:"message"`
+	ChatHistory       []schemas.ChatMessage `json:"chat_history"`
+	Temperature       float64               `json:"temperature,omitempty"`
+	Preamble          string                `json:"preamble,omitempty"`
+	PromptTruncation  *string               `json:"prompt_truncation,omitempty"`
+	Connectors        []string              `json:"connectors,omitempty"`
+	SearchQueriesOnly bool                  `json:"search_queries_only,omitempty"`
+	Stream            bool                  `json:"stream,omitempty"`
+	Seed              *int                  `json:"seed,omitempty"`
+	MaxTokens         *int                  `json:"max_tokens,omitempty"`
+	K                 int                   `json:"k"`
+	P                 float32               `json:"p"`
+	FrequencyPenalty  float32               `json:"frequency_penalty"`
+	PresencePenalty   float32               `json:"presence_penalty"`
+	StopSequences     []string              `json:"stop_sequences"`
+}
+
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	message := params.Messages[len(params.Messages)-1]
+	messageHistory := params.Messages[:len(params.Messages)-1]
+
+	// TODO: Map chat message roles to Cohere roles: CHATBOT, SYSTEM, USER
+
+	r.Message = message.Content
+	r.ChatHistory = messageHistory
 }
 
 type Connectors struct {

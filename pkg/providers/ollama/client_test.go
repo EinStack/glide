@@ -51,17 +51,17 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 
 	clientCfg := clients.DefaultClientConfig()
 
-	providerCfg.Model = "llama2"
+	providerCfg.ModelName = "llama2"
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    schemas.RoleUser,
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	_, err = client.Chat(ctx, &request)
+	_, err = client.Chat(ctx, &chatParams)
 
 	// require.NoError(t, err)
 
@@ -77,21 +77,19 @@ func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
 
 	defer mockServer.Close()
 
-	// Create a new client with the mock server URL
-	client := &Client{
-		httpClient: http.DefaultClient,
-		chatURL:    mockServer.URL,
-		config:     DefaultConfig(),
-		telemetry:  telemetry.NewTelemetryMock(),
-	}
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = mockServer.URL
 
-	// Create a chat request payload
-	payload := &ChatRequest{
-		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
-	}
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
 
-	// Call the chatRequest function
-	_, err := client.doChatRequest(context.Background(), payload)
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "user",
+		Content: "What's the capital of the United Kingdom?",
+	}}}
+
+	_, err = client.Chat(context.Background(), &chatParams)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "provider is not available")
@@ -100,29 +98,38 @@ func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
 func TestOllamaClient_ChatRequest_SuccessfulResponse(t *testing.T) {
 	// Create a mock HTTP server that returns an OK status code and a sample response
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		chatResponse, err := os.ReadFile(filepath.Clean("./testdata/chat.success.json"))
+		if err != nil {
+			t.Errorf("error reading cohere chat mock response: %v", err)
+		}
+
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"response": "OK"}`))
+		w.Header().Set("Content-Type", "application/json")
+
+		_, err = w.Write(chatResponse)
+		if err != nil {
+			t.Errorf("error on sending chat response: %v", err)
+		}
 	}))
 
 	defer mockServer.Close()
 
-	// Create a new client with the mock server URL
-	client := &Client{
-		httpClient: http.DefaultClient,
-		chatURL:    mockServer.URL,
-		config:     DefaultConfig(),
-		telemetry:  telemetry.NewTelemetryMock(),
-	}
+	providerCfg := DefaultConfig()
+	clientCfg := clients.DefaultClientConfig()
+	providerCfg.BaseURL = mockServer.URL
 
-	// Create a chat request payload
-	payload := &ChatRequest{
-		Messages: []ChatMessage{{Role: "human", Content: "Hello"}},
-	}
+	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
+	require.NoError(t, err)
 
-	// Call the chatRequest function
-	response, err := client.doChatRequest(context.Background(), payload)
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "user",
+		Content: "What's the capital of the United Kingdom?",
+	}}}
+
+	response, err := client.Chat(context.Background(), &chatParams)
 
 	require.NoError(t, err)
 	require.NotNil(t, response)
-	require.Equal(t, "", response.ModelResponse.Message.Role)
+	require.Equal(t, "assistant", response.ModelResponse.Message.Role)
+	require.Equal(t, "London", response.ModelResponse.Message.Content)
 }

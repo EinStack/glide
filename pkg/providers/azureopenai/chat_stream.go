@@ -155,9 +155,9 @@ func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (clients.ChatStream, error) {
+func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients.ChatStream, error) {
 	// Create a new chat request
-	httpRequest, err := c.makeStreamReq(ctx, req)
+	httpRequest, err := c.makeStreamReq(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -171,28 +171,13 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 	), nil
 }
 
-func (c *Client) createRequestFromStream(request *schemas.ChatStreamRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
+func (c *Client) makeStreamReq(ctx context.Context, params *schemas.ChatParams) (*http.Request, error) {
+	chatReq := *c.chatRequestTemplate
+	chatReq.ApplyParams(params)
 
-	chatRequest.Messages = make([]ChatMessage, 0, len(request.MessageHistory)+1)
+	chatReq.Stream = true
 
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return &chatRequest
-}
-
-func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamRequest) (*http.Request, error) {
-	chatRequest := c.createRequestFromStream(req)
-
-	chatRequest.Stream = true
-
-	rawPayload, err := json.Marshal(chatRequest)
+	rawPayload, err := json.Marshal(chatReq)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal AzureOpenAI chat stream request payload: %w", err)
 	}
@@ -212,7 +197,7 @@ func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamReque
 	c.tel.L().Debug(
 		"Stream chat request",
 		zap.String("chatURL", c.chatURL),
-		zap.Any("payload", chatRequest),
+		zap.Any("payload", chatReq),
 	)
 
 	return request, nil

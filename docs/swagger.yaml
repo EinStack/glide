@@ -5,11 +5,6 @@ definitions:
       content:
         description: The content of the message.
         type: string
-      name:
-        description: |-
-          The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores,
-          with a maximum length of 64 characters.
-        type: string
       role:
         description: The role of the author of this message. One of system, user,
           or assistant.
@@ -27,7 +22,9 @@ definitions:
           $ref: '#/definitions/schemas.ChatMessage'
         type: array
       override_params:
-        $ref: '#/definitions/schemas.OverrideChatRequest'
+        additionalProperties:
+          $ref: '#/definitions/schemas.ModelParamsOverride'
+        type: object
     required:
     - message
     type: object
@@ -62,6 +59,13 @@ definitions:
       healthy:
         type: boolean
     type: object
+  schemas.ModelParamsOverride:
+    properties:
+      message:
+        allOf:
+        - $ref: '#/definitions/schemas.ChatMessage'
+        description: 'TODO: should be just string?'
+    type: object
   schemas.ModelResponse:
     properties:
       message:
@@ -72,16 +76,6 @@ definitions:
         type: object
       token_usage:
         $ref: '#/definitions/schemas.TokenUsage'
-    type: object
-  schemas.OverrideChatRequest:
-    properties:
-      message:
-        $ref: '#/definitions/schemas.ChatMessage'
-      model_id:
-        type: string
-    required:
-    - message
-    - model_id
     type: object
   schemas.RouterListSchema:
     properties:

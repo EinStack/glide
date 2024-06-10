@@ -178,9 +178,9 @@ func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest) (clients.ChatStream, error) {
+func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients.ChatStream, error) {
 	// Create a new chat request
-	httpRequest, err := c.makeStreamReq(ctx, req)
+	httpRequest, err := c.makeStreamReq(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -195,35 +195,14 @@ func (c *Client) ChatStream(ctx context.Context, req *schemas.ChatStreamRequest)
 	), nil
 }
 
-func (c *Client) createRequestFromStream(request *schemas.ChatStreamRequest) *ChatRequest {
+func (c *Client) makeStreamReq(ctx context.Context, params *schemas.ChatParams) (*http.Request, error) {
 	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Message = request.Message.Content
+	chatReq := *c.chatRequestTemplate
+	chatReq.ApplyParams(params)
 
-	// Build the Cohere specific ChatHistory
-	if len(request.MessageHistory) > 0 {
-		chatRequest.ChatHistory = make([]ChatMessage, 0, len(request.MessageHistory))
+	chatReq.Stream = true
 
-		for _, message := range request.MessageHistory {
-			chatRequest.ChatHistory = append(
-				chatRequest.ChatHistory,
-				ChatMessage{
-					Role:    message.Role,
-					Content: message.Content,
-				},
-			)
-		}
-	}
-
-	return &chatRequest
-}
-
-func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamRequest) (*http.Request, error) {
-	chatRequest := c.createRequestFromStream(req)
-
-	chatRequest.Stream = true
-
-	rawPayload, err := json.Marshal(chatRequest)
+	rawPayload, err := json.Marshal(chatReq)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal cohere chat stream request payload: %w", err)
 	}
@@ -243,7 +222,7 @@ func (c *Client) makeStreamReq(ctx context.Context, req *schemas.ChatStreamReque
 	c.tel.L().Debug(
 		"Stream chat request",
 		zap.String("chatURL", c.chatURL),
-		zap.Any("payload", chatRequest),
+		zap.Any("payload", chatReq),
 	)
 
 	return request, nil
