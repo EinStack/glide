@@ -172,7 +172,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
 			Message: schemas.ChatMessage{
-				Role:    ollamaCompletion.Message.Role,
+				Role:    schemas.Role(ollamaCompletion.Message.Role),
 				Content: ollamaCompletion.Message.Content,
 			},
 			TokenUsage: schemas.TokenUsage{

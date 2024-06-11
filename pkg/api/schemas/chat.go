@@ -62,7 +62,7 @@ func (r *ChatRequest) Params(modelID string, modelName string) *ChatParams {
 func NewChatFromStr(message string) *ChatRequest {
 	return &ChatRequest{
 		Message: ChatMessage{
-			"user",
+			RoleUser,
 			message,
 		},
 	}
@@ -93,10 +93,18 @@ type TokenUsage struct {
 	TotalTokens    int `json:"total_tokens"`
 }
 
+type Role string
+
+const (
+	RoleSystem    Role = "system"
+	RoleUser      Role = "user"
+	RoleAssistant Role = "assistant"
+)
+
 // ChatMessage is a message in a chat request.
 type ChatMessage struct {
 	// The role of the author of this message. One of system, user, or assistant.
-	Role string `json:"role" validate:"required"`
+	Role Role `json:"role" validate:"required"`
 	// The content of the message.
 	Content string `json:"content" validate:"required"`
 }

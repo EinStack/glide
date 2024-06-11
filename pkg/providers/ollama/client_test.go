@@ -57,7 +57,7 @@ func TestOllamaClient_ChatRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the biggest animal?",
 	}}}
 
@@ -85,7 +85,7 @@ func TestOllamaClient_ChatRequest_Non200Response(t *testing.T) {
 	require.NoError(t, err)
 
 	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the capital of the United Kingdom?",
 	}}}
 
@@ -122,7 +122,7 @@ func TestOllamaClient_ChatRequest_SuccessfulResponse(t *testing.T) {
 	require.NoError(t, err)
 
 	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the capital of the United Kingdom?",
 	}}}
 

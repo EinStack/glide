@@ -2,7 +2,7 @@
   "model": "amazon.titan-text-express-v1",
   "messages": [
     {
-      "role": "user",
+      "role": schemas.RoleUser,
       "content": "What's the biggest animal?"
     }
   ],

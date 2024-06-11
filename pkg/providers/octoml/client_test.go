@@ -121,7 +121,7 @@ func TestDoChatRequest_ErrorResponse(t *testing.T) {
 
 	// Create a chat request payload
 	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the dealeo?",
 	}}}
 

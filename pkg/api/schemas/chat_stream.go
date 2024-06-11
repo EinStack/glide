@@ -30,7 +30,7 @@ func NewChatStreamFromStr(message string) *ChatStreamRequest {
 	return &ChatStreamRequest{
 		ChatRequest: &ChatRequest{
 			Message: ChatMessage{
-				"user",
+				RoleUser,
 				message,
 			},
 		},

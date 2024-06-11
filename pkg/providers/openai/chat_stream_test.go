@@ -72,7 +72,7 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 			require.NoError(t, err)
 
 			chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-				Role:    "user",
+				Role:    schemas.RoleUser,
 				Content: "What's the capital of the United Kingdom?",
 			}}}
 
@@ -140,7 +140,7 @@ func TestOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
 			require.NoError(t, err)
 
 			chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-				Role:    "user",
+				Role:    schemas.RoleUser,
 				Content: "What's the capital of the United Kingdom?",
 			}}}
 
