@@ -130,6 +130,6 @@ func TestOllamaClient_ChatRequest_SuccessfulResponse(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, response)
-	require.Equal(t, "assistant", response.ModelResponse.Message.Role)
+	require.Equal(t, schemas.RoleAssistant, response.ModelResponse.Message.Role)
 	require.Equal(t, "London", response.ModelResponse.Message.Content)
 }
