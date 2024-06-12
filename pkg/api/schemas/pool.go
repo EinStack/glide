@@ -43,12 +43,3 @@ func ReleaseChatResponse(res *ChatResponse) {
 	*res = ChatResponse{}
 	chatResponsePool.Put(res)
 }
-
-func GetChatStreamChunk() *ChatStreamChunk {
-	return chatStreamChunkPool.Get().(*ChatStreamChunk)
-}
-
-func ReleaseChatStreamChunk(chunk *ChatStreamChunk) {
-	*chunk = ChatStreamChunk{}
-	chatStreamChunkPool.Put(chunk)
-}

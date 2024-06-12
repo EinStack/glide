@@ -8,7 +8,6 @@ import (
 	"github.com/EinStack/glide/pkg/routers"
 	"github.com/EinStack/glide/pkg/telemetry"
 	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber"
 	"go.uber.org/zap"
 )
 
