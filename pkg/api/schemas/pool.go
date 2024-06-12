@@ -16,12 +16,6 @@ var chatResponsePool = sync.Pool{
 	},
 }
 
-var chatStreamChunkPool = sync.Pool{
-	New: func() interface{} {
-		return &ChatStreamChunk{}
-	},
-}
-
 // GetChatRequest get objects from the pool
 func GetChatRequest() *ChatRequest {
 	return chatRequestPool.Get().(*ChatRequest)
