@@ -8,7 +8,7 @@ import (
 	"github.com/EinStack/glide/pkg/routers"
 	"github.com/EinStack/glide/pkg/telemetry"
 	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber"
 	"go.uber.org/zap"
 )
 
@@ -38,7 +38,8 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 		}
 
 		// Unmarshal request body
-		var req *schemas.ChatRequest
+		req := schemas.GetChatRequest()
+		defer schemas.ReleaseChatRequest(req)
 
 		err := c.BodyParser(&req)
 		if err != nil {
@@ -56,7 +57,10 @@ func LangChatHandler(routerManager *routers.RouterManager) Handler {
 		}
 
 		// Chat with router
-		resp, err := router.Chat(c.Context(), req)
+		resp := schemas.GetChatResponse()
+		defer schemas.ReleaseChatResponse(resp)
+
+		resp, err = router.Chat(c.Context(), req)
 		if err != nil {
 			httpErr := schemas.FromErr(err)
 
