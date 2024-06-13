@@ -109,7 +109,9 @@ type ChatMessage struct {
 	Content string `json:"content" validate:"required"`
 }
 
+// MapToProviderRole maps the internal role to the role the specific provider is expecting
 func MapToProviderRole(provider string, role Role) Role {
+	// TODO: possibly return errors here if inputs are empty?
 	switch provider {
 	case "cohere":
 		switch role {
@@ -120,8 +122,10 @@ func MapToProviderRole(provider string, role Role) Role {
 		case RoleUser:
 			return "USER"
 		}
+
 	case "openai":
 		return role
 	}
-	return role
+
+	return ""
 }
