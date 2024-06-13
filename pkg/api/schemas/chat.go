@@ -108,3 +108,20 @@ type ChatMessage struct {
 	// The content of the message.
 	Content string `json:"content" validate:"required"`
 }
+
+func MapToProviderRole(provider string, role Role) Role {
+	switch provider {
+	case "cohere":
+		switch role {
+		case RoleAssistant:
+			return "CHATBOT"
+		case RoleSystem:
+			return "SYSTEM"
+		case RoleUser:
+			return "USER"
+		}
+	case "openai":
+		return role
+	}
+	return role
+}
