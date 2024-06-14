@@ -2,7 +2,7 @@ package cohere
 
 import "github.com/EinStack/glide/pkg/api/schemas"
 
-// Cohere Chat Response
+// ChatCompletion Cohere Chat Response
 type ChatCompletion struct {
 	Text          string                 `json:"text"`
 	GenerationID  string                 `json:"generation_id"`
@@ -112,7 +112,24 @@ func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
 	message := params.Messages[len(params.Messages)-1]
 	messageHistory := params.Messages[:len(params.Messages)-1]
 
-	// TODO: Map chat message roles to Cohere roles: CHATBOT, SYSTEM, USER
+	mapRole := func(role schemas.Role) string {
+		switch role {
+		case schemas.RoleSystem:
+			return "SYSTEM"
+		case schemas.RoleUser:
+			return "USER"
+		case schemas.RoleAssistant:
+			return "CHATBOT"
+		default:
+			return "USER"
+		}
+	}
+
+	for i := range messageHistory {
+		messageHistory[i].Role = schemas.Role(mapRole(messageHistory[i].Role))
+	}
+
+	message.Role = schemas.Role(mapRole(message.Role))
 
 	r.Message = message.Content
 	r.ChatHistory = messageHistory
