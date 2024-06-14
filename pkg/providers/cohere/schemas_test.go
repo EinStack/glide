@@ -1,9 +1,10 @@
 package cohere
 
 import (
+	"testing"
+
 	"github.com/EinStack/glide/pkg/api/schemas"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestChatRequest_ApplyParams(t *testing.T) {
