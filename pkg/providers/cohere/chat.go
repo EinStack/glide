@@ -127,7 +127,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 				"responseId":   cohereCompletion.ResponseID,
 			},
 			Message: schemas.ChatMessage{
-				Role:    payload.ChatHistory[len(payload.ChatHistory)-1].Role,
+				Role:    payload.Role,
 				Content: cohereCompletion.Text,
 			},
 			TokenUsage: schemas.TokenUsage{

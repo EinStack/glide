@@ -92,6 +92,7 @@ type FinalResponse struct {
 type ChatRequest struct {
 	Model             string                `json:"model"`
 	Message           string                `json:"message"`
+	Role              schemas.Role          `json:"role"`
 	ChatHistory       []schemas.ChatMessage `json:"chat_history"`
 	Temperature       float64               `json:"temperature,omitempty"`
 	Preamble          string                `json:"preamble,omitempty"`
@@ -131,6 +132,7 @@ func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
 
 	message.Role = schemas.Role(mapRole(message.Role))
 
+	r.Role = message.Role
 	r.Message = message.Content
 	r.ChatHistory = messageHistory
 }
