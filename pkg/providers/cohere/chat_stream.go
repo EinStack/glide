@@ -41,6 +41,9 @@ type ChatStream struct {
 	tel                *telemetry.Telemetry
 }
 
+// ensure interfaces are implemented at compilation
+var _ clients.ChatStream = (*ChatStream)(nil)
+
 func NewChatStream(
 	tel *telemetry.Telemetry,
 	client *http.Client,

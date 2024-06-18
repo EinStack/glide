@@ -18,6 +18,9 @@ type LangModelMock struct {
 	weight      int
 }
 
+// ensure interfaces are implemented at compilation
+var _ providers.Model = (*LangModelMock)(nil)
+
 func NewLangModelMock(ID string, healthy bool, avgLatency float64, weight int) LangModelMock {
 	chatLatency := latency.NewMovingAverage(0.06, 3)
 
