@@ -28,6 +28,9 @@ type ChatStream struct {
 	logger             *zap.Logger
 }
 
+// ensure interfaces are implemented at compilation
+var _ clients.ChatStream = (*ChatStream)(nil)
+
 func NewChatStream(
 	client *http.Client,
 	req *http.Request,

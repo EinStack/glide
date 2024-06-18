@@ -48,6 +48,9 @@ type LanguageModel struct {
 	latencyUpdateInterval *fields.Duration
 }
 
+// ensure interfaces are implemented at compilation
+var _ LangModel = (*LanguageModel)(nil)
+
 func NewLangModel(modelID string, client LangProvider, budget *health.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
 	return &LanguageModel{
 		modelID:               modelID,
