@@ -3,7 +3,7 @@
     <h1>Glide: Cloud-Native LLM Gateway for Seamless LLMOps</h1>
     <a href="https://codecov.io/github/EinStack/glide"><img src="https://codecov.io/github/EinStack/glide/graph/badge.svg?token=F7JT39RHX9" alt="CodeCov" /></a>
     <a href="https://discord.gg/pt53Ej7rrc"><img src="https://img.shields.io/discord/1181281407813828710" alt="Discord" /></a>
-    <a href="https://glide.einstack.ai/"><img src="https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F" alt="Glide Docs" /></a>
+    <a href="https://docs.einstack.ai/glide/"><img src="https://img.shields.io/badge/build-view-violet%20?style=flat&logo=books&label=docs&link=https%3A%2F%2Fglide.einstack.ai%2F" alt="Glide Docs" /></a>
     <a href="https://github.com/EinStack/glide/blob/main/LICENSE"><img src="https://img.shields.io/github/license/EinStack/glide.svg?style=flat-square&color=%233f90c8" alt="License" /></a>
     <a href="https://artifacthub.io/packages/helm/einstack/glide"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/einstack" alt="ArtifactHub" /></a>
     <a href="https://app.fossa.com/projects/git%2Bgithub.com%2FEinStack%2Fglide?ref=badge_shield"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FEinStack%2Fglide.svg?type=shield" alt="FOSSA Status" /></a>
@@ -26,7 +26,7 @@ model failover, caching, key management, etc.
 
 <img src="docs/images/marketecture.svg" />
 
-Check out our [documentation](https://glide.einstack.ai)!
+Check out our [documentation](https://docs.einstack.ai/glide/)!
 
 ## Features
 
@@ -108,7 +108,7 @@ Finally, Glide comes with OpenAPI documentation that is accessible via http://12
 
 That's it 🙌
 
-Use [our documentation](https://glide.einstack.ai) to further learn about Glide capabilities and configs.
+Use [our documentation](https://docs.einstack.ai/glide/) to further learn about Glide capabilities and configs.
 
 ---
 
@@ -217,7 +217,7 @@ To let you work with Glide's API with ease, we are going to provide you with SDK
 
 Routers are a core functionality of Glide. Think of routers as a group of models with some predefined logic. For example, the resilience router allows a user to define a set of backup models should the initial model fail. Another example, would be to leverage the least-latency router to make latency sensitive LLM calls in the most efficient manner.
 
-Detailed info on routers can be found [here](https://glide.einstack.ai/essentials/routers).
+Detailed info on routers can be found [here](https://docs.einstack.ai/glide/docs/routers).
 
 #### Available Routers
 
