@@ -13,14 +13,16 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
-install-checkers: ## Install static checkers
+$(CHECKER_BIN)/.installed: $(CHECKER_BIN)/.installed ## Install static checkers
 	@echo "🚚 Downloading binaries.."
 	@GOBIN=$(CHECKER_BIN) go install mvdan.cc/gofumpt@latest
 	@GOBIN=$(CHECKER_BIN) go install golang.org/x/vuln/cmd/govulncheck@latest
 	@GOBIN=$(CHECKER_BIN) go install github.com/securego/gosec/v2/cmd/gosec@latest
 	@GOBIN=$(CHECKER_BIN) go install github.com/swaggo/swag/cmd/swag@latest
+	@GOBIN=$(CHECKER_BIN) go install github.com/air-verse/air@latest
+	@touch $(CHECKER_BIN)/.installed
 
-lint: install-checkers ## Lint the source code
+lint: $(CHECKER_BIN)/.installed ## Lint the source code
 	@echo "🧹 Cleaning go.mod.."
 	@go mod tidy
 	@echo "🧹 Formatting files.."
@@ -31,13 +33,13 @@ lint: install-checkers ## Lint the source code
 	@echo "🧹 GoCI Lint.."
 	@golangci-lint run ./...
 
-vuln: install-checkers ## Check for vulnerabilities
+vuln: $(CHECKER_BIN)/.installed ## Check for vulnerabilities
 	@echo "🔍 Checking for vulnerabilities"
 	@#$(CHECKER_BIN)/govulncheck -test ./... enable in https://github.com/EinStack/glide/issues/169
 	@$(CHECKER_BIN)/gosec -quiet -exclude=G104 ./...
 
-run: ## Run Glide
-	@air -c .air.toml
+run: $(CHECKER_BIN)/.installed ## Run Glide
+	@$(CHECKER_BIN)/air -c .air.toml
 
 build: ## Build Glide
 	@echo "🔨Building Glide binary.."
@@ -47,9 +49,12 @@ build: ## Build Glide
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/glide;
 
 test: ## Run tests
-	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.out ./...
 
-docs-api: install-checkers ## Generate OpenAPI API docs
+test-cov: ## Run tests with coverage
+	@go tool cover -func=coverage.out
+
+docs-api: $(CHECKER_BIN)/.installed ## Generate OpenAPI API docs
 	@$(CHECKER_BIN)/swag init
 
 telemetry-up: ## Start observability services needed to receive Glides signals
