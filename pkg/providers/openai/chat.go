@@ -8,14 +8,16 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/providers/clients"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 	"go.uber.org/zap"
 )
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
+		Model:            cfg.ModelName,
 		Temperature:      cfg.DefaultParams.Temperature,
 		TopP:             cfg.DefaultParams.TopP,
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
@@ -34,38 +36,20 @@ func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 }
 
 // Chat sends a chat request to the specified OpenAI model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createRequestSchema(request)
-	chatRequest.Stream = false
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatReq.Stream = false
+
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
 	return chatResponse, nil
-}
-
-// createRequestSchema creates a new ChatRequest object based on the given request.
-func (c *Client) createRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := *c.chatRequestTemplate // hoping to get a copy of the template
-
-	chatRequest.Messages = make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	chatRequest.Messages = append(chatRequest.Messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return &chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -116,6 +100,11 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	// Parse the response JSON
 	var chatCompletion ChatCompletion
 
+	c.logger.Debug(
+		"Raw chat response",
+		zap.ByteString("resp", bodyBytes),
+	)
+
 	err = json.Unmarshal(bodyBytes, &chatCompletion)
 	if err != nil {
 		c.logger.Error(
@@ -127,6 +116,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		return nil, err
 	}
 
+	modelChoice := chatCompletion.Choices[0]
+
+	if len(modelChoice.Message.Content) == 0 {
+		return nil, clients.ErrEmptyResponse
+	}
+
 	// Map response to ChatResponse schema
 	response := schemas.ChatResponse{
 		ID:        chatCompletion.ID,
@@ -135,12 +130,12 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelName: chatCompletion.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
+			Metadata: map[string]string{
 				"system_fingerprint": chatCompletion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
-				Role:    chatCompletion.Choices[0].Message.Role,
-				Content: chatCompletion.Choices[0].Message.Content,
+				Role:    modelChoice.Message.Role,
+				Content: modelChoice.Message.Content,
 			},
 			TokenUsage: schemas.TokenUsage{
 				PromptTokens:   chatCompletion.Usage.PromptTokens,

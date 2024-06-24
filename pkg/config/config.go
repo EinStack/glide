@@ -1,9 +1,11 @@
 package config
 
 import (
-	"glide/pkg/api"
-	"glide/pkg/routers"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers"
+
+	"github.com/EinStack/glide/pkg/api"
 )
 
 // Config is a general top-level Glide configuration

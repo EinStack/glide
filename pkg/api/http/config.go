@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/EinStack/glide/pkg/version"
 	"github.com/gofiber/fiber/v2"
-	"glide/pkg/version"
 )
 
 type ServerConfig struct {

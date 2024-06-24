@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 
 	"github.com/stretchr/testify/require"
 )
@@ -61,12 +61,12 @@ func TestBedrockClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "user",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 
 	responseString := fmt.Sprintf("%+v", response)
 	// errString := fmt.Sprintf("%+v", err)

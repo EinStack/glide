@@ -6,18 +6,20 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofiber/contrib/otelfiber"
+
 	"github.com/gofiber/swagger"
 
-	"glide/docs"
+	"github.com/EinStack/glide/docs"
 
+	_ "github.com/EinStack/glide/docs" // importing docs package to include them into the binary
 	"github.com/gofiber/contrib/fiberzap/v2"
 
 	"github.com/gofiber/fiber/v2"
-	_ "glide/docs" // importing docs package to include them into the binary
 
-	"glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/routers"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 )
 
 type Server struct {
@@ -43,6 +45,8 @@ func (srv *Server) Run() error {
 	srv.server.Get("/swagger.json", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).Type("json").Send(docs.SwaggerJSON)
 	})
+
+	srv.server.Use(otelfiber.Middleware())
 
 	srv.server.Use(fiberzap.New(fiberzap.Config{
 		Logger: srv.telemetry.Logger,

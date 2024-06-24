@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
 type ChatStream interface {

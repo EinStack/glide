@@ -10,11 +10,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/providers/clients"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 
 	"github.com/stretchr/testify/require"
 )
@@ -55,12 +55,12 @@ func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
 		Role:    "user",
-		Content: "What's the biggest animal?",
-	}}
+		Content: "What's the capital of the United Kingdom?",
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 	require.NoError(t, err)
 
 	require.Equal(t, "chatcmpl-8cdqrFT2lBQlHz0EDvvq6oQcRxNcZ", response.ID)
@@ -81,19 +81,19 @@ func TestAzureOpenAIClient_ChatError(t *testing.T) {
 
 	// Verify the default configuration values
 	require.Equal(t, "/chat/completions", providerCfg.ChatEndpoint)
-	require.Equal(t, "", providerCfg.Model)
+	require.Equal(t, "", providerCfg.ModelName)
 	require.Equal(t, "2023-05-15", providerCfg.APIVersion)
 	require.NotNil(t, providerCfg.DefaultParams)
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	request := schemas.ChatRequest{Message: schemas.ChatMessage{
-		Role:    "user",
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "human",
 		Content: "What's the biggest animal?",
-	}}
+	}}}
 
-	response, err := client.Chat(ctx, &request)
+	response, err := client.Chat(ctx, &chatParams)
 	require.Error(t, err)
 	require.Nil(t, response)
 }
@@ -115,10 +115,12 @@ func TestDoChatRequest_ErrorResponse(t *testing.T) {
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
 
-	// Create a chat request payload
-	payload := schemas.NewChatFromStr("What's the dealio?")
+	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+		Role:    "user",
+		Content: "What's the dealio?",
+	}}}
 
-	_, err = client.Chat(ctx, payload)
+	_, err = client.Chat(ctx, &chatParams)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "provider is not available")

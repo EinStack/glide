@@ -2,11 +2,15 @@ package routers
 
 import (
 	"fmt"
+	"time"
 
-	"glide/pkg/providers"
-	"glide/pkg/routers/retry"
-	"glide/pkg/routers/routing"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers/routing"
+
+	"github.com/EinStack/glide/pkg/routers/retry"
+
+	"github.com/EinStack/glide/pkg/providers"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
@@ -83,7 +87,7 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 
 		if !modelConfig.Enabled {
 			tel.L().Info(
-				"Model is disabled, skipping",
+				"ModelName is disabled, skipping",
 				zap.String("router", c.ID),
 				zap.String("model", modelConfig.ID),
 			)
@@ -161,12 +165,13 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 
 func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
 	retryConfig := c.Retry
+	maxDelay := time.Duration(*retryConfig.MaxDelay)
 
 	return retry.NewExpRetry(
 		retryConfig.MaxRetries,
 		retryConfig.BaseMultiplier,
-		retryConfig.MinDelay,
-		retryConfig.MaxDelay,
+		time.Duration(retryConfig.MinDelay),
+		&maxDelay,
 	)
 }
 

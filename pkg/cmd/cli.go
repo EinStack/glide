@@ -3,11 +3,13 @@ package cmd
 import (
 	"log"
 
-	"glide/pkg/version"
+	"github.com/EinStack/glide/pkg/version"
+
+	"github.com/EinStack/glide/pkg/config"
+
+	"github.com/EinStack/glide/pkg"
 
 	"github.com/spf13/cobra"
-	"glide/pkg"
-	"glide/pkg/config"
 )
 
 var (
@@ -37,7 +39,7 @@ to make your LLM applications production ready 🎉
 func NewCLI() *cobra.Command {
 	// TODO: Chances are we could use the build in flags module in this is all we need from CLI
 	cli := &cobra.Command{
-		Use:     "glide",
+		Use:     "github.com/EinStack/glide",
 		Short:   "🐦Glide is an open-source, lightweight, high-performance model gateway",
 		Long:    Description,
 		Version: version.FullVersion,

@@ -6,11 +6,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/routers"
 
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
 
-	"glide/pkg/api/http"
+	"github.com/EinStack/glide/pkg/api/http"
 )
 
 type ServerManager struct {

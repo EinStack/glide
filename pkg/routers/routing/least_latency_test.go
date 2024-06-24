@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
-	ptesting "glide/pkg/providers/testing"
+	ptesting "github.com/EinStack/glide/pkg/providers/testing"
+
+	"github.com/EinStack/glide/pkg/providers"
 
 	"github.com/stretchr/testify/require"
-	"glide/pkg/providers"
 )
 
 func TestLeastLatencyRouting_Warmup(t *testing.T) {

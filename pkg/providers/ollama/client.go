@@ -1,21 +1,17 @@
 package ollama
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 )
 
 const (
 	providerName = "ollama"
-)
-
-// ErrEmptyResponse is returned when the OpenAI API returns an empty response.
-var (
-	ErrEmptyResponse = errors.New("empty response")
 )
 
 // Client is a client for accessing OpenAI API
@@ -41,11 +37,10 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
 		httpClient: &http.Client{
-			Timeout: *clientConfig.Timeout,
-			// TODO: use values from the config
+			Timeout: time.Duration(*clientConfig.Timeout),
 			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxIdleConnsPerHost: 2,
+				MaxIdleConns:        *clientConfig.MaxIdleConns,
+				MaxIdleConnsPerHost: *clientConfig.MaxIdleConnsPerHost,
 			},
 		},
 		telemetry: tel,
@@ -56,4 +51,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 
 func (c *Client) Provider() string {
 	return providerName
+}
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
 }

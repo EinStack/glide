@@ -18,7 +18,6 @@ type Params struct {
 	Tfsz         float64  `yaml:"tfs_z,omitempty" json:"tfs_z"`
 	NumPredict   int      `yaml:"num_predict,omitempty" json:"num_predict"`
 	TopK         int      `yaml:"top_k,omitempty" json:"top_k"`
-	Stream       bool     `yaml:"stream,omitempty" json:"stream"`
 }
 
 func DefaultParams() Params {
@@ -27,7 +26,6 @@ func DefaultParams() Params {
 		NumCtx:      2048,
 		TopP:        0.9,
 		TopK:        40,
-		Stream:      false,
 	}
 }
 
@@ -40,10 +38,10 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
-	BaseURL       string  `yaml:"baseUrl" json:"baseUrl" validate:"required"`
-	ChatEndpoint  string  `yaml:"chatEndpoint" json:"chatEndpoint" validate:"required"`
-	Model         string  `yaml:"model" json:"model" validate:"required"`
-	DefaultParams *Params `yaml:"defaultParams,omitempty" json:"defaultParams"`
+	BaseURL       string  `yaml:"base_url" json:"base_url" validate:"required"`
+	ChatEndpoint  string  `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
+	ModelName     string  `yaml:"model" json:"model" validate:"required"`
+	DefaultParams *Params `yaml:"default_params,omitempty" json:"default_params"`
 }
 
 // DefaultConfig for OpenAI models
@@ -53,7 +51,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "http://localhost:11434",
 		ChatEndpoint:  "/api/chat",
-		Model:         "",
+		ModelName:     "",
 		DefaultParams: &defaultParams,
 	}
 }

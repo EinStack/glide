@@ -6,41 +6,33 @@ type (
 	Metadata     = map[string]any
 	EventType    = string
 	FinishReason = string
-	ErrorCode    = string
 )
 
 var (
-	Complete        FinishReason = "complete"
-	MaxTokens       FinishReason = "max_tokens"
-	ContentFiltered FinishReason = "content_filtered"
-	ErrorReason     FinishReason = "error"
-	OtherReason     FinishReason = "other"
-)
-
-var (
-	NoModelConfigured    ErrorCode = "no_model_configured"
-	ModelUnavailable     ErrorCode = "model_unavailable"
-	AllModelsUnavailable ErrorCode = "all_models_unavailable"
-	UnknownError         ErrorCode = "unknown_error"
+	ReasonComplete        FinishReason = "complete"
+	ReasonMaxTokens       FinishReason = "max_tokens"
+	ReasonContentFiltered FinishReason = "content_filtered"
+	ReasonError           FinishReason = "error"
+	ReasonOther           FinishReason = "other"
 )
 
 type StreamRequestID = string
 
 // ChatStreamRequest defines a message that requests a new streaming chat
 type ChatStreamRequest struct {
-	ID             StreamRequestID      `json:"id" validate:"required"`
-	Message        ChatMessage          `json:"message" validate:"required"`
-	MessageHistory []ChatMessage        `json:"messageHistory" validate:"required"`
-	Override       *OverrideChatRequest `json:"overrideMessage,omitempty"`
-	Metadata       *Metadata            `json:"metadata,omitempty"`
+	ID StreamRequestID `json:"id" validate:"required"`
+	*ChatRequest
+	OverrideParams *map[string]ModelParamsOverride `json:"override_params,omitempty"`
+	Metadata       *Metadata                       `json:"metadata,omitempty"`
 }
 
 func NewChatStreamFromStr(message string) *ChatStreamRequest {
 	return &ChatStreamRequest{
-		Message: ChatMessage{
-			"user",
-			message,
-			"glide",
+		ChatRequest: &ChatRequest{
+			Message: ChatMessage{
+				"user",
+				message,
+			},
 		},
 	}
 }
@@ -52,8 +44,8 @@ type ModelChunkResponse struct {
 
 type ChatStreamMessage struct {
 	ID        StreamRequestID  `json:"id"`
-	CreatedAt int              `json:"createdAt"`
-	RouterID  string           `json:"routerId"`
+	CreatedAt int              `json:"created_at"`
+	RouterID  string           `json:"router_id"`
 	Metadata  *Metadata        `json:"metadata,omitempty"`
 	Chunk     *ChatStreamChunk `json:"chunk,omitempty"`
 	Error     *ChatStreamError `json:"error,omitempty"`
@@ -61,18 +53,18 @@ type ChatStreamMessage struct {
 
 // ChatStreamChunk defines a message for a chunk of streaming chat response
 type ChatStreamChunk struct {
-	ModelID       string             `json:"modelId"`
-	Provider      string             `json:"providerName"`
-	ModelName     string             `json:"modelName"`
+	ModelID       string             `json:"model_id"`
+	Provider      string             `json:"provider_id"`
+	ModelName     string             `json:"model_name"`
 	Cached        bool               `json:"cached"`
-	ModelResponse ModelChunkResponse `json:"modelResponse"`
-	FinishReason  *FinishReason      `json:"finishReason,omitempty"`
+	ModelResponse ModelChunkResponse `json:"model_response"`
+	FinishReason  *FinishReason      `json:"finish_reason,omitempty"`
 }
 
 type ChatStreamError struct {
-	ErrCode      ErrorCode     `json:"errCode"`
+	Name         ErrorName     `json:"name"`
 	Message      string        `json:"message"`
-	FinishReason *FinishReason `json:"finishReason,omitempty"`
+	FinishReason *FinishReason `json:"finish_reason,omitempty"`
 }
 
 func NewChatStreamChunk(
@@ -93,7 +85,7 @@ func NewChatStreamChunk(
 func NewChatStreamError(
 	reqID StreamRequestID,
 	routerID string,
-	errCode ErrorCode,
+	errName ErrorName,
 	errMsg string,
 	reqMetadata *Metadata,
 	finishReason *FinishReason,
@@ -104,7 +96,7 @@ func NewChatStreamError(
 		CreatedAt: int(time.Now().UTC().Unix()),
 		Metadata:  reqMetadata,
 		Error: &ChatStreamError{
-			ErrCode:      errCode,
+			Name:         errName,
 			Message:      errMsg,
 			FinishReason: finishReason,
 		},

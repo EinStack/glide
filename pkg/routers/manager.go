@@ -1,12 +1,9 @@
 package routers
 
 import (
-	"errors"
-
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/telemetry"
 )
-
-var ErrRouterNotFound = errors.New("no router found with given ID")
 
 type RouterManager struct {
 	Config        *Config
@@ -48,5 +45,5 @@ func (r *RouterManager) GetLangRouter(routerID string) (*LangRouter, error) {
 		return router, nil
 	}
 
-	return nil, ErrRouterNotFound
+	return nil, &schemas.ErrRouterNotFound
 }

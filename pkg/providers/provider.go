@@ -1,12 +1,13 @@
 package providers
 
 import (
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 // ModelProvider exposes provider context
 type ModelProvider interface {
 	Provider() string
+	ModelName() string
 }
 
 // Model represent a configured external modality-agnostic model with its routing properties and status

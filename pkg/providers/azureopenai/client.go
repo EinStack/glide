@@ -1,23 +1,19 @@
 package azureopenai
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
-	"glide/pkg/providers/openai"
+	"github.com/EinStack/glide/pkg/providers/openai"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 )
 
 const (
 	providerName = "azureopenai"
-)
-
-// ErrEmptyResponse is returned when the OpenAI API returns an empty response.
-var (
-	ErrEmptyResponse = errors.New("empty response")
 )
 
 // Client is a client for accessing Azure OpenAI API
@@ -37,7 +33,7 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 	chatURL := fmt.Sprintf(
 		"%s/openai/deployments/%s/chat/completions?api-version=%s",
 		providerConfig.BaseURL,
-		providerConfig.Model,
+		providerConfig.ModelName,
 		providerConfig.APIVersion,
 	)
 
@@ -49,11 +45,10 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		finishReasonMapper:  openai.NewFinishReasonMapper(tel),
 		errMapper:           NewErrorMapper(tel),
 		httpClient: &http.Client{
-			// TODO: use values from the config
-			Timeout: *clientConfig.Timeout,
+			Timeout: time.Duration(*clientConfig.Timeout),
 			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxIdleConnsPerHost: 2,
+				MaxIdleConns:        *clientConfig.MaxIdleConns,
+				MaxIdleConnsPerHost: *clientConfig.MaxIdleConnsPerHost,
 			},
 		},
 		tel: tel,
@@ -64,4 +59,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 
 func (c *Client) Provider() string {
 	return providerName
+}
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
 }

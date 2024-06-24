@@ -1,7 +1,7 @@
 package openai
 
 import (
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 // Params defines OpenAI-specific model params with the specific validation of values
@@ -42,11 +42,11 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
-	BaseURL       string        `yaml:"baseUrl" json:"baseUrl" validate:"required"`
-	ChatEndpoint  string        `yaml:"chatEndpoint" json:"chatEndpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
+	BaseURL       string        `yaml:"base_url" json:"base_url" validate:"required"`
+	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
+	ModelName     string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
-	DefaultParams *Params       `yaml:"defaultParams,omitempty" json:"defaultParams"`
+	DefaultParams *Params       `yaml:"default_params,omitempty" json:"default_params"`
 }
 
 // DefaultConfig for OpenAI models
@@ -56,7 +56,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "https://api.openai.com/v1",
 		ChatEndpoint:  "/chat/completions",
-		Model:         "gpt-3.5-turbo",
+		ModelName:     "gpt-4o",
 		DefaultParams: &defaultParams,
 	}
 }

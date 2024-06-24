@@ -10,11 +10,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
+
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/stretchr/testify/require"
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
 )
 
 func TestOpenAIClient_ChatStreamSupported(t *testing.T) {
@@ -69,8 +71,12 @@ func TestOpenAIClient_ChatStreamRequest(t *testing.T) {
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
 
-			req := schemas.NewChatStreamFromStr("What's the capital of the United Kingdom?")
-			stream, err := client.ChatStream(ctx, req)
+			chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+				Role:    "user",
+				Content: "What's the capital of the United Kingdom?",
+			}}}
+
+			stream, err := client.ChatStream(ctx, &chatParams)
 			require.NoError(t, err)
 
 			err = stream.Open()
@@ -133,8 +139,12 @@ func TestOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
 			client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 			require.NoError(t, err)
 
-			req := schemas.NewChatStreamFromStr("What's the capital of the United Kingdom?")
-			stream, err := client.ChatStream(ctx, req)
+			chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
+				Role:    "user",
+				Content: "What's the capital of the United Kingdom?",
+			}}}
+
+			stream, err := client.ChatStream(ctx, &chatParams)
 			require.NoError(t, err)
 
 			err = stream.Open()

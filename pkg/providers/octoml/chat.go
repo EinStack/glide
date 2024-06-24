@@ -8,80 +8,59 @@ import (
 	"io"
 	"net/http"
 
-	"glide/pkg/providers/openai"
+	"github.com/EinStack/glide/pkg/providers/openai"
 
-	"glide/pkg/api/schemas"
+	"github.com/EinStack/glide/pkg/api/schemas"
+
 	"go.uber.org/zap"
 )
 
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatRequest is an octoml-specific request schema
 type ChatRequest struct {
-	Model            string        `json:"model"`
-	Messages         []ChatMessage `json:"messages"`
-	Temperature      float64       `json:"temperature,omitempty"`
-	TopP             float64       `json:"top_p,omitempty"`
-	MaxTokens        int           `json:"max_tokens,omitempty"`
-	StopWords        []string      `json:"stop,omitempty"`
-	Stream           bool          `json:"stream,omitempty"`
-	FrequencyPenalty int           `json:"frequency_penalty,omitempty"`
-	PresencePenalty  int           `json:"presence_penalty,omitempty"`
+	Model            string                `json:"model"`
+	Messages         []schemas.ChatMessage `json:"messages"`
+	Temperature      float64               `json:"temperature,omitempty"`
+	TopP             float64               `json:"top_p,omitempty"`
+	MaxTokens        int                   `json:"max_tokens,omitempty"`
+	StopWords        []string              `json:"stop,omitempty"`
+	Stream           bool                  `json:"stream,omitempty"`
+	FrequencyPenalty int                   `json:"frequency_penalty,omitempty"`
+	PresencePenalty  int                   `json:"presence_penalty,omitempty"`
+}
+
+func (r *ChatRequest) ApplyParams(params *schemas.ChatParams) {
+	// TODO(185): set other params
+	r.Messages = params.Messages
 }
 
 // NewChatRequestFromConfig fills the struct from the config. Not using reflection because of performance penalty it gives
 func NewChatRequestFromConfig(cfg *Config) *ChatRequest {
 	return &ChatRequest{
-		Model:            cfg.Model,
+		Model:            cfg.ModelName,
 		Temperature:      cfg.DefaultParams.Temperature,
 		TopP:             cfg.DefaultParams.TopP,
 		MaxTokens:        cfg.DefaultParams.MaxTokens,
 		StopWords:        cfg.DefaultParams.StopWords,
-		Stream:           false, // unsupported right now
 		FrequencyPenalty: cfg.DefaultParams.FrequencyPenalty,
 		PresencePenalty:  cfg.DefaultParams.PresencePenalty,
 	}
 }
 
-func NewChatMessagesFromUnifiedRequest(request *schemas.ChatRequest) []ChatMessage {
-	messages := make([]ChatMessage, 0, len(request.MessageHistory)+1)
-
-	// Add items from messageHistory first and the new chat message last
-	for _, message := range request.MessageHistory {
-		messages = append(messages, ChatMessage{Role: message.Role, Content: message.Content})
-	}
-
-	messages = append(messages, ChatMessage{Role: request.Message.Role, Content: request.Message.Content})
-
-	return messages
-}
-
 // Chat sends a chat request to the specified octoml model.
-func (c *Client) Chat(ctx context.Context, request *schemas.ChatRequest) (*schemas.ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, params *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	// Create a new chat request
-	chatRequest := c.createChatRequestSchema(request)
+	// TODO: consider using objectpool to optimize memory allocation
+	chatReq := *c.chatRequestTemplate // hoping to get a copy of the template
+	chatReq.ApplyParams(params)
 
-	chatResponse, err := c.doChatRequest(ctx, chatRequest)
+	chatReq.Stream = false
+
+	chatResponse, err := c.doChatRequest(ctx, &chatReq)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(chatResponse.ModelResponse.Message.Content) == 0 {
-		return nil, ErrEmptyResponse
-	}
-
 	return chatResponse, nil
-}
-
-func (c *Client) createChatRequestSchema(request *schemas.ChatRequest) *ChatRequest {
-	// TODO: consider using objectpool to optimize memory allocation
-	chatRequest := c.chatRequestTemplate // hoping to get a copy of the template
-	chatRequest.Messages = NewChatMessagesFromUnifiedRequest(request)
-
-	return chatRequest
 }
 
 func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*schemas.ChatResponse, error) {
@@ -125,33 +104,39 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 	}
 
 	// Parse the response JSON
-	var openAICompletion openai.ChatCompletion // Octo uses the same response schema as OpenAI
+	var completion openai.ChatCompletion // Octo uses the same response schema as OpenAI
 
-	err = json.Unmarshal(bodyBytes, &openAICompletion)
+	err = json.Unmarshal(bodyBytes, &completion)
 	if err != nil {
 		c.telemetry.Logger.Error("failed to parse openai chat response", zap.Error(err))
 		return nil, err
 	}
 
+	modelChoice := completion.Choices[0]
+
+	if len(modelChoice.Message.Content) == 0 {
+		return nil, ErrEmptyResponse
+	}
+
 	// Map response to UnifiedChatResponse schema
 	response := schemas.ChatResponse{
-		ID:        openAICompletion.ID,
-		Created:   openAICompletion.Created,
+		ID:        completion.ID,
+		Created:   completion.Created,
 		Provider:  providerName,
-		ModelName: openAICompletion.ModelName,
+		ModelName: completion.ModelName,
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
-			SystemID: map[string]string{
-				"system_fingerprint": openAICompletion.SystemFingerprint,
+			Metadata: map[string]string{
+				"system_fingerprint": completion.SystemFingerprint,
 			},
 			Message: schemas.ChatMessage{
-				Role:    openAICompletion.Choices[0].Message.Role,
-				Content: openAICompletion.Choices[0].Message.Content,
+				Role:    modelChoice.Message.Role,
+				Content: modelChoice.Message.Content,
 			},
 			TokenUsage: schemas.TokenUsage{
-				PromptTokens:   openAICompletion.Usage.PromptTokens,
-				ResponseTokens: openAICompletion.Usage.CompletionTokens,
-				TotalTokens:    openAICompletion.Usage.TotalTokens,
+				PromptTokens:   completion.Usage.PromptTokens,
+				ResponseTokens: completion.Usage.CompletionTokens,
+				TotalTokens:    completion.Usage.TotalTokens,
 			},
 		},
 	}

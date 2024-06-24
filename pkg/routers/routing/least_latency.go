@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"glide/pkg/routers/latency"
+	"github.com/EinStack/glide/pkg/routers/latency"
 
-	"glide/pkg/providers"
+	"github.com/EinStack/glide/pkg/providers"
 )
 
 const (

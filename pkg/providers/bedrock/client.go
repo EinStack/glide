@@ -5,9 +5,11 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
-	"glide/pkg/providers/clients"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -15,7 +17,7 @@ import (
 )
 
 const (
-	providerName = "bedrock"
+	providerName = "aws/bedrock"
 )
 
 // ErrEmptyResponse is returned when the OpenAI API returns an empty response.
@@ -36,7 +38,7 @@ type Client struct {
 
 // NewClient creates a new OpenAI client for the OpenAI API.
 func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *telemetry.Telemetry) (*Client, error) {
-	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint, providerConfig.Model, "/invoke")
+	chatURL, err := url.JoinPath(providerConfig.BaseURL, providerConfig.ChatEndpoint, providerConfig.ModelName, "/invoke")
 	if err != nil {
 		return nil, err
 	}
@@ -55,11 +57,10 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 		config:              providerConfig,
 		chatRequestTemplate: NewChatRequestFromConfig(providerConfig),
 		httpClient: &http.Client{
-			Timeout: *clientConfig.Timeout,
-			// TODO: use values from the config
+			Timeout: time.Duration(*clientConfig.Timeout),
 			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxIdleConnsPerHost: 2,
+				MaxIdleConns:        *clientConfig.MaxIdleConns,
+				MaxIdleConnsPerHost: *clientConfig.MaxIdleConnsPerHost,
 			},
 		},
 		telemetry: tel,
@@ -70,4 +71,8 @@ func NewClient(providerConfig *Config, clientConfig *clients.ClientConfig, tel *
 
 func (c *Client) Provider() string {
 	return providerName
+}
+
+func (c *Client) ModelName() string {
+	return c.config.ModelName
 }

@@ -4,20 +4,19 @@ import (
 	"context"
 	"errors"
 
-	"glide/pkg/routers/retry"
+	"github.com/EinStack/glide/pkg/routers/retry"
 	"go.uber.org/zap"
 
-	"glide/pkg/providers"
+	"github.com/EinStack/glide/pkg/providers"
 
-	"glide/pkg/api/schemas"
-	"glide/pkg/routers/routing"
-	"glide/pkg/telemetry"
+	"github.com/EinStack/glide/pkg/telemetry"
+
+	"github.com/EinStack/glide/pkg/routers/routing"
+
+	"github.com/EinStack/glide/pkg/api/schemas"
 )
 
-var (
-	ErrNoModels         = errors.New("no models configured for router")
-	ErrNoModelAvailable = errors.New("could not handle request because all providers are not available")
-)
+var ErrNoModels = errors.New("no models configured for router")
 
 type RouterID = string
 
@@ -83,15 +82,9 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 
 			langModel := model.(providers.LangModel)
 
-			// Check if there is an override in the request
-			if req.Override != nil {
-				// Override the message if the language model ID matches the override model ID
-				if langModel.ID() == req.Override.Model {
-					req.Message = req.Override.Message
-				}
-			}
+			chatParams := req.Params(langModel.ID(), langModel.ModelName())
 
-			resp, err := langModel.Chat(ctx, req)
+			resp, err := langModel.Chat(ctx, chatParams)
 			if err != nil {
 				r.logger.Warn(
 					"Lang model failed processing chat request",
@@ -122,7 +115,7 @@ func (r *LangRouter) Chat(ctx context.Context, req *schemas.ChatRequest) (*schem
 	// if we reach this part, then we are in trouble
 	r.logger.Error("No model was available to handle chat request")
 
-	return nil, ErrNoModelAvailable
+	return nil, &schemas.ErrNoModelAvailable
 }
 
 func (r *LangRouter) ChatStream(
@@ -137,7 +130,7 @@ func (r *LangRouter) ChatStream(
 			schemas.NoModelConfigured,
 			ErrNoModels.Error(),
 			req.Metadata,
-			&schemas.ErrorReason,
+			&schemas.ReasonError,
 		)
 
 		return
@@ -158,7 +151,9 @@ func (r *LangRouter) ChatStream(
 			}
 
 			langModel := model.(providers.LangModel)
-			modelRespC, err := langModel.ChatStream(ctx, req)
+			chatParams := req.Params(langModel.ID(), langModel.ModelName())
+
+			modelRespC, err := langModel.ChatStream(ctx, chatParams)
 			if err != nil {
 				r.logger.Error(
 					"Lang model failed to create streaming chat request",
@@ -237,9 +232,9 @@ func (r *LangRouter) ChatStream(
 	respC <- schemas.NewChatStreamError(
 		req.ID,
 		r.routerID,
-		schemas.AllModelsUnavailable,
-		ErrNoModelAvailable.Error(),
+		schemas.ErrNoModelAvailable.Name,
+		schemas.ErrNoModelAvailable.Message,
 		req.Metadata,
-		&schemas.ErrorReason,
+		&schemas.ReasonError,
 	)
 }

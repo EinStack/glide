@@ -7,16 +7,19 @@ import (
 	"os/signal"
 	"syscall"
 
-	"glide/pkg/version"
+	"github.com/EinStack/glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/version"
+	"go.opentelemetry.io/contrib/instrumentation/host"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 
-	"glide/pkg/routers"
+	"github.com/EinStack/glide/pkg/config"
 
-	"glide/pkg/config"
+	"github.com/EinStack/glide/pkg/telemetry"
 
-	"glide/pkg/telemetry"
 	"go.uber.org/zap"
 
-	"glide/pkg/api"
+	"github.com/EinStack/glide/pkg/api"
+
 	"go.uber.org/multierr"
 )
 
@@ -67,6 +70,17 @@ func NewGateway(configProvider *config.Provider) (*Gateway, error) {
 
 // Run starts and runs the gateway according to given configuration
 func (gw *Gateway) Run(ctx context.Context) error {
+	// Instrument the gateway process
+	err := host.Start()
+	if err != nil {
+		return err
+	}
+
+	err = runtime.Start()
+	if err != nil {
+		return err
+	}
+
 	gw.configProvider.Start()
 	gw.serverManager.Start() //nolint:contextcheck
 

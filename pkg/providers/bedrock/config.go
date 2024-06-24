@@ -1,7 +1,7 @@
 package bedrock
 
 import (
-	"glide/pkg/config/fields"
+	"github.com/EinStack/glide/pkg/config/fields"
 )
 
 // Params defines OpenAI-specific model params with the specific validation of values
@@ -31,14 +31,14 @@ func (p *Params) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
-	BaseURL       string        `yaml:"baseUrl" json:"baseUrl" validate:"required"`
-	ChatEndpoint  string        `yaml:"chatEndpoint" json:"chatEndpoint" validate:"required"`
-	Model         string        `yaml:"model" json:"model" validate:"required"`
+	BaseURL       string        `yaml:"base_url" json:"base_url" validate:"required"`
+	ChatEndpoint  string        `yaml:"chat_endpoint" json:"chat_endpoint" validate:"required"`
+	ModelName     string        `yaml:"model" json:"model" validate:"required"`
 	APIKey        fields.Secret `yaml:"api_key" json:"-" validate:"required"`
 	AccessKey     string        `yaml:"access_key" json:"-" validate:"required"`
 	SecretKey     string        `yaml:"secret_key" json:"-" validate:"required"`
 	AWSRegion     string        `yaml:"aws_region" json:"awsRegion" validate:"required"`
-	DefaultParams *Params       `yaml:"defaultParams,omitempty" json:"defaultParams"`
+	DefaultParams *Params       `yaml:"default_params,omitempty" json:"default_params"`
 }
 
 // DefaultConfig for OpenAI models
@@ -48,7 +48,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:       "", // This needs to come from config. https://bedrock-runtime.{{AWS_Region}}.amazonaws.com/
 		ChatEndpoint:  "/model",
-		Model:         "amazon.titan-text-express-v1",
+		ModelName:     "amazon.titan-text-express-v1",
 		DefaultParams: &defaultParams,
 	}
 }
