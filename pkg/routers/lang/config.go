@@ -3,7 +3,7 @@ package lang
 import (
 	"fmt"
 	"github.com/EinStack/glide/pkg/providers"
-	"github.com/EinStack/glide/pkg/routers/retry"
+	retry2 "github.com/EinStack/glide/pkg/resiliency/retry"
 	"github.com/EinStack/glide/pkg/routers/routing"
 	"github.com/EinStack/glide/pkg/telemetry"
 	"go.uber.org/multierr"
@@ -17,7 +17,7 @@ import (
 type LangRouterConfig struct {
 	ID              string                      `yaml:"id" json:"routers" validate:"required"`                                       // Unique router ID
 	Enabled         bool                        `yaml:"enabled" json:"enabled" validate:"required"`                                  // Is router enabled?
-	Retry           *retry.ExpRetryConfig       `yaml:"retry" json:"retry" validate:"required"`                                      // retry when no healthy model is available to router
+	Retry           *retry2.ExpRetryConfig      `yaml:"retry" json:"retry" validate:"required"`                                      // retry when no healthy model is available to router
 	RoutingStrategy routing.Strategy            `yaml:"strategy" json:"strategy" swaggertype:"primitive,string" validate:"required"` // strategy on picking the next model to serve the request
 	Models          []providers.LangModelConfig `yaml:"models" json:"models" validate:"required,min=1,dive"`                         // the list of models that could handle requests
 }
@@ -119,11 +119,11 @@ func (c *LangRouterConfig) BuildModels(tel *telemetry.Telemetry) ([]*providers.L
 	return chatModels, chatStreamModels, nil
 }
 
-func (c *LangRouterConfig) BuildRetry() *retry.ExpRetry {
+func (c *LangRouterConfig) BuildRetry() *retry2.ExpRetry {
 	retryConfig := c.Retry
 	maxDelay := time.Duration(*retryConfig.MaxDelay)
 
-	return retry.NewExpRetry(
+	return retry2.NewExpRetry(
 		retryConfig.MaxRetries,
 		retryConfig.BaseMultiplier,
 		time.Duration(retryConfig.MinDelay),
@@ -166,7 +166,7 @@ func DefaultLangRouterConfig() LangRouterConfig {
 	return LangRouterConfig{
 		Enabled:         true,
 		RoutingStrategy: routing.Priority,
-		Retry:           retry.DefaultExpRetryConfig(),
+		Retry:           retry2.DefaultExpRetryConfig(),
 	}
 }
 

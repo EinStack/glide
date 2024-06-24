@@ -2,9 +2,8 @@ package testing
 
 import (
 	"context"
+	clients2 "github.com/EinStack/glide/pkg/clients"
 	"io"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
 )
@@ -124,7 +123,7 @@ func (c *ProviderMock) SupportChatStream() bool {
 
 func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatParams) (*schemas.ChatResponse, error) {
 	if c.chatResps == nil {
-		return nil, clients.ErrProviderUnavailable
+		return nil, clients2.ErrProviderUnavailable
 	}
 
 	responses := *c.chatResps
@@ -139,9 +138,9 @@ func (c *ProviderMock) Chat(_ context.Context, _ *schemas.ChatParams) (*schemas.
 	return response.Resp(), nil
 }
 
-func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients.ChatStream, error) {
+func (c *ProviderMock) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients2.ChatStream, error) {
 	if c.chatStreams == nil || c.idx >= len(*c.chatStreams) {
-		return nil, clients.ErrProviderUnavailable
+		return nil, clients2.ErrProviderUnavailable
 	}
 
 	streams := *c.chatStreams

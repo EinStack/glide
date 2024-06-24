@@ -5,12 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	clients2 "github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 
 	"github.com/EinStack/glide/pkg/telemetry"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"go.uber.org/zap"
 
@@ -96,7 +95,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 
 			// if io.EOF occurred in the middle of the stream, then the stream was interrupted
 
-			return nil, clients.ErrProviderUnavailable
+			return nil, clients2.ErrProviderUnavailable
 		}
 
 		s.tel.L().Debug(
@@ -178,7 +177,7 @@ func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients.ChatStream, error) {
+func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients2.ChatStream, error) {
 	// Create a new chat request
 	httpRequest, err := c.makeStreamReq(ctx, params)
 	if err != nil {

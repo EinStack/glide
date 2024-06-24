@@ -3,14 +3,13 @@ package openai
 import (
 	"context"
 	"encoding/json"
+	clients2 "github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
 
@@ -49,7 +48,7 @@ func TestOpenAIClient_ChatRequest(t *testing.T) {
 
 	ctx := context.Background()
 	providerCfg := DefaultConfig()
-	clientCfg := clients.DefaultClientConfig()
+	clientCfg := clients2.DefaultClientConfig()
 
 	providerCfg.BaseURL = openAIServer.URL
 
@@ -78,7 +77,7 @@ func TestOpenAIClient_RateLimit(t *testing.T) {
 
 	ctx := context.Background()
 	providerCfg := DefaultConfig()
-	clientCfg := clients.DefaultClientConfig()
+	clientCfg := clients2.DefaultClientConfig()
 
 	providerCfg.BaseURL = openAIServer.URL
 
@@ -93,5 +92,5 @@ func TestOpenAIClient_RateLimit(t *testing.T) {
 	_, err = client.Chat(ctx, &chatParams)
 
 	require.Error(t, err)
-	require.IsType(t, &clients.RateLimitError{}, err)
+	require.IsType(t, &clients2.RateLimitError{}, err)
 }

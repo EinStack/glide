@@ -2,8 +2,7 @@ package health
 
 import (
 	"errors"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
+	"github.com/EinStack/glide/pkg/clients"
 )
 
 // Tracker tracks errors and general health of model provider

@@ -3,6 +3,7 @@ package azureopenai
 import (
 	"context"
 	"encoding/json"
+	clients2 "github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,14 +15,12 @@ import (
 
 	"github.com/EinStack/glide/pkg/telemetry"
 
-	"github.com/EinStack/glide/pkg/providers/clients"
-
 	"github.com/stretchr/testify/require"
 )
 
 func TestAzureOpenAIClient_ChatStreamSupported(t *testing.T) {
 	providerCfg := DefaultConfig()
-	clientCfg := clients.DefaultClientConfig()
+	clientCfg := clients2.DefaultClientConfig()
 
 	client, err := NewClient(providerCfg, clientCfg, telemetry.NewTelemetryMock())
 	require.NoError(t, err)
@@ -64,7 +63,7 @@ func TestAzureOpenAIClient_ChatStreamRequest(t *testing.T) {
 
 			ctx := context.Background()
 			providerCfg := DefaultConfig()
-			clientCfg := clients.DefaultClientConfig()
+			clientCfg := clients2.DefaultClientConfig()
 
 			providerCfg.BaseURL = AzureopenAIServer.URL
 
@@ -132,7 +131,7 @@ func TestAzureOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
 
 			ctx := context.Background()
 			providerCfg := DefaultConfig()
-			clientCfg := clients.DefaultClientConfig()
+			clientCfg := clients2.DefaultClientConfig()
 
 			providerCfg.BaseURL = openAIServer.URL
 
@@ -153,7 +152,7 @@ func TestAzureOpenAIClient_ChatStreamRequestInterrupted(t *testing.T) {
 			for {
 				chunk, err := stream.Recv()
 				if err != nil {
-					require.ErrorIs(t, err, clients.ErrProviderUnavailable)
+					require.ErrorIs(t, err, clients2.ErrProviderUnavailable)
 					return
 				}
 

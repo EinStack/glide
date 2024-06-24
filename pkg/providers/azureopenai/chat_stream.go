@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	clients2 "github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 
@@ -12,7 +13,6 @@ import (
 
 	"github.com/EinStack/glide/pkg/providers/openai"
 
-	"github.com/EinStack/glide/pkg/providers/clients"
 	"github.com/r3labs/sse/v2"
 
 	"go.uber.org/zap"
@@ -82,7 +82,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			// if err is io.EOF, this still means that the stream is interrupted unexpectedly
 			//  because the normal stream termination is done via finding out streamDoneMarker
 
-			return nil, clients.ErrProviderUnavailable
+			return nil, clients2.ErrProviderUnavailable
 		}
 
 		s.tel.L().Debug(
@@ -91,7 +91,7 @@ func (s *ChatStream) Recv() (*schemas.ChatStreamChunk, error) {
 			zap.ByteString("rawChunk", rawEvent),
 		)
 
-		event, err := clients.ParseSSEvent(rawEvent)
+		event, err := clients2.ParseSSEvent(rawEvent)
 
 		if bytes.Equal(event.Data, openai.StreamDoneMarker) {
 			s.tel.L().Info(
@@ -155,7 +155,7 @@ func (c *Client) SupportChatStream() bool {
 	return true
 }
 
-func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients.ChatStream, error) {
+func (c *Client) ChatStream(ctx context.Context, params *schemas.ChatParams) (clients2.ChatStream, error) {
 	// Create a new chat request
 	httpRequest, err := c.makeStreamReq(ctx, params)
 	if err != nil {

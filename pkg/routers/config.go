@@ -14,9 +14,9 @@ type Config struct {
 	EmbeddingRouters []EmbeddingRouterConfig `yaml:"embedding" validate:"required,dive"`
 }
 
-func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, error) {
+func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*lang.LangRouter, error) {
 	seenIDs := make(map[string]bool, len(c.LanguageRouters))
-	routers := make([]*LangRouter, 0, len(c.LanguageRouters))
+	routers := make([]*lang.LangRouter, 0, len(c.LanguageRouters))
 
 	var errs error
 
@@ -34,7 +34,7 @@ func (c *Config) BuildLangRouters(tel *telemetry.Telemetry) ([]*LangRouter, erro
 
 		tel.L().Debug("Init router", zap.String("routerID", routerConfig.ID))
 
-		router, err := NewLangRouter(&c.LanguageRouters[idx], tel)
+		router, err := lang.NewLangRouter(&c.LanguageRouters[idx], tel)
 		if err != nil {
 			errs = multierr.Append(errs, err)
 			continue

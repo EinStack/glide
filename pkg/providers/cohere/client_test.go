@@ -4,6 +4,7 @@ package cohere
 import (
 	"context"
 	"encoding/json"
+	"github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,8 +15,6 @@ import (
 	"github.com/EinStack/glide/pkg/api/schemas"
 
 	"github.com/EinStack/glide/pkg/telemetry"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/stretchr/testify/require"
 )

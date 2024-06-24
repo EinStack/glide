@@ -2,7 +2,7 @@ package embed
 
 import (
 	"github.com/EinStack/glide/pkg/providers"
-	"github.com/EinStack/glide/pkg/routers/retry"
+	"github.com/EinStack/glide/pkg/resiliency/retry"
 	"github.com/EinStack/glide/pkg/routers/routing"
 )
 

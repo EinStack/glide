@@ -1,10 +1,10 @@
-package routers
+package lang
 
 import (
 	"context"
 	"errors"
+	"github.com/EinStack/glide/pkg/resiliency/retry"
 
-	"github.com/EinStack/glide/pkg/routers/retry"
 	"go.uber.org/zap"
 
 	"github.com/EinStack/glide/pkg/providers"
@@ -237,4 +237,8 @@ func (r *LangRouter) ChatStream(
 		req.Metadata,
 		&schemas.ReasonError,
 	)
+}
+
+func (r *LangRouter) Embed(ctx context.Context, req *schemas.EmbedRequest) (*schemas.EmbedResponse, error) {
+
 }

@@ -2,8 +2,7 @@ package anthropic
 
 import (
 	"context"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
+	clients2 "github.com/EinStack/glide/pkg/clients"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
 )
@@ -12,6 +11,6 @@ func (c *Client) SupportChatStream() bool {
 	return false
 }
 
-func (c *Client) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients.ChatStream, error) {
-	return nil, clients.ErrChatStreamNotImplemented
+func (c *Client) ChatStream(_ context.Context, _ *schemas.ChatParams) (clients2.ChatStream, error) {
+	return nil, clients2.ErrChatStreamNotImplemented
 }
