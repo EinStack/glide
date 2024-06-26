@@ -2,16 +2,14 @@ package providers
 
 import (
 	"context"
+	"github.com/EinStack/glide/pkg/clients"
+	health2 "github.com/EinStack/glide/pkg/resiliency/health"
 	"io"
 	"time"
 
 	"github.com/EinStack/glide/pkg/config/fields"
 
-	"github.com/EinStack/glide/pkg/routers/health"
-
 	"github.com/EinStack/glide/pkg/routers/latency"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
 )
@@ -42,17 +40,17 @@ type LanguageModel struct {
 	modelID               string
 	weight                int
 	client                LangProvider
-	healthTracker         *health.Tracker
+	healthTracker         *health2.Tracker
 	chatLatency           *latency.MovingAverage
 	chatStreamLatency     *latency.MovingAverage
 	latencyUpdateInterval *fields.Duration
 }
 
-func NewLangModel(modelID string, client LangProvider, budget *health.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
+func NewLangModel(modelID string, client LangProvider, budget *health2.ErrorBudget, latencyConfig latency.Config, weight int) *LanguageModel {
 	return &LanguageModel{
 		modelID:               modelID,
 		client:                client,
-		healthTracker:         health.NewTracker(budget),
+		healthTracker:         health2.NewTracker(budget),
 		chatLatency:           latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
 		chatStreamLatency:     latency.NewMovingAverage(latencyConfig.Decay, latencyConfig.WarmupSamples),
 		latencyUpdateInterval: latencyConfig.UpdateInterval,

@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"github.com/EinStack/glide/pkg/clients"
 	"net/http"
 	"net/url"
 	"time"
@@ -8,8 +9,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/EinStack/glide/pkg/telemetry"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 )
 
 const (

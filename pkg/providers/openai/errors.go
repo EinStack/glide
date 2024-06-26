@@ -2,13 +2,13 @@ package openai
 
 import (
 	"fmt"
+	"github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/EinStack/glide/pkg/telemetry"
 
-	"github.com/EinStack/glide/pkg/providers/clients"
 	"go.uber.org/zap"
 )
 

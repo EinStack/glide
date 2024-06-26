@@ -3,6 +3,7 @@ package octoml
 import (
 	"context"
 	"encoding/json"
+	"github.com/EinStack/glide/pkg/clients"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,8 +12,6 @@ import (
 	"testing"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/telemetry"
 

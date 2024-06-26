@@ -3,16 +3,14 @@ package providers
 import (
 	"errors"
 	"fmt"
+	"github.com/EinStack/glide/pkg/clients"
+	"github.com/EinStack/glide/pkg/resiliency/health"
 
 	"github.com/EinStack/glide/pkg/routers/latency"
 
 	"github.com/EinStack/glide/pkg/providers/ollama"
 
-	"github.com/EinStack/glide/pkg/providers/clients"
-
 	"github.com/EinStack/glide/pkg/providers/bedrock"
-
-	"github.com/EinStack/glide/pkg/routers/health"
 
 	"github.com/EinStack/glide/pkg/providers/openai"
 

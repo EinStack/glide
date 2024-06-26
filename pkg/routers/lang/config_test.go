@@ -1,23 +1,19 @@
-package routers
+package lang
 
 import (
-	"testing"
-
+	"github.com/EinStack/glide/pkg/clients"
 	"github.com/EinStack/glide/pkg/providers/cohere"
-
+	"github.com/EinStack/glide/pkg/resiliency/health"
+	"github.com/EinStack/glide/pkg/resiliency/retry"
+	routers2 "github.com/EinStack/glide/pkg/routers"
 	"github.com/EinStack/glide/pkg/telemetry"
+	"testing"
 
 	"github.com/EinStack/glide/pkg/routers/routing"
 
-	"github.com/EinStack/glide/pkg/routers/retry"
-
 	"github.com/EinStack/glide/pkg/routers/latency"
 
-	"github.com/EinStack/glide/pkg/routers/health"
-
 	"github.com/EinStack/glide/pkg/providers/openai"
-
-	"github.com/EinStack/glide/pkg/providers/clients"
 
 	"github.com/EinStack/glide/pkg/providers"
 
@@ -27,7 +23,7 @@ import (
 func TestRouterConfig_BuildModels(t *testing.T) {
 	defaultParams := openai.DefaultParams()
 
-	cfg := Config{
+	cfg := routers2.Config{
 		LanguageRouters: []LangRouterConfig{
 			{
 				ID:              "first_router",
@@ -128,11 +124,11 @@ func TestRouterConfig_InvalidSetups(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		config Config
+		config routers2.Config
 	}{
 		{
 			"duplicated router IDs",
-			Config{
+			routers2.Config{
 				LanguageRouters: []LangRouterConfig{
 					{
 						ID:              "first_router",
@@ -177,7 +173,7 @@ func TestRouterConfig_InvalidSetups(t *testing.T) {
 		},
 		{
 			"duplicated model IDs",
-			Config{
+			routers2.Config{
 				LanguageRouters: []LangRouterConfig{
 					{
 						ID:              "first_router",
@@ -214,7 +210,7 @@ func TestRouterConfig_InvalidSetups(t *testing.T) {
 		},
 		{
 			"no models",
-			Config{
+			routers2.Config{
 				LanguageRouters: []LangRouterConfig{
 					{
 						ID:              "first_router",

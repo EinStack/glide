@@ -1,17 +1,17 @@
-package routers
+package lang
 
 import (
 	"context"
+	"github.com/EinStack/glide/pkg/clients"
+	"github.com/EinStack/glide/pkg/resiliency/health"
+	"github.com/EinStack/glide/pkg/resiliency/retry"
 	"testing"
 	"time"
 
 	"github.com/EinStack/glide/pkg/api/schemas"
 	"github.com/EinStack/glide/pkg/providers"
-	"github.com/EinStack/glide/pkg/providers/clients"
 	ptesting "github.com/EinStack/glide/pkg/providers/testing"
-	"github.com/EinStack/glide/pkg/routers/health"
 	"github.com/EinStack/glide/pkg/routers/latency"
-	"github.com/EinStack/glide/pkg/routers/retry"
 	"github.com/EinStack/glide/pkg/routers/routing"
 	"github.com/EinStack/glide/pkg/telemetry"
 	"github.com/stretchr/testify/require"
