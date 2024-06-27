@@ -41,6 +41,6 @@ func main() {
 	cli := cmd.NewCLI()
 
 	if err := cli.Execute(); err != nil {
-		logger.Fatal("💥Glide has finished with error: %v", zap.Error(err))
+		logger.Fatal("💥Glide has finished with error", zap.Error(err))
 	}
 }
