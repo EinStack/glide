@@ -1,10 +1,24 @@
 package main
 
 import (
-	"log"
-
 	"github.com/EinStack/glide/pkg/cmd"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
+
+var logger *zap.Logger
+
+func init() {
+	config := zap.NewProductionConfig()
+	config.EncoderConfig.TimeKey = "timestamp"
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	var err error
+	logger, err = config.Build()
+	if err != nil {
+		panic(err)
+	}
+	zap.ReplaceGlobals(logger)
+}
 
 //	@title			Glide
 //	@version		0.0.1
@@ -27,6 +41,6 @@ func main() {
 	cli := cmd.NewCLI()
 
 	if err := cli.Execute(); err != nil {
-		log.Fatalf("💥Glide has finished with error: %v", err)
+		logger.Fatal("💥Glide has finished with error: %v", zap.Error(err))
 	}
 }

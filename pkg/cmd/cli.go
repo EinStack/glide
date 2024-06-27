@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/EinStack/glide/pkg/version"
+	"go.uber.org/zap"
 
 	"github.com/EinStack/glide/pkg/config"
 
@@ -45,6 +46,8 @@ func NewCLI() *cobra.Command {
 		Version: version.FullVersion,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			configProvider := config.NewProvider()
+
+			zap.L().Info("Glide command executed")
 
 			err := configProvider.LoadDotEnv(dotEnvFile)
 
