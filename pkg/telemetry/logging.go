@@ -1,6 +1,8 @@
 package telemetry
 
 import (
+	"sync"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -69,4 +71,39 @@ func NewLogger(cfg *LogConfig) (*zap.Logger, error) {
 	}
 
 	return logger, nil
+}
+
+var (
+	globalLogger *zap.Logger
+	loggerMutex  sync.Mutex
+)
+
+// To initialize & check looger only once
+func InitializeGlobalLogger(cfg *LogConfig) error {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+
+	if globalLogger != nil {
+		return nil
+	}
+
+	logger, err := NewLogger(cfg)
+	if err != nil {
+		return err
+	}
+
+	globalLogger = logger
+	return nil
+}
+
+func GetLogger() *zap.Logger {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+
+	if globalLogger == nil {
+		cfg := DefaultLogConfig()
+		globalLogger, _ = NewLogger(cfg)
+	}
+
+	return globalLogger
 }
