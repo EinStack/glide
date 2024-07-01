@@ -1,23 +1,21 @@
 package main
 
 import (
+	"log"
+
 	"github.com/EinStack/glide/pkg/cmd"
+	"github.com/EinStack/glide/pkg/telemetry"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-var logger *zap.Logger
-
 func init() {
-	config := zap.NewProductionConfig()
-	config.EncoderConfig.TimeKey = "timestamp"
-	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	var err error
-	logger, err = config.Build()
+	config := telemetry.DefaultLogConfig()
+	config.Level = zap.DebugLevel
+	config.Encoding = "console"
+	err := telemetry.InitializeGlobalLogger(config)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to initialize logger: %v", err)
 	}
-	zap.ReplaceGlobals(logger)
 }
 
 //	@title			Glide
@@ -38,6 +36,7 @@ func init() {
 // @BasePath	/
 // @schemes	http
 func main() {
+	logger := telemetry.GetLogger()
 	cli := cmd.NewCLI()
 
 	if err := cli.Execute(); err != nil {

@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"log"
-
+	"github.com/EinStack/glide/pkg/telemetry"
 	"github.com/EinStack/glide/pkg/version"
 	"go.uber.org/zap"
 
@@ -16,6 +15,7 @@ import (
 var (
 	dotEnvFile string
 	cfgFile    string
+	logger     = telemetry.GetLogger()
 )
 
 const Description = `
@@ -47,14 +47,12 @@ func NewCLI() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			configProvider := config.NewProvider()
 
-			zap.L().Info("Glide command executed")
-
 			err := configProvider.LoadDotEnv(dotEnvFile)
 
 			if err != nil {
-				log.Println("⚠️failed to load dotenv file: ", err) // don't have an inited logger at this moment
+				logger.Warn("⚠️failed to load dotenv file: ", zap.Error(err)) // don't have an inited logger at this moment
 			} else {
-				log.Printf("🔧dot env file is loaded (%v)", dotEnvFile)
+				logger.Info("🔧dot env file is loaded", zap.Any("dotenv", dotEnvFile))
 			}
 
 			_, err = configProvider.Load(cfgFile)
