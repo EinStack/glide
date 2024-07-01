@@ -139,7 +139,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		ModelResponse: schemas.ModelResponse{
 			Metadata: map[string]string{},
 			Message: schemas.ChatMessage{
-				Role:    completion.Type,
+				Role:    schemas.Role(completion.Type),
 				Content: completion.Text,
 			},
 			TokenUsage: schemas.TokenUsage{

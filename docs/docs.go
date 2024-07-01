@@ -203,7 +203,11 @@ const docTemplate = `{
                 },
                 "role": {
                     "description": "The role of the author of this message. One of system, user, or assistant.",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schemas.Role"
+                        }
+                    ]
                 }
             }
         },
@@ -307,6 +311,19 @@ const docTemplate = `{
                     "$ref": "#/definitions/schemas.TokenUsage"
                 }
             }
+        },
+        "schemas.Role": {
+            "type": "string",
+            "enum": [
+                "system",
+                "user",
+                "assistant"
+            ],
+            "x-enum-varnames": [
+                "RoleSystem",
+                "RoleUser",
+                "RoleAssistant"
+            ]
         },
         "schemas.RouterListSchema": {
             "type": "object",

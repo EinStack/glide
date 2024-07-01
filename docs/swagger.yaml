@@ -6,9 +6,10 @@ definitions:
         description: The content of the message.
         type: string
       role:
+        allOf:
+        - $ref: '#/definitions/schemas.Role'
         description: The role of the author of this message. One of system, user,
           or assistant.
-        type: string
     required:
     - content
     - role
@@ -77,6 +78,16 @@ definitions:
       token_usage:
         $ref: '#/definitions/schemas.TokenUsage'
     type: object
+  schemas.Role:
+    enum:
+    - system
+    - user
+    - assistant
+    type: string
+    x-enum-varnames:
+    - RoleSystem
+    - RoleUser
+    - RoleAssistant
   schemas.RouterListSchema:
     properties:
       routers:

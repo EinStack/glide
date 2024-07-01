@@ -56,7 +56,7 @@ func TestAzureOpenAIClient_ChatRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the capital of the United Kingdom?",
 	}}}
 
@@ -116,7 +116,7 @@ func TestDoChatRequest_ErrorResponse(t *testing.T) {
 	require.NoError(t, err)
 
 	chatParams := schemas.ChatParams{Messages: []schemas.ChatMessage{{
-		Role:    "user",
+		Role:    schemas.RoleUser,
 		Content: "What's the dealio?",
 	}}}
 

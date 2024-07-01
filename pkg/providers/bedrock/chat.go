@@ -104,7 +104,7 @@ func (c *Client) doChatRequest(ctx context.Context, payload *ChatRequest) (*sche
 		Cached:    false,
 		ModelResponse: schemas.ModelResponse{
 			Message: schemas.ChatMessage{
-				Role:    "assistant",
+				Role:    schemas.RoleAssistant,
 				Content: modelResult.OutputText,
 			},
 			TokenUsage: schemas.TokenUsage{

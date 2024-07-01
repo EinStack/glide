@@ -30,7 +30,7 @@ func TestChatRequest_DefaultParams(t *testing.T) {
 
 	chatReq := ChatRequest{
 		Message: ChatMessage{
-			Role:    "user",
+			Role:    RoleUser,
 			Content: defaultMessage,
 		},
 		MessageHistory: []ChatMessage{
@@ -42,7 +42,7 @@ func TestChatRequest_DefaultParams(t *testing.T) {
 		OverrideParams: &map[string]ModelParamsOverride{
 			modelID: {
 				Message: ChatMessage{
-					Role:    "user",
+					Role:    RoleUser,
 					Content: myModelMessage,
 				},
 			},
@@ -66,7 +66,7 @@ func TestChatRequest_ModelIDOverride(t *testing.T) {
 
 	chatReq := ChatRequest{
 		Message: ChatMessage{
-			Role:    "user",
+			Role:    RoleUser,
 			Content: defaultMessage,
 		},
 		MessageHistory: []ChatMessage{
@@ -78,7 +78,7 @@ func TestChatRequest_ModelIDOverride(t *testing.T) {
 		OverrideParams: &map[string]ModelParamsOverride{
 			modelID: {
 				Message: ChatMessage{
-					Role:    "user",
+					Role:    RoleUser,
 					Content: myModelMessage,
 				},
 			},
@@ -102,7 +102,7 @@ func TestChatRequest_ModelNameOverride(t *testing.T) {
 
 	chatReq := ChatRequest{
 		Message: ChatMessage{
-			Role:    "user",
+			Role:    RoleUser,
 			Content: defaultMessage,
 		},
 		MessageHistory: []ChatMessage{
@@ -114,7 +114,7 @@ func TestChatRequest_ModelNameOverride(t *testing.T) {
 		OverrideParams: &map[string]ModelParamsOverride{
 			modelName: {
 				Message: ChatMessage{
-					Role:    "user",
+					Role:    RoleUser,
 					Content: myModelMessage,
 				},
 			},
@@ -139,7 +139,7 @@ func TestChatRequest_ModelNameIDOverride(t *testing.T) {
 
 	chatReq := ChatRequest{
 		Message: ChatMessage{
-			Role:    "user",
+			Role:    RoleUser,
 			Content: defaultMessage,
 		},
 		MessageHistory: []ChatMessage{
@@ -151,13 +151,13 @@ func TestChatRequest_ModelNameIDOverride(t *testing.T) {
 		OverrideParams: &map[string]ModelParamsOverride{
 			modelName: {
 				Message: ChatMessage{
-					Role:    "user",
+					Role:    RoleUser,
 					Content: myModelNameMessage,
 				},
 			},
 			modelID: {
 				Message: ChatMessage{
-					Role:    "user",
+					Role:    RoleUser,
 					Content: myModelIDMessage,
 				},
 			},
